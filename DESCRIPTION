@@ -11,3 +11,11 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 URL: https://github.com/jrvanderdoes/funkycells
 BugReports: https://github.com/jrvanderdoes/funkycells/issues
+Depends: 
+    R (>= 2.10)
+LazyData: true
+Imports: 
+    fda,
+    spatstat.core,
+    spatstat.geom,
+    tidyr
