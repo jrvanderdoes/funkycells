@@ -70,41 +70,46 @@ simulatePP <- function(cellVarData=
     clusterCellsNA_Vars <-
           cellVarData[cellVarData[,'stage']==stage,clusterCellsNA_Names]
 
-
     nonClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars==0]
-    nonClusterCells_data <-
-            data.frame('cell'=cellKappaData[nonClusterCells_cKD_Idx,'cell'],
-                       'kappa'=cellKappaData[nonClusterCells_cKD_Idx,'kappa'])
-
     invClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars>0]
-    invClusterCells_data <-
-      data.frame('cell'=cellKappaData[invClusterCells_cKD_Idx,'cell'],
-                 'kappa'=cellKappaData[invClusterCells_cKD_Idx,'kappa'],
-                 'var'=NA)
-    invClusterCells_data$var <-
-          cellVarData[cellVarData[,'stage']==stage,invClusterCells_data$cell]
-
 
     ## Non-clustering
-    data_stages[[stageIdx]] <-
-      .generateCSRPatterns(stageName=stage,
-                           reduceEdge=reduceEdge,
-                           peoplePerStage=peoplePerStage,
-                           imagesPerPerson=imagesPerPerson,
-                           kappas=nonClusterCells_data$kappa,
-                           cellTypes=nonClusterCells_data$cell,
-                           kappaSep=T, imageAdj=imageAdj)
+    if(length(nonClusterCells_cKD_Idx)>0){
+      nonClusterCells_data <-
+        data.frame('cell'=cellKappaData[nonClusterCells_cKD_Idx,'cell'],
+                   'kappa'=cellKappaData[nonClusterCells_cKD_Idx,'kappa'])
+
+      data_stages[[stageIdx]] <-
+        .generateCSRPatterns(stageName=stage,
+                             reduceEdge=reduceEdge,
+                             peoplePerStage=peoplePerStage,
+                             imagesPerPerson=imagesPerPerson,
+                             kappas=nonClusterCells_data$kappa,
+                             cellTypes=nonClusterCells_data$cell,
+                             kappaSep=T, imageAdj=imageAdj)
+
+    }
     ## Inv-clustering
-    data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
-      .generateInvClusterPatterns(stageName=stage,
-                           reduceEdge=reduceEdge,
-                           peoplePerStage=peoplePerStage,
-                           imagesPerPerson=imagesPerPerson,
-                           kappas=invClusterCells_data$kappa,
-                           cellTypes=invClusterCells_data$cell,
-                           cellVars=invClusterCells_data$var,
-                           kappaSep=T, imageAdj=imageAdj)
-      )
+    if(length(invClusterCells_cKD_Idx)>0){
+      invClusterCells_data <-
+        data.frame('cell'=cellKappaData[invClusterCells_cKD_Idx,'cell'],
+                   'kappa'=cellKappaData[invClusterCells_cKD_Idx,'kappa'],
+                   'var'=NA)
+      invClusterCells_data$var <-
+        cellVarData[cellVarData[,'stage']==stage,invClusterCells_data$cell]
+
+      data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
+                                       .generateInvClusterPatterns(
+                                            stageName=stage,
+                                            reduceEdge=reduceEdge,
+                                            peoplePerStage=peoplePerStage,
+                                            imagesPerPerson=imagesPerPerson,
+                                            kappas=invClusterCells_data$kappa,
+                                            cellTypes=invClusterCells_data$cell,
+                                            cellVars=invClusterCells_data$var,
+                                            kappaSep=T, imageAdj=imageAdj)
+          )
+    }
 
     ## Recursively plot clusters
     completeCells <- clusterCellsNA_Names # Record completed cell generation
@@ -148,7 +153,7 @@ simulatePP <- function(cellVarData=
   }
 
   ## Organize and return
-  .convertList2DF(data_stages)[,c(6,1:3,5,4)]
+  .convertList2Dataframe(data_stages, typeBind = 'row')[,c(6,1:3,5,4)]
 }
 
 #' Simulate Meta Variables
@@ -300,7 +305,7 @@ simulateMeta <- function(pcaData,
                                              cellType=cellTypes[cell])
       }
       # Clean data (with correct info)
-      data_tmp_df <- .convertList2DF(data_tmp)
+      data_tmp_df <- .convertList2Dataframe(data_tmp,typeBind = 'row')
       data_tmp_df$Image <- imageCt+(personCt-1)*imagesPerPerson + imageAdj
       data_tmp_df$Person <- paste0('p',personCt)
       data_tmp_df$Stage <- stageName
@@ -382,28 +387,6 @@ simulateMeta <- function(pcaData,
                               clusterCells = paste0(cellTypes,'_Cluster'),
                               kappas = dataKappas,
                               minPts = 1)
-  data
-}
-
-#' Convert a list to data.frame
-#'
-#' This (internal) function converts lists to a data.frame. No checks are made
-#'     on data size, the lists are merely appended using rbind.
-#'
-#' @param listData List of equally sized data.frames.
-#'
-#' @return Data.frame of the converted list data.
-#' @export
-#'
-#' @examples
-#' # See code for simulatePP. This is not an outward function so won't be
-#' #     viewable.
-.convertList2DF <- function(listData){
-  data <- data.frame()
-  for(i in 1:length(listData)){
-    data <- rbind(data,listData[[i]])
-  }
-
   data
 }
 
