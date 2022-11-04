@@ -6,7 +6,12 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of funkycells is to …
+The term funkycells comes from **fun**ctional **K** function
+anal**y**sis of multiplexed images of **cells**. This package organizes
+ways to analyze cell relationships based on their (empirical) K
+functions. Approaches tailors to different data sizes are present in
+this packages and we encourage all feedback and improvements through
+this github repo.
 
 ## Installation
 
