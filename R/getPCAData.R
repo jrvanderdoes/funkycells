@@ -162,7 +162,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
   K_pca <- fda::pca.fd(K_func, nharm = nPCs)
 
   if(length(dropIdx)>0){
-    K_pca_scores <- .insertMissingRows(K_pca$scores, dropIdx, nPCs)
+    K_pca_scores <- .insertMissingRows(K_pca$scores, dropIdx)
   }else{
     K_pca_scores <- K_pca$scores
   }

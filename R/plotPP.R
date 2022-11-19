@@ -1,5 +1,5 @@
 #' Plot Spatial Point Process
-#' 
+#'
 #' This function is used to plot a spatial point process.
 #'
 #' @param data Data.frame with x,y, and agent type (in that order)
@@ -10,7 +10,7 @@
 #'     region in the x-direction. Default is c(min(x),max(x)).
 #' @param ylim (Optional) Two value numeric vector indicating the size of the
 #'     region in the y-direction. Default is c(min(y),max(y)).
-#' @param dropAxes (Optional) Boolean indicating if the x, y axis title and 
+#' @param dropAxes (Optional) Boolean indicating if the x, y axis title and
 #'     labels should be dropped. Default is FALSE.
 #' @param colors (Optional) Vector of colors for the points. Default is NULL, or
 #'     ggplot2 selected colors.
@@ -25,21 +25,22 @@ plotPP <- function(data, colorGuide = NULL,ptSize=1,
                    dropAxes=F,
                    colors=NULL){
   ## This is used to plot point process data
-  
-  retPlot <- ggplot() +
-    geom_point(mapping=aes(x=data[,1],y=data[,2], col=data[,3]),
+
+  retPlot <- ggplot2::ggplot() +
+    ggplot2::geom_point(mapping=ggplot2::aes(x=data[,1],y=data[,2],
+                                             col=data[,3]),
                size=ptSize) +
-    theme_bw() +
-    xlim(xlim) + 
-    ylim(ylim) +
-    guides(color=colorGuide) 
+    ggplot2::theme_bw() +
+    ggplot2::xlim(xlim) +
+    ggplot2::ylim(ylim) +
+    ggplot2::guides(color=colorGuide)
   if(dropAxes)
     retPlot <- retPlot +
-      theme(axis.title = element_blank(),
-            axis.text = element_blank())
+      ggplot2::theme(axis.title = ggplot2::element_blank(),
+            axis.text = ggplot2::element_blank())
   if(!is.null(colors))
     retPlot <- retPlot +
-      scale_color_manual(values = colors)
-  
+      ggplot2::scale_color_manual(values = colors)
+
   retPlot
 }

@@ -3,8 +3,6 @@
 #' This function computes the K function between the two agents for each unit,
 #'     potentially averaging over repeated measures.
 #'
-#' Upcoming: Marked point process.
-#'
 #' @param data Dataframe with column titles for at least x, y, agents,
 #'     and unit. For consistency (and avoiding errors), use that order.
 #'     Additionally, repeatedUniqueId can be added.
@@ -59,8 +57,7 @@ getKFunction <- function(data, agents, unit,
                          edgeCorrection="isotropic"){
 
   ## Must save as a list to ensure multiple sizes are handled (rCheckVals=NULL)
-  matrix_r = list()
-  matrix_K = list()
+  matrix_r <- matrix_K <- list()
   units <- unique(data[,unit])
 
   for(i in 1:length(units)){
@@ -73,8 +70,7 @@ getKFunction <- function(data, agents, unit,
     if(!is.null(repeatedUniqueId))
       repeats <- unique(data_unit[,repeatedUniqueId])
     # Set up var
-    matrix_K_tmp <- NULL
-    matrix_r_tmp <- NULL
+    matrix_K_tmp <- matrix_r_tmp <- NULL
     agent1Counts <- rep(NA, length(repeats))
 
     for(j in 1:length(repeats)){
@@ -113,7 +109,6 @@ getKFunction <- function(data, agents, unit,
 
       ## Marked since additional properties
       if(ncol(data_repeat)>3){
-        stop('Sorry, this is not yet complete')
         # Apply Kmulti, which generates Kcross functions for subsets of cells that we can
         # define by functions of the cell marks.
         # Since we have Marks as T/F, we set the functions f1 and f2 to return the
@@ -121,11 +116,17 @@ getKFunction <- function(data, agents, unit,
 
         # Because we may be defining different window sizes for each person
         # we return the vector r as well, as it will be different for each patient.
-        f1 = function(X){which(marks(X)[,agents[1]]==TRUE)}
-        f2 = function(X){which(marks(X)[,agents[2]]==TRUE)}
-        K = spatstat::Kmulti(data_ppp,f1,f2,
+        f1 = function(X){which(spatstat.geom::marks(X)[,agents[1]]==TRUE)}
+        f2 = function(X){which(spatstat.geom::marks(X)[,agents[2]]==TRUE)}
+        K <- tryCatch({spatstat.core::Kmulti(data_ppp,f1,f2,
                              correction = edgeCorrection,
                              r=rCheckVals)
+        }, error=function(e){
+          list(NA,NA,NA)
+        })
+
+        # Save weights
+        agent1Counts[j] <- nrow(data_repeat[data_repeat[,agents[1]],])
       } else{
         K <- tryCatch({
           spatstat.core::Kcross(data_ppp,
@@ -136,6 +137,8 @@ getKFunction <- function(data, agents, unit,
           list(NA,NA,NA)
         })
 
+        # Save weights
+        agent1Counts[j] <- nrow(data_repeat[data_repeat[,3]==agents[1],])
       }
 
       ## AlignK and r
@@ -144,8 +147,6 @@ getKFunction <- function(data, agents, unit,
       matrix_K_tmp <- cbind(result[[1]],result[[2]])
       matrix_r_tmp <- result[[3]]
 
-      # Save weights
-      agent1Counts[j] <- nrow(data_repeat[data_repeat[,3]==agents[1],])
     }
     # Drop any NA
     dropIdxs <- which(colSums(is.na(matrix_K_tmp))!=0)

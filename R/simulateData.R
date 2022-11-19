@@ -59,7 +59,7 @@ simulatePP <- function(cellVarData=
     # General Vars
     stage <- cellVarData$stage[stageIdx] # Current Stage
     imageAdj <- (stageIdx-1)*(peoplePerStage*imagesPerPerson) # Adjustment for images due to stage
-
+    personAdj <- (stageIdx-1)*(peoplePerStage) # Adjustment for person due to stage
 
     if(!silent)
       cat(paste0('Stage: ',stage, ' (',stageIdx,'/',nrow(cellVarData),')\n'))
@@ -86,7 +86,7 @@ simulatePP <- function(cellVarData=
                              imagesPerPerson=imagesPerPerson,
                              kappas=nonClusterCells_data$kappa,
                              cellTypes=nonClusterCells_data$cell,
-                             kappaSep=T, imageAdj=imageAdj)
+                             kappaSep=T, imageAdj=imageAdj, personAdj=personAdj)
 
     }
     ## Inv-clustering
@@ -107,7 +107,8 @@ simulatePP <- function(cellVarData=
                                             kappas=invClusterCells_data$kappa,
                                             cellTypes=invClusterCells_data$cell,
                                             cellVars=invClusterCells_data$var,
-                                            kappaSep=T, imageAdj=imageAdj)
+                                            kappaSep=T, imageAdj=imageAdj,
+                                            personAdj=personAdj)
           )
     }
 
@@ -125,15 +126,6 @@ simulatePP <- function(cellVarData=
       if(nrow(nextCell_cKD)==0)
         stop('Error: There is an impossibility in cell placement')
 
-      tmp <- .clusterAroundCells(
-        clusterData=data_stages[[stageIdx]][
-            data_stages[[stageIdx]]$cellType %in% unique(nextCell_cKD$clusterCell),],
-        cellVarData=as.numeric(nextCell_Vars),
-        stageName=stage, reduceEdge=reduceEdge,
-        cells=nextCell_cKD$cell,
-        clusterCells=nextCell_cKD$clusterCell,
-        kappas=nextCell_cKD$kappa,
-        minPts=1)
       data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
          .clusterAroundCells(
              clusterData=data_stages[[stageIdx]][
@@ -153,7 +145,9 @@ simulatePP <- function(cellVarData=
   }
 
   ## Organize and return
-  .convertList2Dataframe(data_stages, typeBind = 'row')[,c(6,1:3,5,4)]
+  data_ret <- .convertList2Dataframe(data_stages, typeBind = 'row')[,c(6,1:3,5,4)]
+  data_ret$Stage <- as.character(data_ret$Stage)
+  data_ret
 }
 
 #' Simulate Meta Variables
@@ -284,7 +278,8 @@ simulateMeta <- function(pcaData,
                                  kappas,
                                  cellTypes,
                                  kappaSep=T,
-                                 imageAdj=0){
+                                 imageAdj=0,
+                                 personAdj=0){
 
   data <- NULL
 
@@ -307,7 +302,7 @@ simulateMeta <- function(pcaData,
       # Clean data (with correct info)
       data_tmp_df <- .convertList2Dataframe(data_tmp,typeBind = 'row')
       data_tmp_df$Image <- imageCt+(personCt-1)*imagesPerPerson + imageAdj
-      data_tmp_df$Person <- paste0('p',personCt)
+      data_tmp_df$Person <- paste0('p',personCt + personAdj)
       data_tmp_df$Stage <- stageName
 
       # Save to full data
@@ -363,7 +358,8 @@ simulateMeta <- function(pcaData,
                                         cellTypes,
                                         cellVars,
                                         kappaSep=F,
-                                        imageAdj=0){
+                                        imageAdj=0,
+                                        personAdj=0){
 
   data <- NULL
   # Consider ways to decide how many clusters
@@ -377,7 +373,8 @@ simulateMeta <- function(pcaData,
                                     clusterKappas,
                                     paste0(cellTypes,'_Cluster'),
                                     kappaSep=T,
-                                    imageAdj=imageAdj)
+                                    imageAdj=imageAdj,
+                                    personAdj=personAdj)
   # Cluster data
   data <- .clusterAroundCells(clusterData = cluster_data,
                               cellVarData = cellVars,

@@ -16,6 +16,10 @@ Depends:
 LazyData: true
 Imports: 
     fda,
+    ggplot2,
+    gridExtra,
+    rpart,
     spatstat.core,
     spatstat.geom,
+    stats,
     tidyr
