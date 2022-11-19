@@ -75,3 +75,45 @@
 
   data_df
 }
+
+
+#' Create K folds
+#'
+#' This (internal) function creates K folds of x. Note these folds are scrambled
+#'     data, but then ordered in each fold.
+#'
+#' @param x Vector of data (or often indices)
+#' @param chunksN Numeric for the number of chunks, or folds, desired
+#'
+#' @return a list with length chunksN, with each containing approximately the
+#'     same number of points
+#' @export
+#'
+#' @examples
+#' .getFolds(1:10,3)
+.getFolds <- function(x,K) {
+  if(K>length(x))
+    warning(paste0('Warning: Only ',length(x),' chunks are used due to data'))
+  if(K<2)
+    return(sample(x))
+  split(x, sample(cut(x, K, labels = FALSE)))
+}
+
+
+#' Specify Decimals
+#'
+#' This (internal) function ensures a numeric displays a given number of
+#'     decimals. This is different from "round" in that it will add zeros as
+#'     necessary.
+#'
+#' @param x Numeric to display k decimals of.
+#' @param k Numeric indicating the number of decimals to display
+#'
+#' @return String with numeric x to k decimal places
+#' @export
+#'
+#' @examples
+#' .specify_decimal(10.123,1)
+#' .specify_decimal(10.123,3)
+#' .specify_decimal(10.123,5)
+.specify_decimal <- function(x, k) {trimws(format(round(x, k), nsmall=k))}
