@@ -1,4 +1,3 @@
-
 #' Get PCA Data
 #'
 #' This function computes K functions from PP data then converts it into PCs.

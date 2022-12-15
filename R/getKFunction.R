@@ -151,7 +151,7 @@ getKFunction <- function(data, agents, unit,
     # Drop any NA
     dropIdxs <- which(colSums(is.na(matrix_K_tmp))!=0)
     if(length(dropIdxs)>0){
-      matrix_K_tmp <- matrix_K_tmp[-dropIdxs]
+      matrix_K_tmp <- matrix_K_tmp[,-dropIdxs]
       agent1Counts <- agent1Counts[-dropIdxs]
     }
 

@@ -296,7 +296,7 @@ simulateMeta <- function(pcaData,
         }
         data_tmp[[cell]] <- .generateCSRData(xRange = c(0,1), yRange = c(0,1),
                                              kappa = kapVal,
-                                             percentAwayFromEdge = reduceEdge,
+                                             #percentAwayFromEdge = reduceEdge,
                                              cellType=cellTypes[cell])
       }
       # Clean data (with correct info)

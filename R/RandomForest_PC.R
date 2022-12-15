@@ -1,4 +1,3 @@
-
 #' Compute Random Forest for Data with multiple PC (Along With Meta-Variables)
 #'
 #' This (internal) function creates a random forest model for data with PCs and
@@ -6,6 +5,8 @@
 #'     This is internal because we want users to use randomForest_CVPC.
 #'
 #' Upcoming: See TEST comment
+#'           Drop parts to make smaller memory impact.
+#'               https://rstudio-pubs-static.s3.amazonaws.com/381812_7b5343e0f1a7403fba31ff7d45cf6d88.html
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Note, currently Unit or repeated measures should not be included.
@@ -134,18 +135,17 @@
   # Get Decrease for each split
   frame[['improve']] = NA
   for (j in 1:nrow(frame)) {
-    if (frame[j,'var'] == '<leaf>') next
+    name <- frame[j,'var']
+    if (name == '<leaf>') next
 
+    # Get name of bigger group (if exists)
+    name_sub <- .getUnderlyingVariable(name)
+
+    # Get Gini improvement
     ind = which(rownames(frame) %in%
                   (as.numeric(rownames(frame)[j])*2+c(0,1)))
     frame[j,'improve'] = frame[j,'n']*frame[j,'gini'] - frame[ind[1],'n']*
       frame[ind[1],'gini'] - frame[ind[2],'n']*frame[ind[2],'gini']
-
-    # Get Gini improvement
-    name <- frame[j,'var']
-
-    # Get name of bigger group (if exists)
-    name_sub <- .getUnderlyingVariable(name)
 
     totVarImportance[totVarImportance$var==name_sub,'giniDec'] <-
       totVarImportance[totVarImportance$var==name_sub,'giniDec'] +
@@ -420,3 +420,4 @@
     return(unique(stringr::str_remove(names,'(_PC)[0-9]+$')))
   return(stringr::str_remove(names,'(_PC)[0-9]+$'))
 }
+# substr(test, 1, max(1,regexpr("_PC[0-9]+$", test)-1))
