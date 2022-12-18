@@ -98,7 +98,8 @@ computeRandomForest_CVPC <- function(data, K=10,
                     syntheticKs=100, syntheticMetas=100,
                     generalSyntheticK=T,
                     curvedSigSims = 100, alpha=0.05, silent=F,
-                    rGuessSims=500,alignmentMethod=c('Add','Mult')){
+                    rGuessSims=500,alignmentMethod=c('Add','Mult'),
+                    subsetPlotSize=50){
   ## Error checking
   checkData(alignmentMethod)
 
@@ -169,7 +170,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                                               rGuessSims = rGuessSims)
 
   # Get curved significance
-  curveData <- .generateCurveNoise(dat=data, nSims=curvedSigSims,
+  curveData <- .generateNoiseCurve(dat=data, nSims=curvedSigSims,
                                    outcome=outcome, unit=unit,
                                    repeatedId=repeatedId, noiseMap=noiseMap,
                                    KFunctions=KFunctions,
@@ -192,7 +193,8 @@ computeRandomForest_CVPC <- function(data, K=10,
           noiseMap=noiseMap,
           KFunctions=KFunctions,metaNames=metaNames,
           alpha=alpha,alignmentMethod='Add',
-          curveData=curveData[,1:2]))
+          curveData=curveData[,1:2],
+          subsetPlotSize=subsetPlotSize))
       ),
       list('multIntVI'=.generateCVVariableImportancePlot(
         giniData=varImpList$giniData,
@@ -201,7 +203,8 @@ computeRandomForest_CVPC <- function(data, K=10,
         noiseMap=noiseMap,
         KFunctions=KFunctions,metaNames=metaNames,
         alpha=alpha,alignmentMethod='Mult',
-        curveData=curveData[,3:4]))
+        curveData=curveData[,3:4],
+        subsetPlotSize=subsetPlotSize))
     )
   }else{
     returnData <- append(
@@ -216,7 +219,8 @@ computeRandomForest_CVPC <- function(data, K=10,
           noiseMap=noiseMap,
           KFunctions=KFunctions,metaNames=metaNames,
           alpha=alpha,alignmentMethod=alignmentMethod,
-          curveData=curveData))
+          curveData=curveData,
+          subsetPlotSize=subsetPlotSize))
       )
   }
 
@@ -611,7 +615,7 @@ computeRandomForest_CVPC <- function(data, K=10,
 .generateCVVariableImportancePlot <- function(giniData, viData, accData,
                                               noiseMap, KFunctions, metaNames,
                                               alpha, alignmentMethod = 'Mult',
-                                              curveData=NULL){
+                                              curveData=NULL,subsetPlotSize=50){
 
   # Get Individual Cutoffs
   cutoffs <- .getIndividualCutoffs(noiseMap,giniData,viData,alignmentMethod,
@@ -657,7 +661,54 @@ computeRandomForest_CVPC <- function(data, K=10,
                                     '), Bias (',
                                     .specify_decimal(accData$bias,2),')'))
 
-  list('varImpPlot'=varImpPlot,'viPlot'=viPlot,'giniPlot'=giniPlot)
+  retData <- list('varImpPlot'=varImpPlot,'viPlot'=viPlot,'giniPlot'=giniPlot)
+
+  if(length(c(KFunctions, metaNames))>subsetPlotSize){
+    # Order Data to take top
+    tmpStdGini <- standardizedData$stdGini[order(-standardizedData$stdGini$avg),]
+    tmpStdVI <- standardizedData$stdVI[order(-standardizedData$stdVI$avg),]
+
+    giniPlot <- .plotCVVariableImportance(
+                          underlyingData = tmpStdGini[1:subsetPlotSize,],
+                          ylabel = 'Gini',
+                          cutoff = max(cutoffs$giniCutoff_df$cutoff),
+                          curveDat = curveData[1:subsetPlotSize,1])
+    viPlot <- .plotCVVariableImportance(
+                          underlyingData = tmpStdVI[1:subsetPlotSize,],
+                          ylabel = 'Variable Importance',
+                          cutoff = max(cutoffs$viCutoff_df$cutoff),
+                          curveDat =curveData[1:subsetPlotSize,2])
+
+    varImpPlot <- gridExtra::arrangeGrob(giniPlot,viPlot,
+                                         layout_matrix = rbind(c(1,2)),
+                                         bottom = paste0('Variable Importance - OOB (',
+                                                         .specify_decimal(accData$OOB,2),
+                                                         '), Guess (',
+                                                         .specify_decimal(accData$guess,2),
+                                                         '), Bias (',
+                                                         .specify_decimal(accData$bias,2),')'))
+    giniPlot <- giniPlot+ggplot2::ylab(paste0('Gini - - OOB (',
+                                              .specify_decimal(accData$OOB,2),
+                                              '), Guess (',
+                                              .specify_decimal(accData$guess,2),
+                                              '), Bias (',
+                                              .specify_decimal(accData$bias,2),')'))
+    viPlot <- viPlot+ggplot2::ylab(paste0('Variable Importance - OOB (',
+                                          .specify_decimal(accData$OOB,2),
+                                          '), Guess (',
+                                          .specify_decimal(accData$guess,2),
+                                          '), Bias (',
+                                          .specify_decimal(accData$bias,2),')'))
+
+    retData <- append(
+                retData,
+                list('subset_varImpPlot'=varImpPlot,
+                     'subset_viPlot'=viPlot,
+                     'subset_giniPlot'=giniPlot)
+               )
+  }
+
+  retData
 }
 
 #' Title
