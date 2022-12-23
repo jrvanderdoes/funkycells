@@ -1,23 +1,48 @@
-#' Title
+#' Generate Noise Curve
 #'
-#' @param dat
-#' @param nSims
-#' @param outcome
-#' @param unit
-#' @param repeatedId
-#' @param noiseMap
-#' @param KFunctions
-#' @param metaNames
-#' @param syntheticMetaNames
-#' @param alpha
-#' @param silent
-#' @param alignmentMethod
+#' This (internal) function generates the noise course of data. It indicates
+#'     the variable importance expected for a group of comparable noise
+#'     variables. This can combat mistakenly thinking the variable with the
+#'     greatest variable importance is significant.
 #'
-#' @return
+#' @param dat Data.frame used to fit random forest. See data given to
+#'     computeRandomForest_CVPC, but note synthetics will also be attached.
+#' @param nSims Numeric indicating the number of simulations to bootstrap the
+#'     data .
+#' @param outcome String indicating the column name with the outcome in dat.
+#' @param unit String indicating the column name with the unit in dat.
+#' @param repeatedId String indicating the column name with the unique id from
+#'     repeated measures in dat.
+#' @param noiseMap Data.frame for matching noise variables to noise groups. The
+#'     columns are noiseVar (the synthetic interactions of which there are
+#'     syntheticKs), dataVar (name of noise group), and synType ('K', which will
+#'     compare to 'Meta' from other functions).
+#' @param KFunctions Vector indicating the K functions to be considered. These
+#'     string names should be in the column names of dat.
+#' @param metaNames Vector indicating the meta-variables to be considered. These
+#'     string names should be in the column names of dat.
+#' @param syntheticMetaNames Vector indicating the synthetic meta-variables to
+#'     be considered. These string names should be in the column names of dat.
+#' @param alpha (Optional) Numeric in (0,1) indicating the significance used
+#'     throughout the analysis. Default is 0.05.
+#' @param silent (Optional) Boolean indicating if output should be suppressed
+#'     when the function is running. Default is FALSE.
+#' @param alignmentMethod (Optional) String indicating the method of aligning
+#'     the variables. The options are 'Add', 'Mult', or c('Add','Mult'). The
+#'     default is 'Add'.
+#'
+#' @return Data.frame with 2 - 4 columns. If only one alignmentMethod is given,
+#'     a 2 column data.frame is returned with the first column for gini and the
+#'     second column for variable importance (both standardized). If two
+#'     alignmentMethod values are given, the first two columns related to gini
+#'     and variable importance for the additional standardization while columns
+#'     3-4  related to the multiplication standardization.
 #' @export
 #'
 #' @examples
-.generateCurveNoise <- function(dat, nSims,
+#' # See code for computeRandomForest_CVPC. This is not an outward
+#' #     function so won't be viewable.
+.generateNoiseCurve <- function(dat, nSims,
                     outcome, unit, repeatedId, noiseMap,
                     KFunctions, metaNames, syntheticMetaNames,
                     alpha=0.05, silent=F, alignmentMethod='Add'){
@@ -34,13 +59,13 @@
                                        c(outcome,unit,repeatedId))]
 
   # Setup Variables
-  #simData <- RF <- list()
   simData <- list()
   avgVI <- avgGini <- data.frame('var'=underlyingVars)
 
   # Bootstrap data and simulate
+  if(!silent) cat(paste0('Curved Sims (',nSims,'): '))
   for(sim in 1:nSims){
-    if(!silent) cat(sim,'/',nSims,'\n')
+    if(!silent) cat(paste0(sim,', '))
     tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
 
     for(varIdx in 1:length(underlyingVars)){
@@ -49,22 +74,20 @@
                          underlyingDataAlignedFunctions==underlyingVars[varIdx],
                          drop=F])
     }
+    if(!silent) cat('\n')
     # simData[[sim]] <- tmpDF
 
     # Get RF and VI
-    #RF[[sim]] <- .computeRandomForest_PC(data=tmpDF,#simData[[sim]],
     RF <- .computeRandomForest_PC(data=tmpDF,#simData[[sim]],
                                   outcome = outcome,
                                   unit=unit, repeatedId=repeatedId,
                                   varImpPlot = F,
                                   metaNames=c(metaNames,syntheticMetaNames))
 
-    #data_merge <- RF[[sim]][[2]][,c('var','avgGini')]
     data_merge <- RF[[2]][,c('var','avgGini')]
     colnames(data_merge) <- c('var',paste0('avgGiniK',sim))
     avgGini <- merge(avgGini, data_merge, by='var')
 
-    #data_merge <- RF[[sim]][[2]][,c('var','avgVI')]
     data_merge <- RF[[2]][,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',sim))
     avgVI <- merge(avgVI, data_merge, by='var')
@@ -106,20 +129,39 @@
 
 
 
-#' Title
+#' Get standardized Curve Data
 #'
-#' @param avgGini
-#' @param avgVI
-#' @param alpha
-#' @param KFunctions
-#' @param metaNames
-#' @param noiseMap
-#' @param alignmentMethod
+#' This (internal) function gets variable importance metrics and standardizes
+#'     the data used in the curved cutoff.
 #'
-#' @return
+#' @param avgGini Data.frame with gini index values from a random forest in
+#'     columns, each column representing a trial and a row for each variable,
+#'     with the first column being a variable name column.
+#' @param avgVI Data.frame with variable importance values from a random forest
+#'     in columns, each column representing a trial and a row for each variable,
+#'     with the first column being a variable name column.
+#' @param alpha Numeric in (0,1) indicating the significance used
+#'     throughout the analysis. Default is 0.05.
+#' @param KFunctions Vector indicating the K functions of interest.
+#' @param metaNames Vector indicating the meta-variables of interest.
+#' @param noiseMap Data.frame for matching noise variables to noise groups.
+#'                 The columns are noiseVar (the synthetic interactions of which
+#'                 there are syntheticKs), dataVar (name of noise group), and
+#'                 synType ('K', which will compare to 'Meta' from other
+#'                 functions).
+#' @param alignmentMethod String indicating the method of aligning the
+#'     variables. The options are 'Add' or 'Mult'.
+#'
+#' @return List containing two data.frame elements of the same structure. The
+#'     first column is var and indicates the variable and subsequent columns are
+#'     the standardized values for each sim. The list elements are:
+#'     1. gini: Data.frame built using the gini index.
+#'     2. vi: Data.frame built using the variable importance metric.
 #' @export
 #'
 #' @examples
+#' # See code for .generateNoiseCurve. This is not an outward
+#' #     function so won't be viewable.
 .getStdCurveData <- function(avgGini, avgVI, alpha,
                              KFunctions, metaNames, noiseMap,
                              alignmentMethod){
@@ -128,8 +170,8 @@
   varImpList <- .getVariableImportanceMetrics(avgGini, avgVI, NULL, NULL, alpha)
 
   cutoffs<- .getIndividualCutoffs(noiseMap = noiseMap,
-                                       giniData = varImpList$giniData,
-                                       viData = varImpList$viData,
+                                  giniData = varImpList$giniData,
+                                  viData = varImpList$viData,
                                        alignmentMethod = alignmentMethod,
                                   alpha=alpha)
 
@@ -141,18 +183,32 @@
 }
 
 
-#' Title
+#' Standardize Curve Data
 #'
-#' @param datAvg
-#' @param cutoff_df
-#' @param KFunctions
-#' @param metaNames
-#' @param alignmentMethod
+#' This (internal) function standardizes the data in datAvg using cutoffs in
+#'     cutoff_df. It returns the standardization for variables of interest,
+#'     indicated in KFunctions and metaNames. Standardization is completed
+#'     according to alignmentMethod.
 #'
-#' @return
+#' @param datAvg Data.frame with first column, var, indicating variable (inc.
+#'     noise variables) and subsequent columns indicating the values for
+#'     importance of each variable.
+#' @param cutoff_df Data.frame with 4 columns. The column dataVar indicates the
+#'     variables which are related, synType indicates if the variable is K or
+#'     meta-variable, adj indicates how much the related variables will need to
+#'     be adjusted, and cutoff indicates the current cutoffs for the variables.
+#' @param KFunctions Vector indicating the K functions of interest.
+#' @param metaNames Vector indicating the meta-variables of interest.
+#' @param alignmentMethod String indicating the method of aligning the
+#'     variables. The options are 'Add' or 'Mult'.
+#'
+#' @return Data.frame with the first column (var) indicating variables of
+#'     interest and the rest being the standardized values from datAvg.
 #' @export
 #'
 #' @examples
+#' # See code for .getStdCurveData. This is not an outward
+#' #     function so won't be viewable.
 .stdCurveData <- function(datAvg, cutoff_df, KFunctions, metaNames,
                           alignmentMethod){
 
@@ -194,12 +250,18 @@
 }
 
 
-#' Title
+#' Get Curve Values
 #'
-#' @param stdData
-#' @param alpha
+#' The (internal) function gets the 1-alpha quantile of each relative location
+#'     in data. This accounts for the fact that variables may change relative
+#'     locations on different runs.
 #'
-#' @return
+#' @param stdData Data.frame with the variables as rows and the point estimates
+#'     for each run, given in each column.
+#' @param alpha Numeric in (0,1) for finding the 1-alpha quantile.
+#'
+#' @return This function returns a vector of numerics indicating the expected
+#'     noise values for an equivalent number of random variables.
 #' @export
 #'
 #' @examples

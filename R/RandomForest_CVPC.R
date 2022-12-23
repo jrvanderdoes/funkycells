@@ -8,7 +8,6 @@
 #' Warning: If there are no sythentics, this may break (will fix it eventually)
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
-#'     Note, currently Unit or repeated measures should not be included.
 #'     Generally use the results from getPCAData, potentially with meta-
 #'     variables attached.
 #' @param K (Optional) Numeric indicating the number of folds to use in K-fold
@@ -33,6 +32,7 @@
 #' @param generalSyntheticK (Optional) Boolean indicating if a general K noise
 #'     group should be used or specialized K noise groups should be used.
 #'     Default is TRUE.
+#' @param curvedSigSims (Optional)
 #' @param alpha (Optional) Numeric in (0,1) indicating the significance used
 #'     throughout the analysis. Default is 0.05.
 #'
@@ -41,6 +41,16 @@
 #'
 #' @param silent (Optional) Boolean indicating if output should be suppressed
 #'     when the function is running. Default is FALSE.
+#' @param rGuessSims (Optional) Numeric value indicating the number of
+#'     simulations used for guessing and creating the guess estimate on the
+#'     plot. Default is 500.
+#' @param alignmentMethod (Optional) String indicating the method of aligning
+#'     variables via noise variables. The options are 'Add', 'Mult', or c('Add',
+#'     'Mult'). The default value is c('Add','Mult').
+#' @param subsetPlotSize (Optional) Numeric indicating the number of top
+#'     variables to include in a subset graph (note if there are less variables)
+#'     than this value indicates then no subset graph will be produced. Default
+#'     is 50.
 #'
 #' @return List with the following items:
 #'     1. Gini: Data.frame with the results of gini indices from the models and
@@ -97,11 +107,11 @@ computeRandomForest_CVPC <- function(data, K=10,
                     cellData=NULL,
                     syntheticKs=100, syntheticMetas=100,
                     generalSyntheticK=T,
-                    curvedSigSims = 100, alpha=0.05, silent=F,
+                    curvedSigSims=100, alpha=0.05, silent=F,
                     rGuessSims=500,alignmentMethod=c('Add','Mult'),
                     subsetPlotSize=50){
   ## Error checking
-  checkData(alignmentMethod)
+  .checkData(alignmentMethod)
 
   ## Generate Synthetics And Connect
   KFunctions <- .getUnderlyingVariable(
@@ -112,7 +122,8 @@ computeRandomForest_CVPC <- function(data, K=10,
                                      data = data,cellData = cellData,
                                      outcome = outcome, unit = unit,
                                      repeatedId = repeatedId,
-                                     metaNames = metaNames)
+                                     metaNames = metaNames,
+                                     silent = silent)
   SyntheticMeta <- .generateSyntheticMetas(metaNames = metaNames,
                                            syntheticMetas = syntheticMetas,
                                            data = data,
@@ -139,9 +150,9 @@ computeRandomForest_CVPC <- function(data, K=10,
   groups <- .getFolds(1:nrow(data), K)
 
   # K-Fold Cross-Validation
+  if(!silent) cat(paste0('CV Trials (',K,'): '))
   for(i in 1:K){
-    if(!silent)
-      cat(paste0('CV Trial: ',i,'/',K,'\n'))
+    if(!silent) cat(paste0(i,', '))
     RF <- .computeRandomForest_PC(data=data[-groups[[i]],],
                                   outcome = outcome,
                                   unit=unit, repeatedId=repeatedId,
@@ -162,6 +173,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                                 type = 'pred', data = data)) /
                   nrow(data[groups[[i]],])
   }
+  if(!silent) cat('\n')
 
   # Organize and return variable importance metrics
   varImpList <- .getVariableImportanceMetrics(avgGini, avgVI, oobAcc,
@@ -254,6 +266,8 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @param metaNames Vector indicating the meta-variables to be considered.
 #' @param generalSyntheticK Boolean indicating if a general K noise group
 #'     should be used or specialized K noise groups should be used.
+#' @param silent (Optional) Boolean indicating if output should be suppressed
+#'     when the function is running. Default is FALSE.
 #'
 #' @return List with two elements:
 #'         1. noiseMap: Data.frame for matching noise variables to noise groups.
@@ -273,7 +287,7 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' #     won't be viewable.
 .generateSyntheticKs <- function(syntheticKs, data, cellData,
                                  outcome, unit, repeatedId, metaNames,
-                                 generalSyntheticK){
+                                 generalSyntheticK, silent = F){
   # Get Underlying K function names and number of PCs
   NamesPCs <- .getUnderlyingNamesAndPCsCount(
                 colnames(data)[!(colnames(data)%in%
@@ -346,9 +360,10 @@ computeRandomForest_CVPC <- function(data, K=10,
   }
 
   list('noiseMap'=noiseMap,
-       'pcaData'= getPCAData(data=noiseData, nPCs = NamesPCs$PCs,
-                    outcome = outcome,unit=unit,repeatedUniqueId = repeatedId,
-                    xRange = c(0,1),yRange = c(0,1), agents_df = agent_df)
+       'pcaData'= getPCAData(data = noiseData, nPCs = NamesPCs$PCs,
+                    outcome = outcome,unit = unit,repeatedUniqueId = repeatedId,
+                    xRange = c(0,1),yRange = c(0,1), agents_df = agent_df,
+                    silent = silent)
   )
 }
 
@@ -381,8 +396,8 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @examples
 #' # See code for .generateSyntheticKs. This is not an outward function so won't
 #' #     be viewable.
-.generateKNoiseGroup <- function(syntheticKs,cellData,kappaL,kappaR,agentName,
-                                 outcome, unit, repeatedId){
+.generateKNoiseGroup <- function(syntheticKs, cellData, kappaL, kappaR,
+                                 agentName, outcome, unit, repeatedId){
   allSituations <- unique(cellData[,c(outcome, unit, repeatedId)])
   syntheticData <- NULL
 
@@ -523,8 +538,8 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
 #' #     won't be viewable.
-.generateSyntheticMetas <- function(metaNames,syntheticMetas,data,
-                                    outcome,unit,repeatedId){
+.generateSyntheticMetas <- function(metaNames, syntheticMetas, data,
+                                    outcome, unit, repeatedId){
 
   syntheticMetaData <- data[colnames(data) %in% c(outcome,unit,repeatedId)]
   noiseMap <- NULL
@@ -589,17 +604,31 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     RandomForest_CVPC function. It add CV errors and manages error alignment.
 #'
 #' Upcoming: Remove Gini.
-#'           Remove upper1/lower1
 #'
-#' @param giniData Data.frame
-#' @param viData Data.frame
+#' @param giniData Data.frame organizing the gini index metrics of the
+#'     variables. Columns of var, avg, sd, lower, and upper.
+#' @param viData Data.frame organizing the variable importance index metrics of
+#'     the variables. Columns of var, avg, sd, lower, and upper.
 #' @param accData Data.frame
-#' @param noiseMap Data.frame
+#' @param noiseMap Data.frame for matching noise variables to noise groups. The
+#'     columns are noiseVar (the synthetic interactions of which there are
+#'     syntheticMetas), dataVar (name of noise group), and synType ('Meta',
+#'     which will compare to 'K' from other functions).
 #' @param KFunctions Vector of the underlying K functions of interest. These
 #'     will be the ones plotted.
 #' @param metaNames Vector of the underlying Meta-variables of interest. These
 #'     will be the ones plotted.
 #' @param alpha Numeric in (0,1) indicating the significance for the cutoff.
+#' @param alignmentMethod (Optional) String indicating the method of aligning
+#'     variables via noise variables. The options are 'Add', 'Mult', or c('Add',
+#'     'Mult'). The default value is 'Mult'.
+#' @param curveData (Optional) Data.frame with two columns (gini, vi) and rows
+#'     equal to the number of variables being considered. This defines the
+#'     values used to create the curved cutoff. Default is NULL.
+#' @param subsetPlotSize (Optional) Numeric indicating the number of top
+#'     variables to include in a subset graph (note if there are less variables)
+#'     than this value indicates then no subset graph will be produced. Default
+#'     is 50.
 #'
 #' @return List containing three plots.
 #'     1. varImpPlot: giniPlot and viPlot together with cross-validated error.
@@ -635,7 +664,7 @@ computeRandomForest_CVPC <- function(data, K=10,
   viPlot <- .plotCVVariableImportance(underlyingData = standardizedData$stdVI,
                                       ylabel = 'Variable Importance',
                                       cutoff = max(cutoffs$viCutoff_df$cutoff),
-                                      curveDat =curveData[,2])
+                                      curveDat = curveData[,2])
 
   varImpPlot <- gridExtra::arrangeGrob(giniPlot,viPlot,
                      layout_matrix = rbind(c(1,2)),
@@ -711,19 +740,36 @@ computeRandomForest_CVPC <- function(data, K=10,
   retData
 }
 
-#' Title
+#' Get Individual Cutoffs
 #'
-#' @param noiseMap
-#' @param giniData
-#' @param viData
-#' @param alignmentMethod
-#' @param alpha
+#' This (internal) function gets the 1-alpha cutoffs for the variables of
+#'     interest based on noise variables mapped via the noiseMap. Cutoffs for
+#'     Gini and variable importance are individual considered. Alignments of the
+#'     cutoffs are done either using multiplication or addition.
+#'
+#' @param noiseMap Data.frame for matching noise variables to noise groups. The
+#'     columns are noiseVar (the synthetic interactions of which there are
+#'     syntheticMetas), dataVar (name of noise group), and synType ('Meta',
+#'     which will compare to 'K' from other functions).
+#' @param giniData Data.frame organizing the gini index metrics of the
+#'     variables. Columns of var, avg, sd, lower, and upper.
+#' @param viData Data.frame organizing the variable importance index metrics of
+#'     the variables. Columns of var, avg, sd, lower, and upper.
+#' @param alignmentMethod String indicating the method of aligning variables via
+#'     noise variables. The options are 'Add' or 'Mult'.
+#' @param alpha Numeric in (0,1) indicating the significance for the cutoff.
 #'
 #' @return
-#' @export
+#' @export List of two data.frames. Each data.frame has columns dataVar
+#'     (variable names), synType (Synthetic types used for standardization),
+#'     cutoff (the cutoff for the variable), and adj (the aligned variables).
+#'     1. giniCutoff_df: data.frame based on gini index.
+#'     2. viCutoff_df: data.frame based on variable importance metric.
 #'
 #' @examples
-.getIndividualCutoffs <- function(noiseMap,giniData,viData,alignmentMethod,
+#' # See code for .generateCVVariableImportancePlot. This is not an outward
+#' #     function so won't be viewable.
+.getIndividualCutoffs <- function(noiseMap, giniData, viData, alignmentMethod,
                                   alpha){
 
   # Organize Data
@@ -764,18 +810,49 @@ computeRandomForest_CVPC <- function(data, K=10,
 }
 
 
-#' Title
+#' Standardize Variable Importance Data
 #'
-#' @param KFunctions
-#' @param metaNames
-#' @param giniCutoff_df
-#' @param viCutoff_df
-#' @param alignmentMethod
+#' This (internal) function returns the variables (specified in KFunctions and
+#'     metaNames), standardized with lower and upper 1-alpha confidence
+#'     intervals, respective to gini index and variable importance measures and
+#'     aligned as specified in alignmentMethod.
 #'
-#' @return
+#' @param giniData Data.frame organizing the gini index metrics of the
+#'     variables. Columns of var, avg, sd, lower, and upper.
+#' @param viData Data.frame organizing the variable importance index metrics of
+#'     the variables. Columns of var, avg, sd, lower, and upper.
+#' @param KFunctions Vector of the underlying K functions of interest. These
+#'     will be the ones plotted.
+#' @param metaNames Vector of the underlying Meta-variables of interest. These
+#'     will be the ones plotted.
+#' @param giniCutoff_df Data.frame built from gini index having columns dataVar
+#'     (variable names), synType (Synthetic types used for standardization),
+#'     cutoff (the cutoff for the variable), and adj (the aligned variables).
+#' @param viCutoff_df Data.frame built from variable importance metric having
+#'     columns dataVar (variable names), synType (Synthetic types used for
+#'     standardization), cutoff (the cutoff for the variable), and adj (the
+#'     aligned variables).
+#' @param alignmentMethod String indicating the method of aligning variables via
+#'     noise variables. The options are 'Add' or 'Mult'.
+#'
+#' @return List containing two named data.frame elements.
+#'     1. stdGini: A data.frame with 4 columns (var, avgVal, lower, and upper).
+#'                 The column var indicates the variable name (from KFunctions
+#'                 and metaNames), the column avgVal indicates the avg from
+#'                 giniData aligned using alignmentMethod. Columns lower and
+#'                 upper are the aligned 1-alpha confidence intervals from
+#'                 giniData.
+#'     2. stdVI: A data.frame with 4 columns (var, avgVal, lower, and upper).
+#'                 The column var indicates the variable name (from KFunctions
+#'                 and metaNames), the column avgVal indicates the avg from
+#'                 viData aligned using alignmentMethod. Columns lower and
+#'                 upper are the aligned 1-alpha confidence intervals from
+#'                 viData.
 #' @export
 #'
 #' @examples
+#' # See code for .generateCVVariableImportancePlot. This is not an outward
+#' #     function so won't be viewable.
 .standardizeVarImpData <- function(giniData, viData,
                                    KFunctions, metaNames,
                                    giniCutoff_df, viCutoff_df,
@@ -785,6 +862,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                                                'avgVal'=NA,'lower'=NA,
                                                'upper'=NA)
   for(uVar in c(KFunctions, metaNames)){
+    # Get Adjustment Value
     if(uVar %in% giniCutoff_df$dataVar) {
       giniAdjVal <- giniCutoff_df[giniCutoff_df$dataVar==uVar,'adj']
       viAdjVal <- viCutoff_df[viCutoff_df$dataVar==uVar,'adj']
@@ -804,6 +882,7 @@ computeRandomForest_CVPC <- function(data, K=10,
       }
     }
 
+    # Adjust The Variable along with interval
     if(alignmentMethod=='Add'){
       underlyingGini[underlyingGini$var==uVar,2:4] <- giniAdjVal +
         giniData[giniData$var==uVar,c('avg','lower','upper')]
@@ -817,8 +896,6 @@ computeRandomForest_CVPC <- function(data, K=10,
     }else{
       stop('Error: alignmentMethod must be Add or Mult')
     }
-
-
   }
 
   list('stdGini'=underlyingGini, 'stdVI'=underlyingVI)
@@ -826,6 +903,12 @@ computeRandomForest_CVPC <- function(data, K=10,
 
 
 #' Get Variable Importance Metrics
+#'
+#' This (internal) function get the average values for each variable based on
+#'     the K folds using both the Gini index and the Variable Importance metric.
+#'     Also calculated is the accuracy data -- Out-of-box accuracy, bias
+#'     (strictly guess the most likely response), and guess (randomly guessing
+#'     based on the frequency in the training data).
 #'
 #' @param avgGini Data.frame obtained from CV sample of random forest. Columns
 #'     of var (K functions and metas, including synthetics) and average gini
@@ -836,17 +919,22 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     importance value from each CV random forest.
 #' @param oobAcc Vector of numerics for out-of-bag accuracy from each fold.
 #'     Numerics are thus in (0,1).
-#' @param outcomes
+#' @param outcomes Vector of the outcomes
 #' @param alpha (Optional) Numeric in (0,1) indicating the significance for the
 #'     upper and lower values (quantiles).
-#' @param rGuessSims
+#' @param rGuessSims (Optional) Numeric indicating the number of simulations
+#'     used in frequency based random guess approach.
 #'
 #' @return List with three elements:
 #'     1. giniData: Data.frame organizing the gini index metrics of the
 #'                  variables. Columns var, avg, sd, lower, and upper.
 #'     2. viData: Data.frame organizing the variable importance index metrics of
 #'                the variables. Columns var, avg, sd, lower, and upper.
-#'     3. accData: REDO FILL OUT
+#'     3. accData: Data.frame with the accuracy of various approaches. Column
+#'                 OOB indicates the out-of-bag accuracy of the CV-RF. Column
+#'                 bias is the accuracy of just selecting the most popular
+#'                 option. Column guess is the accuracy from selecting a random
+#'                 option, with probability based on frequency.
 #'
 #' @export
 #'
@@ -916,10 +1004,12 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'
 #' Upcoming: Rename ylabel (as we flip cooridinates its actually x-axis we see)
 #'
-#' @param underlyingData Data.frame
+#' @param underlyingData Data.frame with 4 columns (var, avgVar, lower, upper).
+#'     See the results from .standardizeVarImpData.
 #' @param ylabel String for the y-axis label
 #' @param cutoff Numeric in [0,1] for the red noise line
-#' @param curveDat
+#' @param curveDat (Optional) Vector of numerics of length nrow(underlyingData).
+#'     This will add the curved line as developed in .generateNoiseCurve.
 #'
 #' @return ggplot2 plot for the CV variable importance plot
 #' @export
@@ -927,9 +1017,9 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward
 #' #     function so won't be viewable.
-.plotCVVariableImportance <- function(underlyingData, ylabel,cutoff,curveDat){
+.plotCVVariableImportance <- function(underlyingData, ylabel, cutoff, curveDat){
   maxVal <- max(underlyingData$avgVal,curveDat)
-  ggplot2::ggplot(data=underlyingData,
+  returnPlot <- ggplot2::ggplot(data=underlyingData,
                   mapping=ggplot2::aes(x=factor(reorder(var,avgVal)),
                                        y=ifelse(avgVal/maxVal>1,1,
                                                 ifelse(avgVal/maxVal<0,0,
@@ -939,9 +1029,9 @@ computeRandomForest_CVPC <- function(data, K=10,
                                         ymax = ifelse(upper/maxVal>1,1,upper/maxVal)),
                            color='black', width=0.2) +
     ggplot2::geom_point(color='black') +
-    ggplot2::geom_line(ggplot2::aes(
-      x=ordered(underlyingData[order(-avgVal),'var']),
-      y=curveDat/maxVal),color='orange', linetype='dashed',size=1) +
+    # ggplot2::geom_line(ggplot2::aes(
+    #   x=ordered(underlyingData[order(-avgVal),'var']),
+    #   y=curveDat/maxVal),color='orange', linetype='dashed',size=1) +
     ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
                         color='red', linetype='dashed',size=1) +
     ggplot2::coord_flip(ylim = c(0,1)) +
@@ -950,17 +1040,35 @@ computeRandomForest_CVPC <- function(data, K=10,
     ggplot2::ylab(ylabel) +
     ggplot2::theme_bw()
 
+  if(!is.null(curveDat)){
+    returnPlot <- returnPlot +
+      ggplot2::geom_line(ggplot2::aes(
+                  x=ordered(underlyingData[order(-avgVal),'var']),
+                  y=curveDat/maxVal),color='orange', linetype='dashed',size=1)
+  }
+
+  returnPlot
 }
 
-#' Title
+#' Check Data
 #'
-#' @param alignmentMethod
+#' This (internal) function is used to check data and report an error if any
+#'     problems will occur rather than waiting for the function to partially
+#'     complete.
 #'
-#' @return
+#' Upcoming: Add more data checks into this function
+#'
+#' @param alignmentMethod String (or vector of strings) indicating the method of
+#'     aligning the variables
+#'
+#' @return NULL. This function will simply throw an error if there are any
+#'     issues.
 #' @export
 #'
 #' @examples
-checkData <- function(alignmentMethod){
+#' # See code for computeRandomForest_CVPC. This is not an outward function so
+#' #     won't be viewable.
+.checkData <- function(alignmentMethod){
   if(length(alignmentMethod)>2 ||
      sum((alignmentMethod %in% c('Add','Mult'))==FALSE) )
     stop(paste("Error: Alignment method should only",
