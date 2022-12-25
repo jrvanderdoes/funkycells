@@ -81,7 +81,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                                      repeatedUniqueId,
                                      xRange, yRange,
                                      edgeCorrection, nbasis){
-                          if(!silent) cat(paste0(agents[1],', '))
+                          if(!silent) cat(paste0(agents[1],','))
                           agents <- agents[-1]
 
                           ## Compute K-Function for each unit

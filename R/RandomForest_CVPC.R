@@ -62,16 +62,22 @@
 #'                alpha.
 #'     3. Accuracy: Data.frame with results of cross validation. The columns are
 #'                      avg, sd, lower and upper.
-#'     4. varImpPlot: ggplot2 object for a plot of both gini and vi plots. See
+#'     4. NoiseCurve: (Optional) Contains columns for noise curve (orange)
+#'     - Next part may be in group or separate based on function call -
+#'     5. varImpPlot: ggplot2 object for a plot of both gini and vi plots. See
 #'                        descriptions below.
-#'     5. viPlot: ggplot2 object for a plot of vi plot. This will display
+#'     6. viPlot: ggplot2 object for a plot of vi plot. This will display
 #'                    ordered underlying functions and meta-variables with point
 #'                    estimates, intervals, and the red (standardized) noise
 #'                    cutoff. Values are based on variable importance values.
-#'     6. giniPlot: ggplot2 object for a plot of gini plot. This will display
+#'     7. giniPlot: ggplot2 object for a plot of gini plot. This will display
 #'                    ordered underlying functions and meta-variables with point
 #'                    estimates, intervals, and the red (standardized) noise
 #'                    cutoff. Values are based on gini index values.
+#'     - Next part may or may not be included -
+#'     8. These next parts are optional and would be the same as 5 - 7 except
+#'            only subsetPlotSize number of variables are displayed in the
+#'            graph - for better seeing interesting patterns.
 #'
 #' @export
 #'
@@ -152,7 +158,7 @@ computeRandomForest_CVPC <- function(data, K=10,
   # K-Fold Cross-Validation
   if(!silent) cat(paste0('CV Trials (',K,'): '))
   for(i in 1:K){
-    if(!silent) cat(paste0(i,', '))
+    if(!silent) cat(paste0(i,','))
     RF <- .computeRandomForest_PC(data=data[-groups[[i]],],
                                   outcome = outcome,
                                   unit=unit, repeatedId=repeatedId,
@@ -197,7 +203,8 @@ computeRandomForest_CVPC <- function(data, K=10,
       append(
         list('Gini'=varImpList$giniData,
              'VI'=varImpList$viData,
-             'Accuracy'=varImpList$accData),
+             'Accuracy'=varImpList$accData,
+             'NoiseCurve'=curveData),
         list('addIntVI'=.generateCVVariableImportancePlot(
           giniData=varImpList$giniData,
           viData=varImpList$viData,
@@ -223,7 +230,8 @@ computeRandomForest_CVPC <- function(data, K=10,
       append(
         list('Gini'=varImpList$giniData,
              'VI'=varImpList$viData,
-             'Accuracy'=varImpList$accData),
+             'Accuracy'=varImpList$accData,
+             'NoiseCurve'=curveData),
         .generateCVVariableImportancePlot(
           giniData=varImpList$giniData,
           viData=varImpList$viData,

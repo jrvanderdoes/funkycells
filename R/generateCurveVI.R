@@ -65,7 +65,7 @@
   # Bootstrap data and simulate
   if(!silent) cat(paste0('Curved Sims (',nSims,'): '))
   for(sim in 1:nSims){
-    if(!silent) cat(paste0(sim,', '))
+    if(!silent) cat(paste0(sim,','))
     tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
 
     for(varIdx in 1:length(underlyingVars)){
