@@ -1,4 +1,4 @@
-#' Title
+#' Organize TNBC
 #'
 #' This function organizes the TNBC data.
 #'
@@ -119,32 +119,14 @@ TNBC_basic <- generateTNBC(
           CDir="~/School/Waterloo/Research/RPackages/funkycells/data-raw/TNBC/")
 TNBC <- cleanTNBC(TNBC_basic)
 
-# Get PCA
-agents_df <- expand.grid(c("FoxP3","Lag3","CD4","CD16", "CD56","PD1","PD.L1",
-                           "Ki67","CD138","CD68","CD8","CD3","IDO","CD45RO",
-                           "CD20","p53","MPO","tumorYN"),
-                         c("FoxP3","Lag3","CD4","CD16", "CD56","PD1","PD.L1",
-                           "Ki67","CD138","CD68","CD8","CD3","IDO","CD45RO",
-                           "CD20","p53","MPO","tumorYN"))
-dataPCA <- getPCAData(data = TNBC[,-3], unit='Person', agents_df=agents_df,
-                      rCheckVals = seq(0,50,1))
-
-# Setup PCA Data
+# Get Meta-Info
 tnbc_clinical01 <- read.csv(
   paste0("~/School/Waterloo/Research/RPackages/funkycells/data-raw/TNBC/",
          'generated/',"tnbc_clinical01.csv"))[-1]
-data_pca_age  = merge(dataPCA,tnbc_clinical01[,c('InternalId','AGE_AT_DX')],
-                      by.x='Person',by.y='InternalId')
-colnames(data_pca_age )[dim(data_pca_age )[2]] = "Age"
+TNBC_Meta <- tnbc_clinical01[,c('InternalId','AGE_AT_DX')]
+colnames(TNBC_Meta) <- c('Person','Age')
 
-# Save Data
+# Save files
 usethis::use_data(TNBC, overwrite = TRUE)
+usethis::use_data(TNBC_Meta, overwrite = TRUE)
 
-## Delete me
-data_pca_age
-
-rfcv <- computeRandomForest_CVPC(data=data_pca_age, K=10,
-                                 outcome='Class',unit='Person',repeatedId=NULL,
-                                 metaNames=c('Age'),cellData= TNBC[,-3],
-                                 syntheticKs=100, syntheticMetas=100,
-                                 generalSyntheticK=T,alpha=0.05, silent=F)

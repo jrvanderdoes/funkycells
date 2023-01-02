@@ -1,8 +1,7 @@
 #' Triple Negative Breast Cancer Data
 #'
-#' A subset of triple negative breast cancer data from patients.
-#'
-#' Upcoming: Get more complete data set
+#' A subset of triple negative breast cancer data from patients indicating
+#'     cell information for each person.
 #'
 #' @format ## `TNBC`
 #' A data frame with 170,171 rows and 60 columns:
