@@ -63,9 +63,9 @@
   avgVI <- avgGini <- data.frame('var'=underlyingVars)
 
   # Bootstrap data and simulate
-  if(!silent) cat(paste0('Curved Sims (',nSims,'): '))
+  if(!silent) cat('Curved Sims (',nSims,'): ',sep='')
   for(sim in 1:nSims){
-    if(!silent) cat(paste0(sim,','))
+    if(!silent) cat(sim,', ',sep='')
     tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
 
     for(varIdx in 1:length(underlyingVars)){
@@ -74,7 +74,6 @@
                          underlyingDataAlignedFunctions==underlyingVars[varIdx],
                          drop=F])
     }
-    if(!silent) cat('\n')
     # simData[[sim]] <- tmpDF
 
     # Get RF and VI
@@ -92,6 +91,7 @@
     colnames(data_merge) <- c('var',paste0('avgVIK',sim))
     avgVI <- merge(avgVI, data_merge, by='var')
   }
+  if(!silent) cat('\n')
 
   ## Standardize results
   if(length(alignmentMethod)==2){

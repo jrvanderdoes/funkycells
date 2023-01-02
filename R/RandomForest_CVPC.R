@@ -156,9 +156,9 @@ computeRandomForest_CVPC <- function(data, K=10,
   groups <- .getFolds(1:nrow(data), K)
 
   # K-Fold Cross-Validation
-  if(!silent) cat(paste0('CV Trials (',K,'): '))
+  if(!silent) cat('CV Trials (',K,'): ',sep='')
   for(i in 1:K){
-    if(!silent) cat(paste0(i,','))
+    if(!silent) cat(i,', ',sep='')
     RF <- .computeRandomForest_PC(data=data[-groups[[i]],],
                                   outcome = outcome,
                                   unit=unit, repeatedId=repeatedId,
