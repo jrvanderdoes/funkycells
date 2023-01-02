@@ -72,7 +72,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
   pcaData <- unique(data[,c(outcome, unit)])
 
   ## Compute PCA for each cell-cell K-function
-  if(!silent) cat(paste0('PCA Pairs (',nrow(agents_df),'):'))
+  if(!silent) cat('PCA Pairs (',nrow(agents_df),'): ',sep='')
   pcaData_list <- apply(cbind(1:nrow(agents_df),
                               as.data.frame(agents_df)),
                         MARGIN=1,
@@ -81,7 +81,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                                      repeatedUniqueId,
                                      xRange, yRange,
                                      edgeCorrection, nbasis){
-                          if(!silent) cat(paste0(agents[1],','))
+                          if(!silent) cat(trimws(agents[1]),', ',sep='')
                           agents <- agents[-1]
 
                           ## Compute K-Function for each unit
