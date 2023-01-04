@@ -23,3 +23,7 @@ Imports:
     spatstat.geom,
     stats,
     tidyr
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
