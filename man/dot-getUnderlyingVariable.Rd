@@ -18,7 +18,11 @@ in it). This is used to centralize called from RandomForest_PC.R and
 RandomForest_CVPC.R. If there is no PC (i.e. in meta-varaiables), the
 meta-variable is returned.
 }
+\details{
+Note: The following line is saved temporarily.
+substr(test, 1, max(1,regexpr("_PC\link{0-9}+$", test)-1))
+}
 \examples{
-# See code for .computeRandomForest_PC. This is not an outward function so
+# See code for computeRandomForest_PC. This is not an outward function so
 #     won't be viewable.
 }

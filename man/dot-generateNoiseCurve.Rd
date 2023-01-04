@@ -16,7 +16,8 @@
   syntheticMetaNames,
   alpha = 0.05,
   silent = F,
-  alignmentMethod = "Add"
+  alignmentMethod = "Add",
+  nTrees = 1000
 )
 }
 \arguments{
@@ -56,6 +57,9 @@ when the function is running. Default is FALSE.}
 \item{alignmentMethod}{(Optional) String indicating the method of aligning
 the variables. The options are 'Add', 'Mult', or c('Add','Mult'). The
 default is 'Add'.}
+
+\item{nTrees}{(Optional) Numeric indicating the number of trees in each
+forest. The default is 1000.}
 }
 \value{
 Data.frame with 2 - 4 columns. If only one alignmentMethod is given,
@@ -63,7 +67,7 @@ a 2 column data.frame is returned with the first column for gini and the
 second column for variable importance (both standardized). If two
 alignmentMethod values are given, the first two columns related to gini
 and variable importance for the additional standardization while columns
-3-4  related to the multiplication standardization.
+3-4  related to the multiplication standardization
 }
 \description{
 This (internal) function generates the noise course of data. It indicates

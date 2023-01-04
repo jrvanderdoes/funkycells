@@ -23,7 +23,6 @@
 #'
 #' @return Data.frame with x, y, and cellType specified. Each row is a new
 #'     point.
-#' @export
 #'
 #' @examples
 #' # See code for simulatePP_Mult_PCA_Meta. This is not an outward function so

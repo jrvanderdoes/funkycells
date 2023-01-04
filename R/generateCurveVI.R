@@ -30,14 +30,15 @@
 #' @param alignmentMethod (Optional) String indicating the method of aligning
 #'     the variables. The options are 'Add', 'Mult', or c('Add','Mult'). The
 #'     default is 'Add'.
+#' @param nTrees (Optional) Numeric indicating the number of trees in each
+#'     forest. The default is 1000.
 #'
 #' @return Data.frame with 2 - 4 columns. If only one alignmentMethod is given,
 #'     a 2 column data.frame is returned with the first column for gini and the
 #'     second column for variable importance (both standardized). If two
 #'     alignmentMethod values are given, the first two columns related to gini
 #'     and variable importance for the additional standardization while columns
-#'     3-4  related to the multiplication standardization.
-#' @export
+#'     3-4  related to the multiplication standardization
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward
@@ -45,7 +46,8 @@
 .generateNoiseCurve <- function(dat, nSims,
                     outcome, unit, repeatedId, noiseMap,
                     KFunctions, metaNames, syntheticMetaNames,
-                    alpha=0.05, silent=F, alignmentMethod='Add'){
+                    alpha=0.05, silent=F, alignmentMethod='Add',
+                    nTrees=1000){
   if(nSims<=0) return(NULL)
   if(nSims==1){
     warning('Warning: curvedSigSims must be greater than 1 to work. Setting to 0')
@@ -77,11 +79,12 @@
     # simData[[sim]] <- tmpDF
 
     # Get RF and VI
-    RF <- .computeRandomForest_PC(data=tmpDF,#simData[[sim]],
-                                  outcome = outcome,
-                                  unit=unit, repeatedId=repeatedId,
-                                  varImpPlot = F,
-                                  metaNames=c(metaNames,syntheticMetaNames))
+    RF <- computeRandomForest_PC(data=tmpDF,#simData[[sim]],
+                                 outcome = outcome,
+                                 unit=unit, repeatedId=repeatedId,
+                                 varImpPlot = F,
+                                 metaNames=c(metaNames,syntheticMetaNames),
+                                 nTrees=nTrees)
 
     data_merge <- RF[[2]][,c('var','avgGini')]
     colnames(data_merge) <- c('var',paste0('avgGiniK',sim))
@@ -128,7 +131,6 @@
 }
 
 
-
 #' Get standardized Curve Data
 #'
 #' This (internal) function gets variable importance metrics and standardizes
@@ -157,7 +159,6 @@
 #'     the standardized values for each sim. The list elements are:
 #'     1. gini: Data.frame built using the gini index.
 #'     2. vi: Data.frame built using the variable importance metric.
-#' @export
 #'
 #' @examples
 #' # See code for .generateNoiseCurve. This is not an outward
@@ -204,7 +205,6 @@
 #'
 #' @return Data.frame with the first column (var) indicating variables of
 #'     interest and the rest being the standardized values from datAvg.
-#' @export
 #'
 #' @examples
 #' # See code for .getStdCurveData. This is not an outward
@@ -262,7 +262,6 @@
 #'
 #' @return This function returns a vector of numerics indicating the expected
 #'     noise values for an equivalent number of random variables.
-#' @export
 #'
 #' @examples
 #' # See code for .generateNoiseCurve. This is not an outward

@@ -13,7 +13,9 @@
 The mode(s) of the vector
 }
 \description{
-Get Mode of vector
+Note: Few lines temporarily saved:
+uniqx <- unique(na.omit(x))
+uniqx\link{which.max(tabulate(match(x, uniqx)))}
 }
 \examples{
 .getMode(c(1,2,3,1))

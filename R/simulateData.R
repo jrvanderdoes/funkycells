@@ -150,6 +150,7 @@ simulatePP <- function(cellVarData=
   data_ret
 }
 
+
 #' Simulate Meta Variables
 #'
 #' This function simulates meta-variables to append to pca data.
@@ -241,6 +242,7 @@ simulateMeta <- function(pcaData,
   pcaData
 }
 
+
 #' Generate CSR Point Patterns
 #'
 #' This (internal) function is used to generate CSR point patterns. It calls
@@ -267,7 +269,6 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
-#' @export
 #'
 #' @examples
 #' # See code for simulatePP. This is not an outward function so won't be
@@ -313,6 +314,7 @@ simulateMeta <- function(pcaData,
   data
 }
 
+
 #' Generate Self/Invisible Clustering Patterns
 #'
 #' This (internal) function creates self or invisible clustering patterns. It
@@ -346,7 +348,6 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
-#' @export
 #'
 #' @examples
 #' # See code for simulatePP. This is not an outward function so won't be
@@ -387,6 +388,7 @@ simulateMeta <- function(pcaData,
   data
 }
 
+
 #' Cluster Point Around Cells
 #'
 #' This (internal) function generates cells that cluster around the given
@@ -416,7 +418,6 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
-#' @export
 #'
 #' @examples
 #' # See code for simulatePP. This is not an outward function so won't be
@@ -472,6 +473,7 @@ simulateMeta <- function(pcaData,
 
   newData
 }
+
 
 #' Place Clustered Points
 #'

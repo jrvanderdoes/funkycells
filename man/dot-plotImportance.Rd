@@ -14,7 +14,7 @@ grid.arrange containing two ggplots
 }
 \description{
 This (internal) function plots the variable importance for a
-.computeRandomForest_PC model.
+computeRandomForest_PC model.
 }
 \examples{
 # See code for .plotVariableImportance. This is not an outward function so won't be

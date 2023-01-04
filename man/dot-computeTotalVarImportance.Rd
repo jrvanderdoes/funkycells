@@ -21,6 +21,6 @@ This (internal) function computes the variable importance for a tree model
 and combines it with totVarImportance data.frame.
 }
 \examples{
-# See code for .computeRandomForest_PC. This is not an outward function so won't be
+# See code for computeRandomForest_PC. This is not an outward function so won't be
 #     viewable.
 }

@@ -20,7 +20,8 @@ computeRandomForest_CVPC(
   silent = F,
   rGuessSims = 500,
   alignmentMethod = c("Add", "Mult"),
-  subsetPlotSize = 50
+  subsetPlotSize = 50,
+  nTrees = 1000
 )
 }
 \arguments{
@@ -82,6 +83,9 @@ variables via noise variables. The options are 'Add', 'Mult', or c('Add',
 variables to include in a subset graph (note if there are less variables)
 than this value indicates then no subset graph will be produced. Default
 is 50.}
+
+\item{nTrees}{(Optional) Numeric indicating the number of trees in each
+forest. The default is 1000.}
 }
 \value{
 List with the following items:
@@ -116,8 +120,6 @@ The function fits a random forest model to the data along with using cross-
 validation to quantify variable importance.
 }
 \details{
-Upcoming:
-
 Warning: If there are no sythentics, this may break (will fix it eventually)
 }
 \examples{

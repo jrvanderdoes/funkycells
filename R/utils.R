@@ -1,9 +1,12 @@
 #' Get Mode of vector
 #'
+#' Note: Few lines temporarily saved:
+#'           uniqx <- unique(na.omit(x))
+#'           uniqx[which.max(tabulate(match(x, uniqx)))]
+#'
 #' @param x Vector of some items
 #'
 #' @return The mode(s) of the vector
-#' @export
 #'
 #' @examples
 #' .getMode(c(1,2,3,1))
@@ -16,8 +19,6 @@
   if(is.numeric(x))
     mode <- as.numeric(mode)
   mode
-  #uniqx <- unique(na.omit(x))
-  #uniqx[which.max(tabulate(match(x, uniqx)))]
 }
 
 
@@ -33,7 +34,6 @@
 #'     default is FALSE.
 #'
 #' @return Data.frame with the data from the list.
-#' @export
 #'
 #' @examples
 #' # See code for .getPCs or simulatePP. This is not an outward function so
@@ -87,7 +87,6 @@
 #'
 #' @return a list with length chunksN, with each containing approximately the
 #'     same number of points
-#' @export
 #'
 #' @examples
 #' .getFolds(1:10,3)
@@ -110,7 +109,6 @@
 #' @param k Numeric indicating the number of decimals to display
 #'
 #' @return String with numeric x to k decimal places
-#' @export
 #'
 #' @examples
 #' .specify_decimal(10.123,1)

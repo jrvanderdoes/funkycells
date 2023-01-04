@@ -11,7 +11,7 @@
 #' @param trueOutcomes Vector of the true results
 #' @param modelPercents Data.frame with columns named after the true outcomes,
 #'     giving the percent of selecting that outcome. This is what is returned
-#'     .predict.RandomForest_PC when type='all' and look at PredPerc[-1] (first
+#'     predict.RandomForest_PC when type='all' and look at PredPerc[-1] (first
 #'     column is the predictions).
 #'
 #' @return NULL. See plot of ROC curves.
@@ -32,8 +32,8 @@
 #'                           silent=F )
 #' pcaData_roc <- getPCAData(data_pp_roc,repeatedUniqueId='Image',
 #'                           xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' RF_roc <- .computeRandomForest_PC(data=pcaData_roc[-2], nTrees = 5)
-#' pred_roc <- .predict.RandomForest_PC(model = RF_roc[[1]],
+#' RF_roc <- computeRandomForest_PC(data=pcaData_roc[-2], nTrees = 5)
+#' pred_roc <- predict.RandomForest_PC(model = RF_roc[[1]],
 #'                                      data_pred = pcaData_roc[-2],
 #'                                      data=pcaData_roc[-2])
 #' computePseudoROCCurves(pcaData_roc$Stage,pred_roc$PredPerc[-1])

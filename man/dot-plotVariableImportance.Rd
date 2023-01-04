@@ -10,19 +10,19 @@
 \item{varImportanceData}{(Optional) Data.frame for the variable importance
 information.}
 
-\item{model}{(Optional) Random forest model from .computeRandomForest_PC.}
+\item{model}{(Optional) Random forest model from computeRandomForest_PC.}
 }
 \value{
 grid.arrange containing two ggplots
 }
 \description{
 This (internal) function organizes the data to plot the variable importance
-for a .computeRandomForest_PC model. One of the inputs is necessary.
+for a computeRandomForest_PC model. One of the inputs is necessary.
 }
 \details{
 Upcoming: See TEST comment
 }
 \examples{
-# See code for .computeRandomForest_PC. This is not an outward function so won't be
+# See code for computeRandomForest_PC. This is not an outward function so won't be
 #     viewable.
 }

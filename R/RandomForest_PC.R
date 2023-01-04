@@ -1,8 +1,9 @@
 #' Compute Random Forest for Data with multiple PC (Along With Meta-Variables)
 #'
-#' This (internal) function creates a random forest model for data with PCs and
+#' This function creates a random forest model for data with PCs and
 #'     meta-variables. This includes proper combination for variable importance.
-#'     This is internal because we want users to use randomForest_CVPC.
+#'     Recommend to users to use randomForest_CVPC in general and perhaps just
+#'     this for a final model
 #'
 #' Upcoming: See TEST comment
 #'           Drop parts to make smaller memory impact.
@@ -30,13 +31,13 @@
 #' data <- simulatePP()
 #' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' RF1 <- .computeRandomForest_PC(data=pcaData[-2])
+#' RF1 <- computeRandomForest_PC(data=pcaData[-2])
 #'
 #' pcaMeta <- simulateMeta(pcaData)
-#' RF2 <- .computeRandomForest_PC(pcaMeta[-2],
+#' RF2 <- computeRandomForest_PC(pcaMeta[-2],
 #'                                metaNames=c("randUnif","randBin","rNorm",
 #'                                            "corrUnif","corrBin","corrNorm"))
-.computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
+computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
                               unit=colnames(data)[2], repeatedId=NULL,
                               nTrees=1000, varImpPlot=T, metaNames=NULL){
   # Ensure this is worthwhile
@@ -119,10 +120,9 @@
 #'
 #' @return Data.frame which is the updated totVarImportance adding in the new
 #'     tree information.
-#' @export
 #'
 #' @examples
-#' # See code for .computeRandomForest_PC. This is not an outward function so won't be
+#' # See code for computeRandomForest_PC. This is not an outward function so won't be
 #' #     viewable.
 .computeTotalVarImportance <- function(tree, totVarImportance){
 
@@ -177,19 +177,18 @@
 #' Plot Variable Importance (Ensure Data)
 #'
 #' This (internal) function organizes the data to plot the variable importance
-#'     for a .computeRandomForest_PC model. One of the inputs is necessary.
+#'     for a computeRandomForest_PC model. One of the inputs is necessary.
 #'
 #' Upcoming: See TEST comment
 #'
 #' @param varImportanceData (Optional) Data.frame for the variable importance
 #'     information.
-#' @param model (Optional) Random forest model from .computeRandomForest_PC.
+#' @param model (Optional) Random forest model from computeRandomForest_PC.
 #'
 #' @return grid.arrange containing two ggplots
-#' @export
 #'
 #' @examples
-#' # See code for .computeRandomForest_PC. This is not an outward function so won't be
+#' # See code for computeRandomForest_PC. This is not an outward function so won't be
 #' #     viewable.
 .plotVariableImportance <- function(varImportanceData=NULL, model=NULL){
   if((is.null(varImportanceData) && is.null(model))||
@@ -223,12 +222,11 @@
 #' Plot Variable Importance (Plot Data)
 #'
 #' This (internal) function plots the variable importance for a
-#' .computeRandomForest_PC model.
+#' computeRandomForest_PC model.
 #'
 #' @param varImportanceData Data.frame for the variable importance information.
 #'
 #' @return grid.arrange containing two ggplots
-#' @export
 #'
 #' @examples
 #' # See code for .plotVariableImportance. This is not an outward function so won't be
@@ -260,13 +258,12 @@
 }
 
 
-
 #' Predict Using RandomForest_PC
 #'
-#' This (internal) function gets the predicted value from a RandomForest_PC
+#' This function gets the predicted value from a RandomForest_PC
 #'     model.
 #'
-#' @param model RandomForest_PC model. See .computeRandomForest_PC. A list of
+#' @param model RandomForest_PC model. See computeRandomForest_PC. A list of
 #'     CART models from rpart.
 #' @param data_pred data.frame of the data to be predicted.
 #' @param type (Optional) String indicating type of analysis. Options are pred
@@ -294,11 +291,11 @@
 #'                     silent=F )
 #' pcaData <- getPCAData(data_pp,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' RF <- .computeRandomForest_PC(data=pcaData[-2], nTrees = 5)
-#' pred <- .predict.RandomForest_PC(model = RF[[1]], type='all',
+#' RF <- computeRandomForest_PC(data=pcaData[-2], nTrees = 5)
+#' pred <- predict.RandomForest_PC(model = RF[[1]], type='all',
 #'                                  data_pred = pcaData[-2],
 #'                                  data=pcaData[-2])
-.predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
+predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
   # Verification
   #   This checks the data to see if there are any columns that are characters
   #   or factors. This will be used later to manage missing data. We obviously
@@ -408,17 +405,18 @@
 #'     RandomForest_CVPC.R. If there is no PC (i.e. in meta-varaiables), the
 #'     meta-variable is returned.
 #'
+#' Note: The following line is saved temporarily.
+#'     substr(test, 1, max(1,regexpr("_PC[0-9]+$", test)-1))
+#'
 #' @param names Vector of names to get underlying function on each
 #'
 #' @return Vector of underlying functions for each in name.
-#' @export
 #'
 #' @examples
-#' # See code for .computeRandomForest_PC. This is not an outward function so
+#' # See code for computeRandomForest_PC. This is not an outward function so
 #' #     won't be viewable.
 .getUnderlyingVariable <- function(names, returnUnique=T){
   if(returnUnique)
     return(unique(stringr::str_remove(names,'(_PC)[0-9]+$')))
   return(stringr::str_remove(names,'(_PC)[0-9]+$'))
 }
-# substr(test, 1, max(1,regexpr("_PC[0-9]+$", test)-1))

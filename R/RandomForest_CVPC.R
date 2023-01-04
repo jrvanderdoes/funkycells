@@ -3,8 +3,6 @@
 #' The function fits a random forest model to the data along with using cross-
 #'     validation to quantify variable importance.
 #'
-#' Upcoming:
-#'
 #' Warning: If there are no sythentics, this may break (will fix it eventually)
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
@@ -80,7 +78,6 @@
 #'     8. These next parts are optional and would be the same as 5 - 7 except
 #'            only subsetPlotSize number of variables are displayed in the
 #'            graph - for better seeing interesting patterns.
-#'
 #' @export
 #'
 #' @examples
@@ -161,7 +158,7 @@ computeRandomForest_CVPC <- function(data, K=10,
   if(!silent) cat('CV Trials (',K,'): ',sep='')
   for(i in 1:K){
     if(!silent) cat(i,', ',sep='')
-    RF <- .computeRandomForest_PC(data=data[-groups[[i]],],
+    RF <- computeRandomForest_PC(data=data[-groups[[i]],],
                                   outcome = outcome,
                                   unit=unit, repeatedId=repeatedId,
                                   varImpPlot = F,
@@ -177,7 +174,7 @@ computeRandomForest_CVPC <- function(data, K=10,
     avgVI <- merge(avgVI, data_merge, by='var')
 
     oobAcc[i] <- sum(data[groups[[i]],outcome]==
-                       .predict.RandomForest_PC(model = RF[[1]],
+                       predict.RandomForest_PC(model = RF[[1]],
                                 data_pred = data[groups[[i]],],
                                 type = 'pred', data = data)) /
                   nrow(data[groups[[i]],])
@@ -198,7 +195,8 @@ computeRandomForest_CVPC <- function(data, K=10,
                                    metaNames=metaNames,
                                    syntheticMetaNames=syntheticMetaNames,
                                    alpha=alpha,silent=silent,
-                                   alignmentMethod=alignmentMethod)
+                                   alignmentMethod=alignmentMethod,
+                                   nTrees=nTrees)
 
   ## Get plots and organize results
   if(length(alignmentMethod)==2){
@@ -290,8 +288,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'                         the pcaData for the noise variables. See values
 #'                         returns from getPCAData, but outcome, person,
 #'                         repeatedId, and PCs for synthetic Ks.
-#'
-#' @export
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
@@ -402,7 +398,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'
 #' @return Data.frame for all the cells in the noise group. This will contain
 #'     columns of x, y, and cellType.
-#' @export
 #'
 #' @examples
 #' # See code for .generateSyntheticKs. This is not an outward function so won't
@@ -452,7 +447,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'
 #' @return Data.frame with cells for noise variables. The columns are x, y, and
 #'     cellType.
-#' @export
 #'
 #' @examples
 #' # See code for .generateKNoiseGroup. This is not an outward function so won't
@@ -497,7 +491,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @return List with two elements:
 #'     1. Vars: Underlying function names
 #'     2. PCs: Numeric indicating the number of principal components
-#' @export
 #'
 #' @examples
 #' # See code for .generateSyntheticKs. This is not an outward function so won't
@@ -544,7 +537,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'                           variables. This contains the outcome, unit, and
 #'                           (potentially) repeatedId along with synthetic meta
 #'                           variables.
-#' @export
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
@@ -593,7 +585,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'
 #' @return Data.frame with syntheticMetas columns and observations (rows) of
 #'     data. Each column is a bootstrapped sample of the meta variable.
-#' @export
 #'
 #' @examples
 #' # See code for .generateSyntheticMetas. This is not an outward function so
@@ -647,7 +638,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'                    noise variable cutoff using variable importance metric.
 #'     3. giniPlot: plot with each K function and Meta-variable aligned with
 #'                    noise variable cutoff using gini metric.
-#' @export
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
@@ -775,7 +765,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     cutoff (the cutoff for the variable), and adj (the aligned variables).
 #'     1. giniCutoff_df: data.frame based on gini index.
 #'     2. viCutoff_df: data.frame based on variable importance metric.
-#' @export
 #'
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward
@@ -859,7 +848,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'                 viData aligned using alignmentMethod. Columns lower and
 #'                 upper are the aligned 1-alpha confidence intervals from
 #'                 viData.
-#' @export
 #'
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward
@@ -947,8 +935,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'                 option. Column guess is the accuracy from selecting a random
 #'                 option, with probability based on frequency.
 #'
-#' @export
-#'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
 #' #     won't be viewable.
@@ -1023,7 +1009,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     This will add the curved line as developed in .generateNoiseCurve.
 #'
 #' @return ggplot2 plot for the CV variable importance plot
-#' @export
 #'
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward
@@ -1074,7 +1059,6 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'
 #' @return NULL. This function will simply throw an error if there are any
 #'     issues.
-#' @export
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so

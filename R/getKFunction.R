@@ -171,6 +171,7 @@ getKFunction <- function(data, agents, unit,
   data_return
 }
 
+
 #' Align K and r matrices
 #'
 #' This (internal) function makes a master r vector and ensures all K functions
@@ -188,7 +189,6 @@ getKFunction <- function(data, agents, unit,
 #'     1. K which is K evaluated at the (potentially) new r
 #'     2. newK which is newK evaluated at the (potentially) new r
 #'     3. r which is the new master vector of evaluated radius r values
-#' @export
 #'
 #' @examples
 #' # See code for getKFunction This is not an outward function so won't be
@@ -236,6 +236,7 @@ getKFunction <- function(data, agents, unit,
        'r'=bigr)
 }
 
+
 #' Convert r and K to a Data.frame
 #'
 #' This converts the r and K matrices from different units into a single
@@ -248,7 +249,6 @@ getKFunction <- function(data, agents, unit,
 #'
 #' @return Data.frame with the first column being the evaluated r and the rest
 #'     being the evaluted K functions for each unit.
-#' @export
 #'
 #' @examples
 #' # See code for getKFunction This is not an outward function so won't be
