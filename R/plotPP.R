@@ -19,6 +19,19 @@
 #' @export
 #'
 #' @examples
+#' dat <- simulatePP(cellVarData=
+#'                        data.frame('stage'=c(0,1),
+#'                                   'A'=c(0,0),
+#'                                   'B'=c(1/50,1/50)),
+#'                    cellKappaData=data.frame(
+#'                                   'cell'=c('A','B'),
+#'                                   'clusterCell'=c(NA,'A'),
+#'                                   'kappa'=c(20,5)),
+#'                    peoplePerStage=100,
+#'                    imagesPerPerson=1,
+#'                    reduceEdge=0.025,
+#'                    silent=F )
+#' plotPP(dat[dat$Image==1,c('x','y','cellType')])
 plotPP <- function(data, colorGuide = NULL,ptSize=1,
                    xlim=c(min(data[,1]),max(data[,1])),
                    ylim=c(min(data[,2]),max(data[,2])),

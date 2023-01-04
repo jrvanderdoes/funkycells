@@ -260,6 +260,7 @@
 }
 
 
+
 #' Predict Using RandomForest_PC
 #'
 #' This (internal) function gets the predicted value from a RandomForest_PC
@@ -395,7 +396,7 @@
   }else if(type=='all'){
     return(list('PredPerc'=cbind(modelPredictions,modelPercents),
                 'Acc'=sum(modelPredictions==data_pred[,1])/nrow(data_pred)))#,
-                #'ROC'=multiclass.roc(data_pred[,1], modelPercents)))
+                #"ROC"=multiclass.roc(data_pred[,1], modelPercents)))
   }
 }
 

@@ -51,6 +51,8 @@
 #'     variables to include in a subset graph (note if there are less variables)
 #'     than this value indicates then no subset graph will be produced. Default
 #'     is 50.
+#' @param nTrees (Optional) Numeric indicating the number of trees in each
+#'     forest. The default is 1000.
 #'
 #' @return List with the following items:
 #'     1. Gini: Data.frame with the results of gini indices from the models and
@@ -115,7 +117,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                     generalSyntheticK=T,
                     curvedSigSims=100, alpha=0.05, silent=F,
                     rGuessSims=500,alignmentMethod=c('Add','Mult'),
-                    subsetPlotSize=50){
+                    subsetPlotSize=50, nTrees=1000){
   ## Error checking
   .checkData(alignmentMethod)
 
@@ -163,7 +165,8 @@ computeRandomForest_CVPC <- function(data, K=10,
                                   outcome = outcome,
                                   unit=unit, repeatedId=repeatedId,
                                   varImpPlot = F,
-                                  metaNames=c(metaNames, syntheticMetaNames))
+                                  metaNames=c(metaNames, syntheticMetaNames),
+                                  nTrees=nTrees)
 
     data_merge <- RF[[2]][,c('var','avgGini')]
     colnames(data_merge) <- c('var',paste0('avgGiniK',i))
@@ -767,12 +770,12 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     noise variables. The options are 'Add' or 'Mult'.
 #' @param alpha Numeric in (0,1) indicating the significance for the cutoff.
 #'
-#' @return
-#' @export List of two data.frames. Each data.frame has columns dataVar
+#' @return List of two data.frames. Each data.frame has columns dataVar
 #'     (variable names), synType (Synthetic types used for standardization),
 #'     cutoff (the cutoff for the variable), and adj (the aligned variables).
 #'     1. giniCutoff_df: data.frame based on gini index.
 #'     2. viCutoff_df: data.frame based on variable importance metric.
+#' @export
 #'
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward

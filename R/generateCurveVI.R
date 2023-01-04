@@ -265,6 +265,8 @@
 #' @export
 #'
 #' @examples
+#' # See code for .generateNoiseCurve. This is not an outward
+#' #     function so won't be viewable.
 .getCurveValues <- function(stdData,alpha){
   apply(apply(stdData[-1], MARGIN=2, FUN=sort, decreasing = T),
         MARGIN = 1, FUN = quantile, probs = 1-alpha)
