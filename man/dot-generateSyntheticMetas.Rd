@@ -34,15 +34,17 @@ repeated measures in cellData.}
 }
 \value{
 List with two elements:
-1. noiseMap: Data.frame for matching noise variables to noise groups. The
-columns are noiseVar (the synthetic interactions of which
-there are syntheticMetas), dataVar (name of noise group),
-and synType ('Meta', which will compare to 'K' from other
-functions).
-2. syntheticMetaData: Data.frame with results and synthetic meta
+\enumerate{
+\item noiseMap: Data.frame for matching noise variables to noise
+groups. The columns are noiseVar (the synthetic
+interactions of which there are syntheticMetas),
+dataVar (name of noise group), and synType ('Meta',
+which will compare to 'K' from other functions).
+\item syntheticMetaData: Data.frame with results and synthetic meta
 variables. This contains the outcome, unit, and
 (potentially) repeatedId along with synthetic meta
 variables.
+}
 }
 \description{
 This (internal) function generates the synthetic meta-variables and also

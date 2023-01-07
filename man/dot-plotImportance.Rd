@@ -10,7 +10,7 @@
 \item{varImportanceData}{Data.frame for the variable importance information.}
 }
 \value{
-grid.arrange containing two ggplots
+grid.arrange containing two ggplots.
 }
 \description{
 This (internal) function plots the variable importance for a

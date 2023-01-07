@@ -48,15 +48,17 @@ when the function is running. Default is FALSE.}
 }
 \value{
 List with two elements:
-1. noiseMap: Data.frame for matching noise variables to noise groups.
+\enumerate{
+\item noiseMap: Data.frame for matching noise variables to noise groups.
 The columns are noiseVar (the synthetic interactions
 of which there are syntheticKs), dataVar (name of
 noise group), and synType ('K', which will compare
 to 'Meta' from other functions).
-2. pcaData: Data.frame with nPCs equal to that in data. This contains
+\item pcaData: Data.frame with nPCs equal to that in data. This contains
 the pcaData for the noise variables. See values
 returns from getPCAData, but outcome, person,
 repeatedId, and PCs for synthetic Ks.
+}
 }
 \description{
 This (internal) function generates the synthetic K functions (in PCs).

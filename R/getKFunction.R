@@ -186,9 +186,11 @@ getKFunction <- function(data, agents, unit,
 #' @param newr  Data.frame of one column for the evaluated r values in newK.
 #'
 #' @return list of three data.frames
-#'     1. K which is K evaluated at the (potentially) new r
-#'     2. newK which is newK evaluated at the (potentially) new r
-#'     3. r which is the new master vector of evaluated radius r values
+#'     \enumerate{
+#'         \item K: K functions evaluated at the (potentially) new r values
+#'         \item newK: newK evaluated at the (potentially) new r values
+#'         \item r: new master vector of evaluated radius r values
+#'     }
 #'
 #' @examples
 #' # See code for getKFunction This is not an outward function so won't be

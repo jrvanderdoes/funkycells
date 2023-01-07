@@ -20,9 +20,11 @@ at the values in newr.}
 }
 \value{
 list of three data.frames
-1. K which is K evaluated at the (potentially) new r
-2. newK which is newK evaluated at the (potentially) new r
-3. r which is the new master vector of evaluated radius r values
+\enumerate{
+\item K: K functions evaluated at the (potentially) new r values
+\item newK: newK evaluated at the (potentially) new r values
+\item r: new master vector of evaluated radius r values
+}
 }
 \description{
 This (internal) function makes a master r vector and ensures all K functions

@@ -54,11 +54,15 @@ is 50.}
 }
 \value{
 List containing three plots.
-1. varImpPlot: giniPlot and viPlot together with cross-validated error.
-2. viPlot: plot with each K function and Meta-variable aligned with
-noise variable cutoff using variable importance metric.
-3. giniPlot: plot with each K function and Meta-variable aligned with
-noise variable cutoff using gini metric.
+\enumerate{
+\item varImpPlot: giniPlot and viPlot together with cross-validated
+error.
+\item viPlot: Plot with each K function and Meta-variable aligned
+with noise variable cutoff using variable importance
+metric.
+\item giniPlot: Plot with each K function and Meta-variable aligned
+with noise variable cutoff using gini metric.
+}
 }
 \description{
 This (internal) function generates the CV variable importance plots for the

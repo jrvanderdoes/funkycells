@@ -36,15 +36,19 @@ used in frequency based random guess approach.}
 }
 \value{
 List with three elements:
-1. giniData: Data.frame organizing the gini index metrics of the
+\enumerate{
+\item giniData: Data.frame organizing the gini index metrics of the
 variables. Columns var, avg, sd, lower, and upper.
-2. viData: Data.frame organizing the variable importance index metrics of
-the variables. Columns var, avg, sd, lower, and upper.
-3. accData: Data.frame with the accuracy of various approaches. Column
-OOB indicates the out-of-bag accuracy of the CV-RF. Column
-bias is the accuracy of just selecting the most popular
-option. Column guess is the accuracy from selecting a random
-option, with probability based on frequency.
+\item viData: Data.frame organizing the variable importance index
+metrics of the variables. Columns var, avg, sd, lower,
+and upper.
+\item accData: Data.frame with the accuracy of various approaches.
+Column OOB indicates the out-of-bag accuracy of the
+CV-RF. Column bias is the accuracy of just selecting
+the most popular option. Column guess is the accuracy
+from selecting a random option, with probability based
+on frequency.
+}
 }
 \description{
 This (internal) function get the average values for each variable based on

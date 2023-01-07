@@ -11,8 +11,10 @@
 }
 \value{
 List with two elements:
-1. Vars: Underlying function names
-2. PCs: Numeric indicating the number of principal components
+\enumerate{
+\item Vars: Underlying function names
+\item PCs: Numeric indicating the number of principal components
+}
 }
 \description{
 This (internal) function get the underlying functions and the total principal

@@ -20,8 +20,10 @@ model will be extracted (by row name) to determine data the model knows.}
 }
 \value{
 The returned data depends on type:
-1. type='pred': returns a vector of the predictions
-2. type='all': returns a vector of the predictions
+\itemize{
+\item type='pred': returns a vector of the predictions
+\item type='all': returns a vector of the predictions
+}
 }
 \description{
 This function gets the predicted value from a RandomForest_PC

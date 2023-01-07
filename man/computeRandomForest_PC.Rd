@@ -33,9 +33,12 @@ correspond to metavariables. Default is NULL.}
 }
 \value{
 A list with two (three) entries
-1. model: List of CART that builds the andom forest model
-2. varImportanceData: Data.frame for variable importance information
-3. (Optional) varImportancePlot: Variable importance plots.
+\enumerate{
+\item model: List of CART that builds the random forest model.
+\item varImportanceData: Data.frame for variable importance
+information.
+\item (Optional) varImportancePlot: Variable importance plots.
+}
 }
 \description{
 This function creates a random forest model for data with PCs and

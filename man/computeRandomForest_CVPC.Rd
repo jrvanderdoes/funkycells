@@ -89,31 +89,40 @@ forest. The default is 1000.}
 }
 \value{
 List with the following items:
-1. Gini: Data.frame with the results of gini indices from the models and
-CV. The columns are var, avg, sd, lower, and upper. The
-columns lower and upper are made with significance alpha.
-2. VI: Data.frame with the results of variable importance indices from
-the models and CV. The columns are var, avg, sd, lower, and
-upper. The columns lower and upper are made with significance
-alpha.
-3. Accuracy: Data.frame with results of cross validation. The columns are
-avg, sd, lower and upper.
-4. NoiseCurve: (Optional) Contains columns for noise curve (orange)
-- Next part may be in group or separate based on function call -
-5. varImpPlot: ggplot2 object for a plot of both gini and vi plots. See
-descriptions below.
-6. viPlot: ggplot2 object for a plot of vi plot. This will display
-ordered underlying functions and meta-variables with point
-estimates, intervals, and the red (standardized) noise
-cutoff. Values are based on variable importance values.
-7. giniPlot: ggplot2 object for a plot of gini plot. This will display
-ordered underlying functions and meta-variables with point
-estimates, intervals, and the red (standardized) noise
-cutoff. Values are based on gini index values.
-- Next part may or may not be included -
-8. These next parts are optional and would be the same as 5 - 7 except
-only subsetPlotSize number of variables are displayed in the
-graph - for better seeing interesting patterns.
+\enumerate{
+\item Gini: Data.frame with the results of gini indices from the
+models and CV. The columns are var, avg, sd, lower, and
+upper. The columns lower and upper are made with
+significance alpha.
+\item VI: Data.frame with the results of variable importance indices
+from the models and CV. The columns are var, avg, sd,
+lower, and upper. The columns lower and upper are made with
+significance alpha.
+\item Accuracy: Data.frame with results of cross validation. The
+columns are avg, sd, lower and upper.
+\item NoiseCurve: (Optional) Contains columns for noise curve (orange)
+\item varImpPlot: ggplot2 object (may be in list or seperate) for a
+plot of both gini and vi plots. See following
+descriptions.
+\enumerate{
+\item viPlot: ggplot2 object for a plot of vi plot. This
+will display ordered underlying functions and
+meta-variables with point estimates,
+intervals, and the red (standardized) noise
+cutoff. Values are based on variable
+importance values.
+\item giniPlot: ggplot2 object for a plot of gini plot.
+This will display ordered underlying
+functions and meta-variables with point
+estimates, intervals, and the red
+(standardized) noise cutoff. Values are
+based on gini index values.
+}
+\item Subset (Optional) These next parts are similar to the previous
+part, but subset figures. Only the top subsetPlotSize number of
+variables are displayed in the graph - for better seeing
+interesting patterns.
+}
 }
 \description{
 The function fits a random forest model to the data along with using cross-

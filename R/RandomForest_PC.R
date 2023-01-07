@@ -22,9 +22,12 @@
 #'     correspond to metavariables. Default is NULL.
 #'
 #' @return A list with two (three) entries
-#'     1. model: List of CART that builds the andom forest model
-#'     2. varImportanceData: Data.frame for variable importance information
-#'     3. (Optional) varImportancePlot: Variable importance plots.
+#'     \enumerate{
+#'         \item model: List of CART that builds the random forest model.
+#'         \item varImportanceData: Data.frame for variable importance
+#'                                  information.
+#'         \item (Optional) varImportancePlot: Variable importance plots.
+#'     }
 #' @export
 #'
 #' @examples
@@ -226,7 +229,7 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #'
 #' @param varImportanceData Data.frame for the variable importance information.
 #'
-#' @return grid.arrange containing two ggplots
+#' @return grid.arrange containing two ggplots.
 #'
 #' @examples
 #' # See code for .plotVariableImportance. This is not an outward function so won't be
@@ -272,8 +275,10 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #'     model will be extracted (by row name) to determine data the model knows.
 #'
 #' @return The returned data depends on type:
-#'     1. type='pred': returns a vector of the predictions
-#'     2. type='all': returns a vector of the predictions
+#'     \itemize{
+#'         \item type='pred': returns a vector of the predictions
+#'         \item type='all': returns a vector of the predictions
+#'     }
 #' @export
 #'
 #' @examples

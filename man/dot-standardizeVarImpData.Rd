@@ -41,18 +41,22 @@ noise variables. The options are 'Add' or 'Mult'.}
 }
 \value{
 List containing two named data.frame elements.
-1. stdGini: A data.frame with 4 columns (var, avgVal, lower, and upper).
-The column var indicates the variable name (from KFunctions
-and metaNames), the column avgVal indicates the avg from
-giniData aligned using alignmentMethod. Columns lower and
-upper are the aligned 1-alpha confidence intervals from
-giniData.
-2. stdVI: A data.frame with 4 columns (var, avgVal, lower, and upper).
-The column var indicates the variable name (from KFunctions
-and metaNames), the column avgVal indicates the avg from
-viData aligned using alignmentMethod. Columns lower and
-upper are the aligned 1-alpha confidence intervals from
-viData.
+\enumerate{
+\item stdGini: A data.frame with 4 columns (var, avgVal, lower, and
+upper). The column var indicates the variable name
+(from KFunctions and metaNames), the column avgVal
+indicates the avg from giniData aligned using
+alignmentMethod. Columns lower and upper are the
+aligned 1-alpha confidence intervals from giniData.
+\item stdVI: A data.frame with 4 columns (var, avgVal, lower, and
+upper). The column var indicates the variable name (from
+KFunctions and metaNames), the column avgVal indicates
+the avg from viData aligned using alignmentMethod.
+Columns lower and upper are the aligned 1-alpha
+confidence intervals from viData.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{\}
+}\if{html}{\out{</div>}}
 }
 \description{
 This (internal) function returns the variables (specified in KFunctions and

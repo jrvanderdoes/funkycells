@@ -53,31 +53,40 @@
 #'     forest. The default is 1000.
 #'
 #' @return List with the following items:
-#'     1. Gini: Data.frame with the results of gini indices from the models and
-#'                  CV. The columns are var, avg, sd, lower, and upper. The
-#'                  columns lower and upper are made with significance alpha.
-#'     2. VI: Data.frame with the results of variable importance indices from
-#'                the models and CV. The columns are var, avg, sd, lower, and
-#'                upper. The columns lower and upper are made with significance
-#'                alpha.
-#'     3. Accuracy: Data.frame with results of cross validation. The columns are
-#'                      avg, sd, lower and upper.
-#'     4. NoiseCurve: (Optional) Contains columns for noise curve (orange)
-#'     - Next part may be in group or separate based on function call -
-#'     5. varImpPlot: ggplot2 object for a plot of both gini and vi plots. See
-#'                        descriptions below.
-#'     6. viPlot: ggplot2 object for a plot of vi plot. This will display
-#'                    ordered underlying functions and meta-variables with point
-#'                    estimates, intervals, and the red (standardized) noise
-#'                    cutoff. Values are based on variable importance values.
-#'     7. giniPlot: ggplot2 object for a plot of gini plot. This will display
-#'                    ordered underlying functions and meta-variables with point
-#'                    estimates, intervals, and the red (standardized) noise
-#'                    cutoff. Values are based on gini index values.
-#'     - Next part may or may not be included -
-#'     8. These next parts are optional and would be the same as 5 - 7 except
-#'            only subsetPlotSize number of variables are displayed in the
-#'            graph - for better seeing interesting patterns.
+#'     \enumerate{
+#'         \item Gini: Data.frame with the results of gini indices from the
+#'                     models and CV. The columns are var, avg, sd, lower, and
+#'                     upper. The columns lower and upper are made with
+#'                     significance alpha.
+#'         \item VI: Data.frame with the results of variable importance indices
+#'                   from the models and CV. The columns are var, avg, sd,
+#'                   lower, and upper. The columns lower and upper are made with
+#'                   significance alpha.
+#'         \item Accuracy: Data.frame with results of cross validation. The
+#'                         columns are avg, sd, lower and upper.
+#'         \item NoiseCurve: (Optional) Contains columns for noise curve (orange)
+#'         \item varImpPlot: ggplot2 object (may be in list or seperate) for a
+#'                           plot of both gini and vi plots. See following
+#'                           descriptions.
+#'               \enumerate{
+#'                   \item viPlot: ggplot2 object for a plot of vi plot. This
+#'                                 will display ordered underlying functions and
+#'                                 meta-variables with point estimates,
+#'                                 intervals, and the red (standardized) noise
+#'                                 cutoff. Values are based on variable
+#'                                 importance values.
+#'                   \item giniPlot: ggplot2 object for a plot of gini plot.
+#'                                   This will display ordered underlying
+#'                                   functions and meta-variables with point
+#'                                   estimates, intervals, and the red
+#'                                   (standardized) noise cutoff. Values are
+#'                                   based on gini index values.
+#'               }
+#'         \item Subset (Optional) These next parts are similar to the previous
+#'               part, but subset figures. Only the top subsetPlotSize number of
+#'               variables are displayed in the graph - for better seeing
+#'               interesting patterns.
+#'            }
 #' @export
 #'
 #' @examples
@@ -279,15 +288,17 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     when the function is running. Default is FALSE.
 #'
 #' @return List with two elements:
-#'         1. noiseMap: Data.frame for matching noise variables to noise groups.
-#'                          The columns are noiseVar (the synthetic interactions
-#'                          of which there are syntheticKs), dataVar (name of
-#'                          noise group), and synType ('K', which will compare
-#'                          to 'Meta' from other functions).
-#'         2. pcaData: Data.frame with nPCs equal to that in data. This contains
-#'                         the pcaData for the noise variables. See values
-#'                         returns from getPCAData, but outcome, person,
-#'                         repeatedId, and PCs for synthetic Ks.
+#'     \enumerate{
+#'       \item noiseMap: Data.frame for matching noise variables to noise groups.
+#'                       The columns are noiseVar (the synthetic interactions
+#'                       of which there are syntheticKs), dataVar (name of
+#'                       noise group), and synType ('K', which will compare
+#'                       to 'Meta' from other functions).
+#'       \item pcaData: Data.frame with nPCs equal to that in data. This contains
+#'                      the pcaData for the noise variables. See values
+#'                      returns from getPCAData, but outcome, person,
+#'                      repeatedId, and PCs for synthetic Ks.
+#'     }
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
@@ -489,8 +500,10 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @param namesOfInterest Vector of variable names, names with _PC# with them
 #'
 #' @return List with two elements:
-#'     1. Vars: Underlying function names
-#'     2. PCs: Numeric indicating the number of principal components
+#'     \enumerate{
+#'         \item Vars: Underlying function names
+#'         \item PCs: Numeric indicating the number of principal components
+#'     }
 #'
 #' @examples
 #' # See code for .generateSyntheticKs. This is not an outward function so won't
@@ -528,15 +541,17 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     repeated measures in cellData.
 #'
 #' @return List with two elements:
-#'     1. noiseMap: Data.frame for matching noise variables to noise groups. The
-#'                  columns are noiseVar (the synthetic interactions of which
-#'                  there are syntheticMetas), dataVar (name of noise group),
-#'                  and synType ('Meta', which will compare to 'K' from other
-#'                  functions).
-#'     2. syntheticMetaData: Data.frame with results and synthetic meta
+#'     \enumerate{
+#'         \item noiseMap: Data.frame for matching noise variables to noise
+#'                         groups. The columns are noiseVar (the synthetic
+#'                         interactions of which there are syntheticMetas),
+#'                         dataVar (name of noise group), and synType ('Meta',
+#'                         which will compare to 'K' from other functions).
+#'         \item syntheticMetaData: Data.frame with results and synthetic meta
 #'                           variables. This contains the outcome, unit, and
 #'                           (potentially) repeatedId along with synthetic meta
 #'                           variables.
+#'     }
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
@@ -633,11 +648,15 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     is 50.
 #'
 #' @return List containing three plots.
-#'     1. varImpPlot: giniPlot and viPlot together with cross-validated error.
-#'     2. viPlot: plot with each K function and Meta-variable aligned with
-#'                    noise variable cutoff using variable importance metric.
-#'     3. giniPlot: plot with each K function and Meta-variable aligned with
-#'                    noise variable cutoff using gini metric.
+#'     \enumerate{
+#'         \item varImpPlot: giniPlot and viPlot together with cross-validated
+#'                           error.
+#'         \item viPlot: Plot with each K function and Meta-variable aligned
+#'                       with noise variable cutoff using variable importance
+#'                       metric.
+#'         \item giniPlot: Plot with each K function and Meta-variable aligned
+#'                         with noise variable cutoff using gini metric.
+#'     }
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so
@@ -763,8 +782,10 @@ computeRandomForest_CVPC <- function(data, K=10,
 #' @return List of two data.frames. Each data.frame has columns dataVar
 #'     (variable names), synType (Synthetic types used for standardization),
 #'     cutoff (the cutoff for the variable), and adj (the aligned variables).
-#'     1. giniCutoff_df: data.frame based on gini index.
-#'     2. viCutoff_df: data.frame based on variable importance metric.
+#'     \enumerate{
+#'         \item giniCutoff_df: Data.frame based on gini index.
+#'         \item viCutoff_df: Data.frame based on variable importance metric.
+#'     }
 #'
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward
@@ -836,18 +857,21 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     noise variables. The options are 'Add' or 'Mult'.
 #'
 #' @return List containing two named data.frame elements.
-#'     1. stdGini: A data.frame with 4 columns (var, avgVal, lower, and upper).
-#'                 The column var indicates the variable name (from KFunctions
-#'                 and metaNames), the column avgVal indicates the avg from
-#'                 giniData aligned using alignmentMethod. Columns lower and
-#'                 upper are the aligned 1-alpha confidence intervals from
-#'                 giniData.
-#'     2. stdVI: A data.frame with 4 columns (var, avgVal, lower, and upper).
-#'                 The column var indicates the variable name (from KFunctions
-#'                 and metaNames), the column avgVal indicates the avg from
-#'                 viData aligned using alignmentMethod. Columns lower and
-#'                 upper are the aligned 1-alpha confidence intervals from
-#'                 viData.
+#'     \enumerate{
+#'         \item stdGini: A data.frame with 4 columns (var, avgVal, lower, and
+#'                        upper). The column var indicates the variable name
+#'                        (from KFunctions and metaNames), the column avgVal
+#'                        indicates the avg from giniData aligned using
+#'                        alignmentMethod. Columns lower and upper are the
+#'                        aligned 1-alpha confidence intervals from giniData.
+#'         \item stdVI: A data.frame with 4 columns (var, avgVal, lower, and
+#'                      upper). The column var indicates the variable name (from
+#'                      KFunctions and metaNames), the column avgVal indicates
+#'                      the avg from viData aligned using alignmentMethod.
+#'                      Columns lower and upper are the aligned 1-alpha
+#'                      confidence intervals from viData.
+#'
+#'     }
 #'
 #' @examples
 #' # See code for .generateCVVariableImportancePlot. This is not an outward
@@ -925,15 +949,19 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     used in frequency based random guess approach.
 #'
 #' @return List with three elements:
-#'     1. giniData: Data.frame organizing the gini index metrics of the
-#'                  variables. Columns var, avg, sd, lower, and upper.
-#'     2. viData: Data.frame organizing the variable importance index metrics of
-#'                the variables. Columns var, avg, sd, lower, and upper.
-#'     3. accData: Data.frame with the accuracy of various approaches. Column
-#'                 OOB indicates the out-of-bag accuracy of the CV-RF. Column
-#'                 bias is the accuracy of just selecting the most popular
-#'                 option. Column guess is the accuracy from selecting a random
-#'                 option, with probability based on frequency.
+#'     \enumerate{
+#'         \item giniData: Data.frame organizing the gini index metrics of the
+#'                         variables. Columns var, avg, sd, lower, and upper.
+#'         \item viData: Data.frame organizing the variable importance index
+#'                       metrics of the variables. Columns var, avg, sd, lower,
+#'                       and upper.
+#'         \item accData: Data.frame with the accuracy of various approaches.
+#'                        Column OOB indicates the out-of-bag accuracy of the
+#'                        CV-RF. Column bias is the accuracy of just selecting
+#'                        the most popular option. Column guess is the accuracy
+#'                        from selecting a random option, with probability based
+#'                        on frequency.
+#'     }
 #'
 #' @examples
 #' # See code for computeRandomForest_CVPC. This is not an outward function so

@@ -27,8 +27,10 @@ noise variables. The options are 'Add' or 'Mult'.}
 List of two data.frames. Each data.frame has columns dataVar
 (variable names), synType (Synthetic types used for standardization),
 cutoff (the cutoff for the variable), and adj (the aligned variables).
-1. giniCutoff_df: data.frame based on gini index.
-2. viCutoff_df: data.frame based on variable importance metric.
+\enumerate{
+\item giniCutoff_df: Data.frame based on gini index.
+\item viCutoff_df: Data.frame based on variable importance metric.
+}
 }
 \description{
 This (internal) function gets the 1-alpha cutoffs for the variables of

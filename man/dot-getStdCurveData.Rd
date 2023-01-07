@@ -43,8 +43,10 @@ variables. The options are 'Add' or 'Mult'.}
 List containing two data.frame elements of the same structure. The
 first column is var and indicates the variable and subsequent columns are
 the standardized values for each sim. The list elements are:
-1. gini: Data.frame built using the gini index.
-2. vi: Data.frame built using the variable importance metric.
+\enumerate{
+\item gini: Data.frame built using the gini index.
+\item vi: Data.frame built using the variable importance metric.
+}
 }
 \description{
 This (internal) function gets variable importance metrics and standardizes

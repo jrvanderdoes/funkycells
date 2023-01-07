@@ -171,9 +171,11 @@ simulatePP <- function(cellVarData=
 #'
 #' In order to allow designation of the expected values, the following rules are
 #'     imposed on each distribution:
-#'     - runif: a=0, so b is modified,
-#'     - rbinom: n=1, so this defines the probability,
-#'     - runif: the standard deviation is set to 1.
+#'     \itemize{
+#'         \item runif: a=0, so b is modified,
+#'         \item rbinom: n=1, so this defines the probability
+#'         \item runif: the standard deviation is set to 1
+#'     }
 #'
 #' @return Data.frame with the outcome, unit, principle components of
 #'     computed K functions, and the meta-variables. pcaData with appended
