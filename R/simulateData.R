@@ -21,8 +21,6 @@
 #'     outcome.
 #' @param imagesPerPerson (Optional) Numeric indicating the number of repeated
 #'     measures.
-#' @param reduceEdge (Optional) Numeric indicating how far from edge agents
-#'     should be placed. Note the current figure size is [0,1]x[0,1].
 #' @param silent (Optional) Boolean indicating if progress output should be
 #'     printed.
 #'
@@ -48,7 +46,6 @@ simulatePP <- function(cellVarData=
                            'kappa'=c(20,5,4,2,15,5)),
                         peoplePerStage=20,
                         imagesPerPerson=5,
-                        reduceEdge=0.025,
                         silent=F
                        ){
   ## Setup
@@ -81,7 +78,6 @@ simulatePP <- function(cellVarData=
 
       data_stages[[stageIdx]] <-
         .generateCSRPatterns(stageName=stage,
-                             reduceEdge=reduceEdge,
                              peoplePerStage=peoplePerStage,
                              imagesPerPerson=imagesPerPerson,
                              kappas=nonClusterCells_data$kappa,
@@ -101,7 +97,6 @@ simulatePP <- function(cellVarData=
       data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
                                        .generateInvClusterPatterns(
                                             stageName=stage,
-                                            reduceEdge=reduceEdge,
                                             peoplePerStage=peoplePerStage,
                                             imagesPerPerson=imagesPerPerson,
                                             kappas=invClusterCells_data$kappa,
@@ -131,7 +126,7 @@ simulatePP <- function(cellVarData=
              clusterData=data_stages[[stageIdx]][
                data_stages[[stageIdx]]$cellType %in% unique(nextCell_cKD$clusterCell),],
              cellVarData=as.numeric(nextCell_Vars),
-             stageName=stage, reduceEdge=reduceEdge,
+             stageName=stage,
              cells=nextCell_cKD$cell,
              clusterCells=nextCell_cKD$clusterCell,
              kappas=nextCell_cKD$kappa,
@@ -254,8 +249,6 @@ simulateMeta <- function(pcaData,
 #' Upcoming: Try to eliminate or indicate when kappaSep is used.
 #'
 #' @param stageName String inidicating the outcome name that should be given.
-#' @param reduceEdge (Optional) Numeric indicating how far from edge agents
-#'     should be placed. Note the current figure size is [0,1]x[0,1].
 #' @param peoplePerStage Numeric indicating the number of units per
 #'     outcome.
 #' @param imagesPerPerson Numeric indicating the number of repeated
@@ -275,7 +268,7 @@ simulateMeta <- function(pcaData,
 #' @examples
 #' # See code for simulatePP. This is not an outward function so won't be
 #' #     viewable.
-.generateCSRPatterns <- function(stageName, reduceEdge,
+.generateCSRPatterns <- function(stageName,
                                  peoplePerStage,
                                  imagesPerPerson,
                                  kappas,
@@ -299,7 +292,6 @@ simulateMeta <- function(pcaData,
         }
         data_tmp[[cell]] <- .generateCSRData(xRange = c(0,1), yRange = c(0,1),
                                              kappa = kapVal,
-                                             #percentAwayFromEdge = reduceEdge,
                                              cellType=cellTypes[cell])
       }
       # Clean data (with correct info)
@@ -327,8 +319,6 @@ simulateMeta <- function(pcaData,
 #'     build.
 #'
 #' @param stageName String inidicating the outcome name that should be given.
-#' @param reduceEdge Numeric indicating how far from edge agents
-#'     should be placed. Note the current figure size is [0,1]x[0,1].
 #' @param peoplePerStage Numeric indicating the number of units per
 #'     outcome.
 #' @param imagesPerPerson Numeric indicating the number of repeated
@@ -354,7 +344,7 @@ simulateMeta <- function(pcaData,
 #' @examples
 #' # See code for simulatePP. This is not an outward function so won't be
 #' #     viewable.
-.generateInvClusterPatterns <- function(stageName, reduceEdge,
+.generateInvClusterPatterns <- function(stageName,
                                         peoplePerStage,
                                         imagesPerPerson,
                                         kappas,
@@ -370,7 +360,7 @@ simulateMeta <- function(pcaData,
   dataKappas <- kappas/clusterKappas
 
   # Generate data to cluster around
-  cluster_data <- .generateCSRPatterns(stageName, reduceEdge=0.025,
+  cluster_data <- .generateCSRPatterns(stageName,
                                     peoplePerStage,
                                     imagesPerPerson,
                                     clusterKappas,
@@ -382,7 +372,6 @@ simulateMeta <- function(pcaData,
   data <- .clusterAroundCells(clusterData = cluster_data,
                               cellVarData = cellVars,
                               stageName = stageName,
-                              reduceEdge = reduceEdge,
                               cells = cellTypes,
                               clusterCells = paste0(cellTypes,'_Cluster'),
                               kappas = dataKappas,
@@ -402,8 +391,6 @@ simulateMeta <- function(pcaData,
 #' @param clusterData Data.frame with columns x, y, cellType, Image, Person, and
 #'     Stage. These names are required.
 #' @param stageName String inidicating the outcome name that should be given.
-#' @param reduceEdge Numeric indicating how far from edge agents
-#'     should be placed. Note the current figure size is [0,1]x[0,1].
 #' @param cells Vector indicating the agents that are clustering.
 #' @param clusterCells Vector indicating the agents in which each agent in cells
 #'     will cluster around. These should be found in clusterData column
@@ -425,7 +412,7 @@ simulateMeta <- function(pcaData,
 #' # See code for simulatePP. This is not an outward function so won't be
 #' #     viewable.
 .clusterAroundCells <- function(clusterData, cellVarData,
-                                stageName, reduceEdge,
+                                stageName,
                                 cells, clusterCells, kappas,
                                 minPts=1){
   newData <- data.frame()
@@ -438,8 +425,7 @@ simulateMeta <- function(pcaData,
       data_pts <- .placeClusteredPts(currXY=as.numeric(clusterCellData[j, c('x','y')]),
                            cell=cells[i],
                            numPts=rpois(1,kappas[i]),
-                           varValue=cellVarData[i],
-                           reduceEdge=reduceEdge)
+                           varValue=cellVarData[i])
       if(!is.null(data_pts)){
         data_pts$Image <- clusterCellData[j,'Image']
         data_pts$Person <- clusterCellData[j,'Person']
@@ -462,8 +448,7 @@ simulateMeta <- function(pcaData,
       data_pts <- .placeClusteredPts(currXY=as.numeric(clusterCellData[j, c('x','y')]),
                            cell=cells[i],
                            numPts=rpois(1,kappas[i]),
-                           varValue=cellVarData[i],
-                           reduceEdge=reduceEdge)
+                           varValue=cellVarData[i])
       data_pts$Image <- clusterCellData[j,'Image']
       data_pts$Person <- clusterCellData[j,'Person']
       data_pts$Stage <- clusterCellData[j,'Stage']
@@ -491,8 +476,6 @@ simulateMeta <- function(pcaData,
 #' @param numPts Numeric indicating the number of agents to place.
 #' @param varValue Numeric giving the variance of the normal distribution for
 #'     placement of the agents.
-#' @param reduceEdge Numeric indicating how far from edge agents
-#'     should be placed. Note the current figure size is [0,1]x[0,1].
 #' @param xRange (Optional) Vector of two values indicating the x range of the
 #'     region. Default is c(0,1).
 #' @param yRange (Optional) Vector of two values indicating the x range of the
@@ -506,7 +489,7 @@ simulateMeta <- function(pcaData,
 #' @examples
 #' # See code for simulatePP. This is not an outward function so won't be
 #' #     viewable.
-.placeClusteredPts <- function(currXY, cell, numPts, varValue, reduceEdge,
+.placeClusteredPts <- function(currXY, cell, numPts, varValue,
                                xRange=c(0,1), yRange=c(0,1)){
   if(numPts<=0) return()
 
@@ -518,10 +501,10 @@ simulateMeta <- function(pcaData,
     data_ret[compPts+1,'y'] <- rnorm(1,mean=currXY[2],sd=sqrt(varValue))
 
     # Ensure its in boundaries
-    if(data_ret[compPts+1,'x'] >= xRange[1]+reduceEdge &
-       data_ret[compPts+1,'x'] <= xRange[2]-reduceEdge &
-       data_ret[compPts+1,'y'] >= yRange[1]+reduceEdge &
-       data_ret[compPts+1,'y'] <= yRange[2]-reduceEdge){
+    if(data_ret[compPts+1,'x'] >= xRange[1] &
+       data_ret[compPts+1,'x'] <= xRange[2] &
+       data_ret[compPts+1,'y'] >= yRange[1] &
+       data_ret[compPts+1,'y'] <= yRange[2]){
       compPts <- compPts + 1
     }
   }

@@ -30,7 +30,8 @@
 #' @param generalSyntheticK (Optional) Boolean indicating if a general K noise
 #'     group should be used or specialized K noise groups should be used.
 #'     Default is TRUE.
-#' @param curvedSigSims (Optional)
+#' @param curvedSigSims (Optional) Numeric indicating the number of simulations
+#'     used to create the curved lines. Default is 100.
 #' @param alpha (Optional) Numeric in (0,1) indicating the significance used
 #'     throughout the analysis. Default is 0.05.
 #'
@@ -48,7 +49,7 @@
 #' @param subsetPlotSize (Optional) Numeric indicating the number of top
 #'     variables to include in a subset graph (note if there are less variables)
 #'     than this value indicates then no subset graph will be produced. Default
-#'     is 50.
+#'     is 25.
 #' @param nTrees (Optional) Numeric indicating the number of trees in each
 #'     forest. The default is 1000.
 #'
@@ -100,18 +101,18 @@
 #'                                   'kappa'=c(20,5)),
 #'                    peoplePerStage=100,
 #'                    imagesPerPerson=1,
-#'                    reduceEdge=0.025,
 #'                    silent=F )
 #' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
-#'                           xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' pcaMeta <- simulateMeta(pcaData,
+#'                       xRange = c(0,1),  yRange = c(0,1),
+#'                       silent=F, addCounts = T)
+#' pcaMeta <- simulateMeta(pcaData$pcaData,
 #'                 metaInfo = data.frame(
 #'                       'var'=c('randUnif','randBin','corrNorm'),
 #'                       'rdist'=c('runif','rbinom','rnorm'),
 #'                       'Stage_0'=c('0.5','0.5','1'),
 #'                       'Stage_1'=c('0.5','0.5','2')))
 #' rfcv <- computeRandomForest_CVPC(data=pcaMeta,repeatedId='Image',
-#'                                  metaNames=c('randUnif','randBin','corrNorm'),
+#'                                  metaNames=c(pcaData$metaNames,'randUnif','randBin','corrNorm'),
 #'                                  cellData=dat)
 computeRandomForest_CVPC <- function(data, K=10,
                     outcome=colnames(data)[1],
@@ -123,7 +124,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                     generalSyntheticK=T,
                     curvedSigSims=100, alpha=0.05, silent=F,
                     rGuessSims=500,alignmentMethod=c('Add','Mult'),
-                    subsetPlotSize=50, nTrees=1000){
+                    subsetPlotSize=25, nTrees=1000){
   ## Error checking
   .checkData(alignmentMethod)
 
@@ -381,7 +382,7 @@ computeRandomForest_CVPC <- function(data, K=10,
        'pcaData'= getPCAData(data = noiseData, nPCs = NamesPCs$PCs,
                     outcome = outcome,unit = unit,repeatedUniqueId = repeatedId,
                     xRange = c(0,1),yRange = c(0,1), agents_df = agent_df,
-                    silent = silent)
+                    silent = silent, addCounts=F)
   )
 }
 

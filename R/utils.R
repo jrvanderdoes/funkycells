@@ -76,6 +76,32 @@
   data_df
 }
 
+#' Merge Lists into Base Data.frame
+#'
+#' This (internal) function appends items in list to a data.frame by the given
+#'     column names.
+#'
+#' @param df Data.frame with a column named by baseCol
+#' @param lists Lists of data.frames with each containing listCol column
+#'              matching the values in df$baseCol.
+#' @param dfCol String with column name for matching column in df
+#' @param listsDFCol String with column name for matching column in lists
+#'
+#' @return Data.frame df with values from lists appended
+#' @export
+#'
+#' @examples
+#' # See code for getPCAData. This is not an outward function so
+#' #     won't be viewable.
+.mergeListsToDF <- function(df, lists, dfCol, listsDFCol){
+
+  for(i in 1:length(lists)){
+    df <- merge(x=df, by.x=dfCol, y=lists[[i]], by.y=listsDFCol, sort=F
+              )[, union(names(df),names(lists[[i]])[!(names(lists[[i]])%in%listsDFCol)])]
+  }
+
+  df
+}
 
 #' Create K folds
 #'
