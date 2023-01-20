@@ -51,7 +51,7 @@
 #'     than this value indicates then no subset graph will be produced. Default
 #'     is 25.
 #' @param nTrees (Optional) Numeric indicating the number of trees in each
-#'     forest. The default is 1000.
+#'     forest. The default is 500.
 #'
 #' @return List with the following items:
 #'     \enumerate{
@@ -104,15 +104,21 @@
 #'                    silent=F )
 #' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1),
-#'                       silent=F, addCounts = T)
-#' pcaMeta <- simulateMeta(pcaData$pcaData,
+#'                       silent=F)
+#' pcaMeta <- simulateMeta(pcaData,
 #'                 metaInfo = data.frame(
 #'                       'var'=c('randUnif','randBin','corrNorm'),
 #'                       'rdist'=c('runif','rbinom','rnorm'),
 #'                       'Stage_0'=c('0.5','0.5','1'),
 #'                       'Stage_1'=c('0.5','0.5','2')))
-#' rfcv <- computeRandomForest_CVPC(data=pcaMeta,repeatedId='Image',
-#'                                  metaNames=c(pcaData$metaNames,'randUnif','randBin','corrNorm'),
+#' pcaMetaCt <- computeCountMeta(data=pcaMeta, outcome='Stage', unit='Person',
+#'                               agents = c('A','B'),
+#'                               cellData = dat[,c('Stage','Person',
+#'                                                 'Image','cellType')],
+#'                               repeatedUniqueId='Image')
+#' rfcv <- computeRandomForest_CVPC(data=pcaMetaCt$data,repeatedId='Image',
+#'                                  metaNames=c(pcaMetaCt$metaNames,
+#'                                              'randUnif','randBin','corrNorm'),
 #'                                  cellData=dat)
 computeRandomForest_CVPC <- function(data, K=10,
                     outcome=colnames(data)[1],
@@ -124,7 +130,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                     generalSyntheticK=T,
                     curvedSigSims=100, alpha=0.05, silent=F,
                     rGuessSims=500,alignmentMethod=c('Add','Mult'),
-                    subsetPlotSize=25, nTrees=1000){
+                    subsetPlotSize=25, nTrees=500){
   ## Error checking
   .checkData(alignmentMethod)
 
@@ -382,7 +388,7 @@ computeRandomForest_CVPC <- function(data, K=10,
        'pcaData'= getPCAData(data = noiseData, nPCs = NamesPCs$PCs,
                     outcome = outcome,unit = unit,repeatedUniqueId = repeatedId,
                     xRange = c(0,1),yRange = c(0,1), agents_df = agent_df,
-                    silent = silent, addCounts=F)
+                    silent = silent)
   )
 }
 
@@ -1054,11 +1060,8 @@ computeRandomForest_CVPC <- function(data, K=10,
                                         ymax = ifelse(upper/maxVal>1,1,upper/maxVal)),
                            color='black', width=0.2) +
     ggplot2::geom_point(color='black') +
-    # ggplot2::geom_line(ggplot2::aes(
-    #   x=ordered(underlyingData[order(-avgVal),'var']),
-    #   y=curveDat/maxVal),color='orange', linetype='dashed',size=1) +
     ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
-                        color='red', linetype='dashed',size=1) +
+                        color='red', linetype='dotted',size=1) +
     ggplot2::coord_flip(ylim = c(0,1)) +
     ggplot2::xlab(NULL) +
     ggplot2::ylim(c(0,1)) +

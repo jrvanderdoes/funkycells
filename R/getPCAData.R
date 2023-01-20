@@ -69,7 +69,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                                                              unique(data[,4]))),
                        xRange=NULL, yRange=NULL,
                        edgeCorrection="isotropic", nbasis=21,
-                       addCounts=T, silent=F){
+                       silent=F){
   # Define pcaData
   pcaData <- unique(data[,c(outcome, unit)])
 
@@ -79,11 +79,10 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                               as.data.frame(agents_df)),
                         MARGIN=1,
                         FUN=function(agents, nPCs, rCheckVals, data,
-                                     unit,
+                                     outcome, unit,
                                      repeatedUniqueId,
                                      xRange, yRange,
-                                     edgeCorrection, nbasis,
-                                     addCounts){
+                                     edgeCorrection, nbasis){
                           if(!silent) cat(trimws(agents[1]),', ',sep='')
                           agents <- agents[-1]
 
@@ -107,43 +106,16 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                           # Set up data (add counts as desired)
                           retData <- cbind('Unit'=unique(data[,unit]),
                                            as.data.frame(K_pca_scores))
-                          if(addCounts){
-                            retData <-  merge(
-                              retData,
-                              as.data.frame(
-                                table(data[data$cellType==agents[1],'Person'])),
-                                by.x='Unit',by.y='Var1',sort=F)
-                            names(retData)[names(retData) == 'Freq'] <-
-                              paste0(agents[1],'_',agents[2],'_Ct')
-                          }
-
-                          retData
                         },
                         nPCs=nPCs, rCheckVals=rCheckVals,
-                        data=data,
-                        unit=unit,
+                        data=data, outcome=outcome, unit=unit,
                         repeatedUniqueId=repeatedUniqueId,
-                        xRange=xRange,yRange=yRange,
+                        xRange=xRange, yRange=yRange,
                         edgeCorrection=edgeCorrection,
-                        nbasis=nbasis,addCounts=addCounts)
+                        nbasis=nbasis)
   if(!silent) cat('\n')
 
-  retData <- .mergeListsToDF(df=pcaData, lists=pcaData_list,
-                             dfCol=unit, listsDFCol='Unit')
-
-  if(addCounts){
-    metaNames <- colnames(retData)[!(colnames(retData) %in% c(outcome, unit))]
-    metaNames <- metaNames[-grep('PC',metaNames)]
-
-    retData <- list(
-      'pcaData' = retData,
-      'metaNames' = metaNames
-    )
-  }
-
-  retData
-  #cbind(pcaData, .convertList2Dataframe(pcaData_list))
-  #cbind(pcaData, .convertList2Dataframe(pcaData_list,typeBind='col'))
+  .mergeListsToDF(df=pcaData, lists=pcaData_list, dfCol=unit, listsDFCol='Unit')
 }
 
 

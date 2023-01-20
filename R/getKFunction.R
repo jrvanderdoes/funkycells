@@ -103,7 +103,7 @@ getKFunction <- function(data, agents, unit,
 
       # Define the marked point pattern using the data set for an individual person.
       # For this data the person data has had the marks listed as True/False, as factors.
-      # as.ppp interprets the first two columns as x-y coordinates and remaining colums as marks
+      # as.ppp interprets the first two columns as x-y coordinates and remaining columns as marks
       data_ppp <- spatstat.geom::as.ppp(data_repeat,
                                         W=spatstat.geom::as.owin(c(xRange_rm,yRange_rm)))
 

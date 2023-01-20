@@ -15,7 +15,7 @@
 #'     variables attached.
 #' @param outcome (Optional) String indicating the outcome column name in data
 #' @param nTrees (Optional) Numeric indicating the number of trees to use in the
-#'     random forest model. Default is 1000.
+#'     random forest model. Default is 500.
 #' @param varImpPlot (Optional) Boolean indicating if variable importance plots
 #'     should also be returned with the model. Default is TRUE.
 #' @param metaNames (Optional) Vector with the column names of data that
@@ -42,7 +42,7 @@
 #'                                            "corrUnif","corrBin","corrNorm"))
 computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
                               unit=colnames(data)[2], repeatedId=NULL,
-                              nTrees=1000, varImpPlot=T, metaNames=NULL){
+                              nTrees=500, varImpPlot=T, metaNames=NULL){
   # Ensure this is worthwhile
   if(length(unique(data[,outcome]))==1)
     stop('Error: Only 1 outcome in data, cannot do RF')
