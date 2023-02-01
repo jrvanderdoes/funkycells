@@ -129,7 +129,7 @@ computeRandomForest_CVPC <- function(data, K=10,
                     syntheticKs=100, syntheticMetas=100,
                     generalSyntheticK=T,
                     curvedSigSims=100, alpha=0.05, silent=F,
-                    rGuessSims=500,alignmentMethod=c('Add','Mult'),
+                    rGuessSims=500, alignmentMethod=c('Add','Mult'),
                     subsetPlotSize=25, nTrees=500){
   ## Error checking
   .checkData(alignmentMethod)
@@ -181,16 +181,16 @@ computeRandomForest_CVPC <- function(data, K=10,
                                   metaNames=c(metaNames, syntheticMetaNames),
                                   nTrees=nTrees)
 
-    data_merge <- RF[[2]][,c('var','avgGini')]
+    data_merge <- RF$varImportanceData[,c('var','avgGini')]
     colnames(data_merge) <- c('var',paste0('avgGiniK',i))
     avgGini <- merge(avgGini, data_merge, by='var')
 
-    data_merge <- RF[[2]][,c('var','avgVI')]
+    data_merge <- RF$varImportanceData[,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',i))
     avgVI <- merge(avgVI, data_merge, by='var')
 
     oobAcc[i] <- sum(data[groups[[i]],outcome]==
-                       predict.RandomForest_PC(model = RF[[1]],
+                       predict.RandomForest_PC(model = RF$model,
                                 data_pred = data[groups[[i]],],
                                 type = 'pred', data = data)) /
                   nrow(data[groups[[i]],])
@@ -198,7 +198,8 @@ computeRandomForest_CVPC <- function(data, K=10,
   if(!silent) cat('\n')
 
   # Organize and return variable importance metrics
-  varImpList <- .getVariableImportanceMetrics(avgGini, avgVI, oobAcc,
+  varImpList <- .getVariableImportanceMetrics(avgGini = avgGini, avgVI = avgVI,
+                                              oobAcc = oobAcc,
                                               outcomes = data[,outcome],
                                               alpha = alpha,
                                               rGuessSims = rGuessSims)
@@ -978,14 +979,20 @@ computeRandomForest_CVPC <- function(data, K=10,
   # Variable Importance values (Empirical close to normal)
   giniData <- data.frame('var'=avgGini$var,
                          'avg'=rowMeans(avgGini[-1]),
-                         'sd'=apply(avgGini[-1],MARGIN=1,FUN=function(x){sd(x)}),
-                         'lower'= apply(avgGini[-1], 1, quantile, probs = alpha/2),
-                         'upper'= apply(avgGini[-1], 1, quantile, probs = 1-alpha/2))
+                         'sd'=apply(avgGini[-1],MARGIN=1,FUN=function(x){sd(x)}))
+  giniData$lower <- sapply(giniData$avg - qnorm(1-alpha/2) * giniData$sd,
+                          function(x){max(0,x)})
+  #giniData$lower1 <- apply(avgGini[-1], 1, quantile, probs = alpha/2)
+  giniData$upper <- giniData$avg + qnorm(1-alpha/2) * giniData$sd
+  #giniData$upper1 <- apply(avgGini[-1], 1, quantile, probs = 1-alpha/2)
   viData <- data.frame('var'=avgVI$var,
                        'avg'=rowMeans(avgVI[-1]),
-                       'sd'=apply(avgVI[-1],MARGIN=1,FUN=function(x){sd(x)}),
-                       'lower'= apply(avgVI[-1], 1, quantile, probs = alpha/2),
-                       'upper'= apply(avgVI[-1], 1, quantile, probs = 1-alpha/2))
+                       'sd'=apply(avgVI[-1],MARGIN=1,FUN=function(x){sd(x)}))
+  viData$lower <- sapply(viData$avg - qnorm(1-alpha/2) * viData$sd,
+                         function(x){max(0,x)})
+  #viData$lower1 <- apply(avgVI[-1], 1, quantile, probs = alpha/2)
+  viData$upper <- viData$avg + qnorm(1-alpha/2) * viData$sd
+  #viData$upper1 <- apply(avgVI[-1], 1, quantile, probs = 1-alpha/2)
 
   ## Setup model accuracy
   # Params

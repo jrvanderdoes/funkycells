@@ -68,15 +68,19 @@
   if(!silent) cat('Curved Sims (',nSims,'): ',sep='')
   for(sim in 1:nSims){
     if(!silent) cat(sim,', ',sep='')
-    tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
 
-    for(varIdx in 1:length(underlyingVars)){
-      tmpDF <- cbind(tmpDF,
-                     dat[sample(1:nrow(dat)),
-                         underlyingDataAlignedFunctions==underlyingVars[varIdx],
-                         drop=F])
-    }
-    # simData[[sim]] <- tmpDF
+    tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
+    tmpDF <- cbind(tmpDF,
+                   sapply(dat[,!(colnames(dat) %in% c(outcome,unit,repeatedId))],
+                          function(x,n) x[sample.int(n)], n=nrow(dat) ))
+
+    # tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
+    # for(varIdx in 1:length(underlyingVars)){
+    #   tmpDF <- cbind(tmpDF,
+    #                  dat[sample(1:nrow(dat)),
+    #                      underlyingDataAlignedFunctions==underlyingVars[varIdx],
+    #                      drop=F])
+    # }
 
     # Get RF and VI
     RF <- computeRandomForest_PC(data=tmpDF,#simData[[sim]],
@@ -84,13 +88,13 @@
                                  unit=unit, repeatedId=repeatedId,
                                  varImpPlot = F,
                                  metaNames=c(metaNames,syntheticMetaNames),
-                                 nTrees=nTrees)
+                                 nTrees=nTrees,keepModels=F)
 
-    data_merge <- RF[[2]][,c('var','avgGini')]
+    data_merge <- RF$varImportanceData[,c('var','avgGini')]
     colnames(data_merge) <- c('var',paste0('avgGiniK',sim))
     avgGini <- merge(avgGini, data_merge, by='var')
 
-    data_merge <- RF[[2]][,c('var','avgVI')]
+    data_merge <- RF$varImportanceData[,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',sim))
     avgVI <- merge(avgVI, data_merge, by='var')
   }

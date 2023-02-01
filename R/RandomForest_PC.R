@@ -20,12 +20,14 @@
 #'     should also be returned with the model. Default is TRUE.
 #' @param metaNames (Optional) Vector with the column names of data that
 #'     correspond to metavariables. Default is NULL.
+#' @param keepModels (Optional) Boolean indicating if the individual models
+#'     should be kept. Can get large in size. Default is TRUE.
 #'
-#' @return A list with two (three) entries
+#' @return A list with  entries
 #'     \enumerate{
-#'         \item model: List of CART that builds the random forest model.
 #'         \item varImportanceData: Data.frame for variable importance
 #'                                  information.
+#'         \item (Optional) model: List of CART that builds the random forest model.
 #'         \item (Optional) varImportancePlot: Variable importance plots.
 #'     }
 #' @export
@@ -42,7 +44,8 @@
 #'                                            "corrUnif","corrBin","corrNorm"))
 computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
                               unit=colnames(data)[2], repeatedId=NULL,
-                              nTrees=500, varImpPlot=T, metaNames=NULL){
+                              nTrees=500, varImpPlot=T, metaNames=NULL,
+                              keepModels=T){
   # Ensure this is worthwhile
   if(length(unique(data[,outcome]))==1)
     stop('Error: Only 1 outcome in data, cannot do RF')
@@ -69,7 +72,7 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
                             'varImp'=0,
                             'varImpCt'=0,
                             'vi'=0)
-  RF <- list()
+  if(keepModels) RF <- list()
   # To do CART
   varSelPercent <- 0.8 # Percent of variable selection
   for(i in 1:nTrees){
@@ -93,7 +96,7 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
                    control=rpart::rpart.control(minsplit =1,minbucket=1, cp=0))
     data_result <- .computeTotalVarImportance(model, data_result)
 
-    RF[[i]] <- model # Save model
+    if(keepModels) RF[[i]] <- model # Save model
   }
 
   # Get mean results for variable importance
@@ -101,14 +104,19 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
   data_result$avgGini <- data_result$giniDec / nTrees#data_result$splits
   data_result$avgVI <- data_result$varImp / nTrees#data_result$varImpCt
 
+  returnResults <- list('varImportanceData'=data_result)
+
+  if(keepModels){
+    returnResults <- append(returnResults, list('model'=RF))
+  }
 
   # Get Variable importance
   if(varImpPlot){
-    return(list('model'=RF, 'varImportanceData'=data_result,
-                'varImportancePlot'=.plotVariableImportance(varImportanceData=data_result)))
-  }
+    returnResults <- append(returnResults,
+                            list('varImportancePlot'=.plotVariableImportance(varImportanceData=data_result)))
+    }
 
-  list('model'=RF, 'varImportanceData'=data_result)
+  returnResults
 }
 
 
