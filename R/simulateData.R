@@ -92,7 +92,7 @@ simulatePP <- function(cellVarData=
                    'kappa'=cellKappaData[invClusterCells_cKD_Idx,'kappa'],
                    'var'=NA)
       invClusterCells_data$var <-
-        cellVarData[cellVarData[,'stage']==stage,invClusterCells_data$cell]
+        as.numeric(cellVarData[cellVarData[,'stage']==stage,invClusterCells_data$cell])
 
       data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
                                        .generateInvClusterPatterns(

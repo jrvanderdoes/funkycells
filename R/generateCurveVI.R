@@ -44,10 +44,10 @@
 #' # See code for computeRandomForest_CVPC. This is not an outward
 #' #     function so won't be viewable.
 .generateNoiseCurve <- function(dat, nSims,
-                    outcome, unit, repeatedId, noiseMap,
-                    KFunctions, metaNames, syntheticMetaNames,
-                    alpha=0.05, silent=F, alignmentMethod='Add',
-                    nTrees=1000){
+                                outcome, unit, repeatedId, noiseMap,
+                                KFunctions, metaNames, syntheticMetaNames,
+                                alpha=0.05, silent=F, alignmentMethod='Add',
+                                nTrees=1000){
   if(nSims<=0) return(NULL)
   if(nSims==1){
     warning('Warning: curvedSigSims must be greater than 1 to work. Setting to 0')
@@ -69,10 +69,19 @@
   for(sim in 1:nSims){
     if(!silent) cat(sim,', ',sep='')
 
+    # Permute but do the functional components together
     tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
+    # tmpDF <- cbind(tmpDF,
+    #                sapply(dat[,!(colnames(dat) %in% c(outcome,unit,repeatedId))],
+    #                       function(x,n) x[sample.int(n)], n=nrow(dat) ))
     tmpDF <- cbind(tmpDF,
-                   sapply(dat[,!(colnames(dat) %in% c(outcome,unit,repeatedId))],
-                          function(x,n) x[sample.int(n)], n=nrow(dat) ))
+                   as.data.frame(sapply(1:length(underlyingVars),
+                                        function(idx, DF) {
+                                          DF[sample.int(nrow(DF)),
+                                             underlyingDataAlignedFunctions==underlyingVars[idx],
+                                             drop=FALSE]
+                                        }, simplify = 'array',
+                                        DF=dat)))
 
     # tmpDF <- dat[,colnames(dat) %in% c(outcome,unit,repeatedId)]
     # for(varIdx in 1:length(underlyingVars)){
@@ -90,9 +99,9 @@
                                  metaNames=c(metaNames,syntheticMetaNames),
                                  nTrees=nTrees,keepModels=F)
 
-    data_merge <- RF$varImportanceData[,c('var','avgGini')]
-    colnames(data_merge) <- c('var',paste0('avgGiniK',sim))
-    avgGini <- merge(avgGini, data_merge, by='var')
+    # data_merge <- RF$varImportanceData[,c('var','avgGini')]
+    # colnames(data_merge) <- c('var',paste0('avgGiniK',sim))
+    # avgGini <- merge(avgGini, data_merge, by='var')
 
     data_merge <- RF$varImportanceData[,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',sim))
@@ -103,31 +112,33 @@
   ## Standardize results
   if(length(alignmentMethod)==2){
     # Return both methods
-    stdCurveList_add <- .getStdCurveData(avgGini, avgVI, alpha,
+    #     X% of values for picking cutoff to standardize
+    stdCurveList_add <- .getStdCurveData(avgVI, alpha,
                                          KFunctions, metaNames, noiseMap,
-                                         'Add')
+                                         alignmentMethod='Add')
 
-    stdCurveList_mult <- .getStdCurveData(avgGini, avgVI, alpha,
+    stdCurveList_mult <- .getStdCurveData(avgVI, alpha,
                                           KFunctions, metaNames, noiseMap,
-                                          'Mult')
+                                          alignmentMethod='Mult')
 
     ## Get Curve Values
+    #     X% of values for value to make line
     dataReturn <-
       data.frame(
-        'gini_add'=.getCurveValues(stdCurveList_add$gini[-1],alpha),
+        # 'gini_add'=.getCurveValues(stdCurveList_add$gini[-1],alpha),
         'vi_add'=.getCurveValues(stdCurveList_add$vi[-1],alpha),
-        'gini_mult'=.getCurveValues(stdCurveList_mult$gini[-1],alpha),
+        # 'gini_mult'=.getCurveValues(stdCurveList_mult$gini[-1],alpha),
         'vi_mult'=.getCurveValues(stdCurveList_mult$vi[-1],alpha) )
   } else{
     # Return the desired method
-    stdCurveList <- .getStdCurveData(avgGini, avgVI, alpha,
+    stdCurveList <- .getStdCurveData(avgVI, alpha,
                                      KFunctions, metaNames, noiseMap,
                                      alignmentMethod)
 
     ## Get Curve Values
     dataReturn <-
       data.frame(
-        'gini'=.getCurveValues(stdCurveList$gini[-1],alpha),
+        # 'gini'=.getCurveValues(stdCurveList$gini[-1],alpha),
         'vi'=.getCurveValues(stdCurveList$vi[-1],alpha) )
   }
 
@@ -169,24 +180,22 @@
 #' @examples
 #' # See code for .generateNoiseCurve. This is not an outward
 #' #     function so won't be viewable.
-.getStdCurveData <- function(avgGini, avgVI, alpha,
+.getStdCurveData <- function(avgVI, alpha,
                              KFunctions, metaNames, noiseMap,
                              alignmentMethod){
 
   # VarImpList only for noise organization
-  varImpList <- .getVariableImportanceMetrics(avgGini, avgVI, NULL, NULL, alpha)
+  ## Alpha doesn't matter, just need mean estimates
+  varImpList <- .getVariableImportanceMetrics(avgVI, NULL, NULL, alpha)
 
   cutoffs<- .getIndividualCutoffs(noiseMap = noiseMap,
-                                  giniData = varImpList$giniData,
                                   viData = varImpList$viData,
-                                       alignmentMethod = alignmentMethod,
+                                  alignmentMethod = alignmentMethod,
                                   alpha=alpha)
 
   # Return Std Curve Data
-  list('gini'=.stdCurveData(avgGini, cutoffs$giniCutoff_df,
-                                KFunctions, metaNames,alignmentMethod),
-       'vi'=.stdCurveData(avgVI, cutoffs$viCutoff_df,
-                              KFunctions, metaNames,alignmentMethod))
+  list('vi'=.stdCurveData(avgVI, cutoffs$viCutoff_df,
+                          KFunctions, metaNames,alignmentMethod))
 }
 
 

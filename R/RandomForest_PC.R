@@ -22,6 +22,8 @@
 #'     correspond to metavariables. Default is NULL.
 #' @param keepModels (Optional) Boolean indicating if the individual models
 #'     should be kept. Can get large in size. Default is TRUE.
+#' @param varSelPercent Numeric in (0,1) indicating (approx) percentage of
+#'     features to keep for each tree.
 #'
 #' @return A list with  entries
 #'     \enumerate{
@@ -43,20 +45,20 @@
 #'                                metaNames=c("randUnif","randBin","rNorm",
 #'                                            "corrUnif","corrBin","corrNorm"))
 computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
-                              unit=colnames(data)[2], repeatedId=NULL,
-                              nTrees=500, varImpPlot=T, metaNames=NULL,
-                              keepModels=T){
+                                    unit=colnames(data)[2], repeatedId=NULL,
+                                    nTrees=500, varImpPlot=T, metaNames=NULL,
+                                    keepModels=T, varSelPercent=0.8){
   # Ensure this is worthwhile
   if(length(unique(data[,outcome]))==1)
     stop('Error: Only 1 outcome in data, cannot do RF')
 
   # Setup
   underlyingDataAlignedFunctions <- colnames(data)[!(colnames(data) %in%
-                                                      c(outcome,unit,repeatedId,metaNames))]
+                                                       c(outcome,unit,repeatedId,metaNames))]
   for(i in 1:length(underlyingDataAlignedFunctions)){
     underlyingDataAlignedFunctions[i] <-
       substr(underlyingDataAlignedFunctions[i],1,
-        tail(unlist(gregexpr('_', underlyingDataAlignedFunctions[i])), n=1)-1)
+             tail(unlist(gregexpr('_', underlyingDataAlignedFunctions[i])), n=1)-1)
   }
   underlyingDataAlignedFunctions <- underlyingDataAlignedFunctions[underlyingDataAlignedFunctions!=""]
   underlyingDataAlignedFunctions <- c(colnames(data)[colnames(data)%in%c(outcome,unit,repeatedId)],
@@ -64,17 +66,14 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 
   underlyingVars <- unique(
     underlyingDataAlignedFunctions[!(underlyingDataAlignedFunctions%in%
-                                     c(outcome,unit,repeatedId))])
+                                       c(outcome,unit,repeatedId))])
 
   data_result <- data.frame('var'=underlyingVars,
-                            'splits'=0,
-                            'giniDec'=0,
-                            'varImp'=0,
-                            'varImpCt'=0,
-                            'vi'=0)
+                            # xx 'splits'=0, 'giniDec'=0,
+                            # xx 'varImp'=0, 'varImpCt'=0,
+                            'VI'=0)
   if(keepModels) RF <- list()
   # To do CART
-  varSelPercent <- 0.8 # Percent of variable selection
   for(i in 1:nTrees){
     # Bootstrap observations
     data_rf <- data[sample(1:nrow(data), nrow(data), replace = T),]
@@ -85,24 +84,26 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 
     # Variable selection
     underlyingVarsSelected <- unique(sample(underlyingVars,
-                    varSelPercent*length(underlyingVars), replace = F))
+                                            varSelPercent*length(underlyingVars), replace = F))
     # Build RF data. Note estimators are scrambled to avoid computational bias
     data_rf_vars <-
-          data_rf[underlyingDataAlignedFunctions%in%underlyingVarsSelected]
+      data_rf[underlyingDataAlignedFunctions%in%underlyingVarsSelected]
     data_rf <- cbind(data_rf[outcome],data_rf_vars[,sample(1:ncol(data_rf_vars))])
 
     # Fit CART
     model <- rpart::rpart(paste0(outcome,' ~ .'), data=data_rf, method="class",
-                   control=rpart::rpart.control(minsplit =1,minbucket=1, cp=0))
-    data_result <- .computeTotalVarImportance(model, data_result)
+                          control=rpart::rpart.control(minsplit =1,minbucket=1, cp=0))
+
+    # Get Var importance
+    data_result <- .computeTotalVarImportance1(model, data_result)
 
     if(keepModels) RF[[i]] <- model # Save model
   }
 
   # Get mean results for variable importance
   #     TEST: Use average over all or just when appears in model
-  data_result$avgGini <- data_result$giniDec / nTrees#data_result$splits
-  data_result$avgVI <- data_result$varImp / nTrees#data_result$varImpCt
+  # data_result$avgGini <- data_result$giniDec / nTrees#data_result$splits
+  data_result$avgVI <- data_result$VI / nTrees#data_result$varImpCt
 
   returnResults <- list('varImportanceData'=data_result)
 
@@ -114,7 +115,7 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
   if(varImpPlot){
     returnResults <- append(returnResults,
                             list('varImportancePlot'=.plotVariableImportance(varImportanceData=data_result)))
-    }
+  }
 
   returnResults
 }
@@ -185,6 +186,32 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 }
 
 
+#' Title
+#'
+#' @return
+#' @export
+#'
+#' @examples
+.computeTotalVarImportance1 <- function(tree, totVarImportance=NULL){
+  tmp1 <- as.data.frame(tree$variable.importance)
+  tmp2 <- data.frame('var'=rownames(tmp1),
+                     'VI'=tmp1[,1])#,
+  #'group'=.getUnderlyingVariable(rownames(tmp1),returnUnique = F))
+  tmp2$var <- .getUnderlyingVariable(rownames(tmp1),returnUnique = F)
+
+  # Combine Data
+  if(is.null(totVarImportance))
+    totVarImportance <- data.frame('var' = unique(tmp2$var),'VI'=0)
+
+  for(v in unique(tmp2$var)){
+    totVarImportance[totVarImportance$var==v,"VI"] <-
+      totVarImportance[totVarImportance$var==v,"VI"] + sum(tmp2[tmp2$var==v,'VI'])
+  }
+
+  totVarImportance
+}
+
+
 #' Plot Variable Importance (Ensure Data)
 #'
 #' This (internal) function organizes the data to plot the variable importance
@@ -209,11 +236,9 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
   if(is.null(varImportanceData)){
 
     varImportanceData <- data.frame('var'=cols_preds,
-                              'splits'=0,
-                              'giniDec'=0,
-                              'varImp'=0,
-                              'varImpCt'=0,
-                              'vi'=0)
+                                    # 'splits'=0, 'giniDec'=0,
+                                    # 'varImp'=0, 'varImpCt'=0,
+                                    'VI'=0)
 
     for(i in 1:length(model)){
       varImportanceData <- .computeTotalVarImportance(model[[i]], varImportanceData)
@@ -221,8 +246,8 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 
     # Get mean results for variable importance
     #     TEST: Use average over all or just when appears in model
-    varImportanceData$avgGini <- varImportanceData$giniDec / nTrees#data_result$splits
-    varImportanceData$avgVI <- varImportanceData$varImp / nTrees#data_result$varImpCt
+    # varImportanceData$avgGini <- varImportanceData$giniDec / nTrees#data_result$splits
+    varImportanceData$avgVI <- varImportanceData$VI / nTrees#data_result$varImpCt
 
   }
 
@@ -244,14 +269,14 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #' #     viewable.
 .plotImportance <- function(varImportanceData){
 
-  avgGini <- ggplot2::ggplot() +
-    ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgGini), y=avgGini/max(avgGini)),
-                        data=varImportanceData) +
-    ggplot2::coord_flip() +
-    ggplot2::xlab(NULL) +
-    ggplot2::ylim(c(0,1)) +
-    ggplot2::ylab('Gini') +
-    ggplot2::theme_bw()
+  # avgGini <- ggplot2::ggplot() +
+  #   ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgGini), y=avgGini/max(avgGini)),
+  #                       data=varImportanceData) +
+  #   ggplot2::coord_flip() +
+  #   ggplot2::xlab(NULL) +
+  #   ggplot2::ylim(c(0,1)) +
+  #   ggplot2::ylab('Gini') +
+  #   ggplot2::theme_bw()
   avgVI <- ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgVI), y=avgVI/max(avgVI)),
                         data=varImportanceData) +
@@ -261,9 +286,9 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
     ggplot2::ylab('VarImp') +
     ggplot2::theme_bw()
 
-  varImportance <- gridExtra::arrangeGrob(avgGini,avgVI,
-                                layout_matrix = rbind(c(1,2)),
-                                bottom = 'Variable Importance - Percent of Max')
+  # varImportance <- gridExtra::arrangeGrob(avgGini,avgVI,
+  #                               layout_matrix = rbind(c(1,2)),
+  #                               bottom = 'Variable Importance - Percent of Max')
 
   varImportance
 }
@@ -379,7 +404,7 @@ predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
   # Combine predictions
   if(is.numeric(predictions)){
     warning(paste('Sorry: I haven\'t decided how to deal with modelPercents.',
-                   'Only Preds will be returned'))
+                  'Only Preds will be returned'))
     type = 'pred'
     # Take Mean
     modelPredictions <- rowMeans(predictions)
@@ -406,7 +431,7 @@ predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
   }else if(type=='all'){
     return(list('PredPerc'=cbind(modelPredictions,modelPercents),
                 'Acc'=sum(modelPredictions==data_pred[,1])/nrow(data_pred)))#,
-                #"ROC"=multiclass.roc(data_pred[,1], modelPercents)))
+    #"ROC"=multiclass.roc(data_pred[,1], modelPercents)))
   }
 }
 
