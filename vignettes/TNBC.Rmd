@@ -26,9 +26,579 @@ This vignette documents a sample analysis of Triple Negative Breast Cancer (TNBC
 
 We recommend exploring this data, and additional information is available in the data documentation. Such analysis reveals TNBC contains the cell information while TNBC_Meta contains the metadata. 
 
-The first step is to convert the cell data into K functions. This data is unique since rather than giving a cell type, a T/F column is given for different columns. Therefore, the K functions, discritized using PCA is computed as follows.
+Diagram Info
+```{r diagram}
+## Data Gen
+set.seed(12345)
+dat0 <- simulatePP(cellVarData=
+                       data.frame('stage'=c(0,1),
+                                  'A'=c(0,0),
+                                  'B'=c(1/50,1/1000)),
+                   cellKappaData=data.frame(
+                                  'cell'=c('A','B'),
+                                  'clusterCell'=c(NA,'A'),
+                                  'kappa'=c(20,5)),
+                   peoplePerStage=50,
+                   imagesPerPerson=1,
+                   silent=F )
+dat1 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'A'=c(0,0),
+                                'B'=c(1/50,1/50)),
+                   cellKappaData=data.frame(
+                                 'cell'=c('A','B'),
+                                 'clusterCell'=c(NA,'A'),
+                                 'kappa'=c(20,5)),
+                   peoplePerStage=1,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1$Person <- ifelse(dat1$Person=='p1','p101',
+                      ifelse(dat1$Person=='p2','p102', NA))
+dat1$Image <- ifelse(dat1$Image=='1','101',
+                     ifelse(dat1$Image=='2','102',NA))
+dat <- rbind(dat0,dat1)
+
+set.seed(12345)
+Kvals <- getKFunction(data = dat[,-1], agents = c('A','B'),
+             unit = 'Person', repeatedUniqueId = 'Image',
+             xRange = c(0,1), yRange = c(0,1),
+             rCheckVals = seq(0,0.25,0.01))
+pcaData <- getPCAData(dat,repeatedUniqueId='Image',
+                      xRange = c(0,1),  yRange = c(0,1),
+                      silent=F)
+
+set.seed(12345)
+pcaMeta <- simulateMeta(pcaData,
+                        metaInfo = data.frame(
+                          'var'=c('randUnif','randBin','corrNorm'),
+                          'rdist'=c('runif','rbinom','rnorm'),
+                          'Stage_0'=c('0.5','0.5','1'),
+                          'Stage_1'=c('0.5','0.5','2')))
+
+set.seed(12345)
+rfcv <- computeRandomForest_CVPC(data=pcaMeta,repeatedId='Image',
+                                 metaNames=c('randUnif','randBin','corrNorm'),
+                                 cellData=dat)
+
+## K FUNCTIONS
+ggplot() +
+  geom_line(aes(x=r,y=K1),data=Kvals, size=2) +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+ggplot() +
+  geom_line(aes(x=r,y=K52),data=Kvals, size=2) +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+
+## Point Processes
+plotPP(dat[dat$Image==1,c('x','y','cellType')],
+       ptSize = 5, dropAxes = T, colorGuide = 'none')
+plotPP(dat[dat$Image==51,c('x','y','cellType')],
+       ptSize = 5, dropAxes = T, colorGuide = 'none')
+plotPP(dat[dat$Image==60,c('x','y','cellType')],
+       ptSize = 5, dropAxes = T, colorGuide = 'none')
+
+## RF
+giniData=rfcv$Gini 
+viData=rfcv$VI
+accData=rfcv$Accuracy
+noiseMap=rfcv$AddDataToCVVarImpPlot$noiseMap 
+KFunctions=rfcv$AddDataToCVVarImpPlot$KFunctions
+metaNames=rfcv$AddDataToCVVarImpPlot$metaNames
+alpha=rfcv$AddDataToCVVarImpPlot$alpha 
+alignmentMethod = 'Mult'
+curveData=rfcv$AddDataToCVVarImpPlot$curveData
+subsetPlotSize=rfcv$AddDataToCVVarImpPlot$subsetPlotSize
+
+## .generateCVVariableImportancePlot
+set.seed(12345)
+cutoffs <- .getIndividualCutoffs(noiseMap,giniData,viData,alignmentMethod,
+                                 alpha)
+
+standardizedData <- .standardizeVarImpData(giniData, viData,
+                                           KFunctions, metaNames,
+                                           cutoffs$giniCutoff_df,
+                                           cutoffs$viCutoff_df,
+                                           alignmentMethod)
+
+## Full
+underlyingData = standardizedData$stdVI
+ylabel = 'Variable Importance'
+cutoff = max(cutoffs$viCutoff_df$cutoff)
+curveDat = curveData[,2]
+
+## .plotCVVariableImportance
+maxVal <- max(underlyingData$avgVal,curveDat)
+ggplot2::ggplot(data=underlyingData,
+                mapping=ggplot2::aes(x=factor(reorder(var,avgVal)),
+                                     y=ifelse(avgVal/maxVal>1,1,
+                                              ifelse(avgVal/maxVal<0,0,
+                                                     avgVal/maxVal)),
+                                     group=1)) +
+  ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal),
+                                      ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)),
+                         color='darkgray', width=0.2,size=1.5) +
+  ggplot2::geom_point(color='black',size=3) +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
+                      color='red', linetype='dotted',linewidth=2) +
+  ggplot2::coord_flip(ylim = c(0,1)) +
+  ggplot2::xlab(NULL) + #'Variables') +
+  ggplot2::ylim(c(0,1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text=ggplot2::element_text(size=18),
+                 axis.ticks.y=ggplot2::element_blank(),
+                 panel.grid.major.y = ggplot2::element_blank(),
+                 axis.title = ggplot2::element_text(size=22)) +
+  ggplot2::geom_line(ggplot2::aes(
+    x=ordered(underlyingData[order(-avgVal),'var']),
+    y=curveDat/maxVal),color='orange', linetype='dashed',size=2) +
+  ggplot2::ylab(paste0('OOB (',
+                       .specify_decimal(accData$OOB,2),
+                       '), Guess (',
+                       .specify_decimal(accData$guess,2),
+                       '), Bias (',
+                       .specify_decimal(accData$bias,2),')'))
+
+######## Fake Synthetic 
+data=pcaMeta
+outcome='Stage'
+unit='Person'
+repeatedId='Image'
+metaNames=c('randUnif','randBin','corrNorm')
+cellData=dat
+syntheticKs = 100
+
+set.seed(12345)
+NamesPCs <- .getUnderlyingNamesAndPCsCount(
+  colnames(data)[!(colnames(data)%in%
+                     c(outcome, unit, repeatedId, metaNames))])
+
+noiseMap <- NULL
+
+if(!is.null(cellData[['cellType']])){
+  kappa <- round(mean(table(cellData[,'cellType'])) /
+                   nrow(unique(cellData[,c(outcome, unit, repeatedId)])))
+} else{
+  kappa <- (sum(cellData[
+    unique(stringr::str_remove_all(NamesPCs$Vars,'_.*$'))]) /
+      length(NamesPCs$Vars) ) /
+    nrow(unique(cellData[,c(outcome, unit, repeatedId)]))
+}
+
+noiseData <- .generateKNoiseGroup(
+  syntheticKs = syntheticKs, cellData = cellData,
+  agentName='syntheticCell',
+  kappaL = kappa, kappaR=kappa,
+  outcome = outcome, unit = unit,
+  repeatedId = repeatedId)
+
+
+Kvals_n <- getKFunction(data = noiseData[,-4], agents = c('syntheticCell1L','syntheticCell1R'),
+                        unit = 'Person', repeatedUniqueId = 'Image',
+                        xRange = c(0,1), yRange = c(0,1),
+                        rCheckVals = seq(0,0.25,0.01))
+
+## K FUNCTIONS
+ggplot() +
+  geom_line(aes(x=r,y=K1),data=Kvals_n, size=2) +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+ggplot() +
+  geom_line(aes(x=r,y=K52),data=Kvals_n, size=2) +
+  theme_bw() +
+  theme(axis.title = element_blank(),
+        axis.text = element_blank())
+
+## Point Processes
+plotPP(noiseData[noiseData$Image==1 & 
+                   noiseData$cellType %in% c('syntheticCell1L','syntheticCell1R'),
+                 c('x','y','cellType')],
+       ptSize = 5, dropAxes = T, colorGuide = 'none')
+plotPP(noiseData[noiseData$Image==52 & 
+                   noiseData$cellType %in% c('syntheticCell1L','syntheticCell1R'),
+                 c('x','y','cellType')],
+       ptSize = 5, dropAxes = T, colorGuide = 'none')
+
+
+```
+
+
+Exploring the data, we can build simulations with similar behaviors.
+```{r simNoEffect}
+
+set.seed(12345)
+dat0 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'c1'=c(0,0),
+                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
+                                'c4'=c(0,0),
+                                'c5'=c(0,0),'c6'=c(0,0),
+                                'c7'=c(0,0),'c8'=c(1/100,1/100),
+                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
+                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
+                                'c13'=c(0,0),'c14'=c(0,0),
+                                'c15'=c(0,0),'c16'=c(0,0),
+                                'c17'=c(0,0),'c18'=c(0,0)),
+                   cellKappaData=data.frame(
+                     'cell'=paste0('c',1:18),
+                     'clusterCell'=c(NA,'c1','c1', rep(NA,15)),
+                     'kappa'=c(rbinom(1,100,0.5),
+                               rbinom(2,70,0.5),
+                               rbinom(1,60,0.5),
+                               rbinom(2,300,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(4,600,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(2,50,0.5),
+                               rbinom(2,20,0.5))),
+                   peoplePerStage=17,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'c1'=c(0,0),
+                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
+                                'c4'=c(0,0),
+                                'c5'=c(0,0),'c6'=c(0,0),
+                                'c7'=c(0,0),'c8'=c(1/100,1/100),
+                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
+                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
+                                'c13'=c(0,0),'c14'=c(0,0),
+                                'c15'=c(0,0),'c16'=c(0,0),
+                                'c17'=c(0,0),'c18'=c(0,0)),
+                   cellKappaData=data.frame(
+                     'cell'=paste0('c',1:18),
+                     'clusterCell'=c(NA,'c1','c1', rep(NA,15)),
+                     'kappa'=c(rbinom(1,100,0.5),
+                               rbinom(2,70,0.5),
+                               rbinom(1,60,0.5),
+                               rbinom(2,300,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(4,600,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(2,50,0.5),
+                               rbinom(2,20,0.5))),
+                   peoplePerStage=1,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1$Person <- ifelse(dat1$Person=='p1','p35',
+                      ifelse(dat1$Person=='p2','p36', NA))
+dat1$Image <- ifelse(dat1$Image=='1','35',
+                     ifelse(dat1$Image=='2','36',NA))
+dat <- rbind(dat0,dat1)
+set.seed(12345)
+pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
+                      xRange = c(0,1),  yRange = c(0,1),
+                      silent=F)
+set.seed(12345)
+pcaMeta <- simulateMeta(pcaData,
+                        metaInfo = data.frame(
+                          'var'=c('gender','age'),
+                          'rdist'=c('rbinom','rnorm'),
+                          'Stage_0'=c('0.5','25'),
+                          'Stage_1'=c('0.5','25')))
+set.seed(12345)
+rfcv <- computeRandomForest_CVPC(data=pcaMeta,#pcaMetaCt$data,
+                                 outcome = 'Stage',
+                                 unit = 'Person',repeatedId='Image',
+                                 metaNames=c('gender','age'),
+                                 cellData=dat)
+rfcv$multIntVI$subset_viPlot
+rfcv$multIntVI$viPlot
+
+```
+
+```{r simEffect}
+
+set.seed(12345)
+dat0 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'c1'=c(0,0),
+                                'c2'=c(1/25,1/60), 'c3'=c(1/50,1/10),
+                                'c4'=c(0,0),
+                                'c5'=c(0,0),'c6'=c(0,0),
+                                'c7'=c(0,0),'c8'=c(1/100,1/100),
+                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
+                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
+                                'c13'=c(0,0),'c14'=c(0,0),
+                                'c15'=c(0,0),'c16'=c(0,0),
+                                'c17'=c(0,0),'c18'=c(0,0)),
+                   cellKappaData=data.frame(
+                     'cell'=paste0('c',1:18),
+                     'clusterCell'=c(NA,'c1','c1', rep(NA,15)),
+                     'kappa'=c(rbinom(1,100,0.5),
+                               rbinom(2,70,0.5),
+                               rbinom(1,60,0.5),
+                               rbinom(2,300,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(4,600,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(2,50,0.5),
+                               rbinom(2,20,0.5))),
+                   peoplePerStage=17,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'c1'=c(0,0),
+                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
+                                'c4'=c(0,0),
+                                'c5'=c(0,0),'c6'=c(0,0),
+                                'c7'=c(0,0),'c8'=c(1/100,1/100),
+                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
+                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
+                                'c13'=c(0,0),'c14'=c(0,0),
+                                'c15'=c(0,0),'c16'=c(0,0),
+                                'c17'=c(0,0),'c18'=c(0,0)),
+                   cellKappaData=data.frame(
+                     'cell'=paste0('c',1:18),
+                     'clusterCell'=c(NA,'c1','c1', rep(NA,15)),
+                     'kappa'=c(rbinom(1,100,0.5),
+                               rbinom(2,70,0.5),
+                               rbinom(1,60,0.5),
+                               rbinom(2,300,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(4,600,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(2,50,0.5),
+                               rbinom(2,20,0.5))),
+                   peoplePerStage=2,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1$Person <- ifelse(dat1$Person=='p1','p35',
+                      ifelse(dat1$Person=='p2','p36',
+                             ifelse(dat1$Person=='p3','p37',
+                                    ifelse(dat1$Person=='p4','p38',NA))))
+dat1$Image <- ifelse(dat1$Image=='1','35',
+                     ifelse(dat1$Image=='2','36',
+                            ifelse(dat1$Image=='3','37',
+                                   ifelse(dat1$Image=='4','38',NA))))
+dat <- rbind(dat0,dat1)
+set.seed(12345)
+pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
+                      xRange = c(0,1),  yRange = c(0,1),
+                      silent=F)
+set.seed(12345)
+pcaMeta <- simulateMeta(pcaData,
+                        metaInfo = data.frame(
+                          'var'=c('gender','age'),
+                          'rdist'=c('rbinom','rnorm'),
+                          'Stage_0'=c('0.5','25'),
+                          'Stage_1'=c('0.5','27.5')))
+set.seed(12345)
+rfcv <- computeRandomForest_CVPC(data=pcaMeta,#pcaMetaCt$data,
+                                 outcome = 'Stage',
+                                 unit = 'Person',repeatedId='Image',
+                                 metaNames=c('gender','age'),
+                                 cellData=dat)
+rfcv$multIntVI$subset_viPlot
+rfcv$multIntVI$viPlot
+
+```
+
+```{r plotSimEffect}
+# saveRDS(rfcv,'C:/Users/jerem/Downloads/Paper/SeeMe/rfcv_Effect.rds')
+
+giniData=rfcv$Gini 
+viData=rfcv$VI
+accData=rfcv$Accuracy
+noiseMap=rfcv$AddDataToCVVarImpPlot$noiseMap 
+KFunctions=rfcv$AddDataToCVVarImpPlot$KFunctions
+metaNames=rfcv$AddDataToCVVarImpPlot$metaNames
+alpha=rfcv$AddDataToCVVarImpPlot$alpha 
+alignmentMethod = 'Mult'
+curveData=rfcv$AddDataToCVVarImpPlot$curveData
+subsetPlotSize=rfcv$AddDataToCVVarImpPlot$subsetPlotSize
+
+## .generateCVVariableImportancePlot
+
+cutoffs <- .getIndividualCutoffs(noiseMap,giniData,viData,alignmentMethod,
+                                 alpha)
+
+standardizedData <- .standardizeVarImpData(giniData, viData,
+                                           KFunctions, metaNames,
+                                           cutoffs$giniCutoff_df,
+                                           cutoffs$viCutoff_df,
+                                           alignmentMethod)
+
+## Full
+underlyingData = standardizedData$stdVI
+ylabel = 'Variable Importance'
+cutoff = max(cutoffs$viCutoff_df$cutoff)
+curveDat = curveData[,2]
+
+## .plotCVVariableImportance
+maxVal <- max(underlyingData$avgVal,curveDat)
+ggplot2::ggplot(data=underlyingData,
+                mapping=ggplot2::aes(x=factor(reorder(var,avgVal)),
+                                     y=ifelse(avgVal/maxVal>1,1,
+                                              ifelse(avgVal/maxVal<0,0,
+                                                     avgVal/maxVal)),
+                                     group=1)) +
+  ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal),
+                                      ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)),
+                         color='darkgray', width=0.2) +
+  ggplot2::geom_point(color='black') +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
+                      color='red', linetype='dotted',linewidth=2) +
+  ggplot2::coord_flip(ylim = c(0,1)) +
+  ggplot2::xlab(NULL) +#'Variables') +
+  ggplot2::ylim(c(0,1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text.y=ggplot2::element_blank(),
+                 axis.ticks.y=ggplot2::element_blank(),
+                 panel.grid.major.y = ggplot2::element_blank(),
+                 axis.text.x = ggplot2::element_text(size=18),
+                 axis.title = ggplot2::element_text(size=22)) +
+  ggplot2::geom_line(ggplot2::aes(
+    x=ordered(underlyingData[order(-avgVal),'var']),
+    y=curveDat/maxVal),color='orange', linetype='dashed',size=2)
+
+
+## Subset
+
+tmpStdGini <- standardizedData$stdGini[order(-standardizedData$stdGini$avg),]
+tmpStdVI <- standardizedData$stdVI[order(-standardizedData$stdVI$avg),]
+
+underlyingData = tmpStdVI[1:subsetPlotSize,]
+ylabel = 'Variable Importance'
+cutoff = max(cutoffs$viCutoff_df$cutoff)
+curveDat =curveData[1:subsetPlotSize,2]
+
+
+## .plotCVVariableImportance
+maxVal <- max(underlyingData$avgVal,curveDat)
+ggplot2::ggplot(data=underlyingData,
+                mapping=ggplot2::aes(x=factor(reorder(var,avgVal)),
+                                     y=ifelse(avgVal/maxVal>1,1,
+                                              ifelse(avgVal/maxVal<0,0,
+                                                     avgVal/maxVal)),
+                                     group=1)) +
+  ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal),
+                                      ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)),
+                         color='darkgray', width=0.4, size=1.5) +
+  ggplot2::geom_point(color='black', size=3) +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
+                      color='red', linetype='dotted',linewidth=2) +
+  ggplot2::coord_flip(ylim = c(0,1)) +
+  ggplot2::xlab(NULL) +
+  ggplot2::ylim(c(0,1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text=ggplot2::element_text(size=18),
+                 axis.ticks.y=ggplot2::element_blank(),
+                 panel.grid.major.y = ggplot2::element_blank(),
+                 axis.title = ggplot2::element_text(size=22)) +
+  ggplot2::geom_line(ggplot2::aes(
+    x=ordered(underlyingData[order(-avgVal),'var']),
+    y=curveDat/maxVal),color='orange', linetype='dashed',size=2) +
+  ggplot2::ylab(paste0('OOB (',
+                       .specify_decimal(accData$OOB,2),
+                       '), Guess (',
+                       .specify_decimal(accData$guess,2),
+                       '), Bias (',
+                       .specify_decimal(accData$bias,2),')'))
+```
+
+Also look at similar structure 
+```{r structure}
+set.seed(12345)
+dat0 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'c1'=c(0,0),
+                                'c2'=c(1/25,1/60), 'c3'=c(1/50,1/25),
+                                'c4'=c(0,0),
+                                'c5'=c(0,0),'c6'=c(0,0),
+                                'c7'=c(0,0),'c8'=c(1/100,1/100),
+                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
+                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
+                                'c13'=c(0,0),'c14'=c(0,0),
+                                'c15'=c(0,0),'c16'=c(0,0),
+                                'c17'=c(0,0),'c18'=c(0,0)),
+                   cellKappaData=data.frame(
+                     'cell'=paste0('c',1:18),
+                     'clusterCell'=c(NA,'c1','c1', rep(NA,15)),
+                     'kappa'=c(rbinom(1,100,0.5),
+                               rbinom(2,70,0.5),
+                               rbinom(1,60,0.5),
+                               rbinom(2,300,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(4,600,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(2,50,0.5),
+                               rbinom(2,20,0.5))),
+                   peoplePerStage=17,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1 <- simulatePP(cellVarData=
+                     data.frame('stage'=c(0,1),
+                                'c1'=c(0,0),
+                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
+                                'c4'=c(0,0),
+                                'c5'=c(0,0),'c6'=c(0,0),
+                                'c7'=c(0,0),'c8'=c(1/100,1/100),
+                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
+                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
+                                'c13'=c(0,0),'c14'=c(0,0),
+                                'c15'=c(0,0),'c16'=c(0,0),
+                                'c17'=c(0,0),'c18'=c(0,0)),
+                   cellKappaData=data.frame(
+                     'cell'=paste0('c',1:18),
+                     'clusterCell'=c(NA,'c1','c1', rep(NA,15)),
+                     'kappa'=c(rbinom(1,100,0.5),
+                               rbinom(2,70,0.5),
+                               rbinom(1,60,0.5),
+                               rbinom(2,300,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(4,600,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(2,50,0.5),
+                               rbinom(2,20,0.5))),
+                   peoplePerStage=1,
+                   imagesPerPerson=1,
+                   silent=F)
+dat1$Person <- ifelse(dat1$Person=='p1','p35',
+                      ifelse(dat1$Person=='p2','p36', NA))
+#                             ifelse(dat1$Person=='p3','p37',
+#                                    ifelse(dat1$Person=='p4','p38',NA))))
+dat1$Image <- ifelse(dat1$Image=='1','35',
+                     ifelse(dat1$Image=='2','36',NA))
+#                             ifelse(dat1$Image=='3','37',
+#                                    ifelse(dat1$Image=='4','38',NA))))
+dat <- rbind(dat0,dat1)
+set.seed(12345)
+pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
+                      xRange = c(0,1),  yRange = c(0,1),
+                      silent=F)
+set.seed(12345)
+pcaMeta <- simulateMeta(pcaData,
+                        metaInfo = data.frame(
+                          'var'=c('gender','age'),
+                          'rdist'=c('rbinom','rnorm'),
+                          'Stage_0'=c('0.5','25'),
+                          'Stage_1'=c('0.5','27.5')))
+set.seed(12345)
+rfcv <- computeRandomForest_CVPC(data=pcaMeta,#pcaMetaCt$data,
+                                 outcome = 'Stage',
+                                 unit = 'Person',repeatedId='Image',
+                                 #metaNames=c(pcaMetaCt$metaNames,'gender','age'),
+                                 metaNames=c('gender','age'),
+                                 cellData=dat)
+rfcv$multIntVI$subset_viPlot
+rfcv$multIntVI$viPlot
+```
+
+Now returning to the data, the first step is to convert the cell data into K functions. This data is unique since rather than giving a cell type, a T/F column is given for different columns. Therefore, the K functions, discritized using PCA is computed as follows.
 ```{r computePCA}
-  agents_df <- expand.grid(c("FoxP3","Lag3","CD4","CD16","CD56","PD1","PD.L1","Ki67","CD138","CD68","CD8","CD3","IDO","CD45RO","CD20","p53","MPO","tumorYN"),c("FoxP3","Lag3","CD4","CD16","CD56","PD1","PD.L1","Ki67","CD138","CD68","CD8","CD3","IDO","CD45RO","CD20","p53","MPO","tumorYN"))
+  proteins <- c("FoxP3","Lag3","CD4","CD16","CD56","PD1","PD.L1",
+                             "Ki67","CD138","CD68","CD8","CD3","IDO","CD45RO",
+                             "CD20","p53","MPO","tumorYN")
+  agents_df <- expand.grid(proteins, proteins)
   dataPCA <- getPCAData(data = TNBC[,-3], unit='Person', agents_df=agents_df, rCheckVals = seq(0,50,1))
 ```
 
@@ -39,7 +609,7 @@ The resulting data is merged with the meta data for use in analysis.
 
 We then compute the cross-validated random forest.
 ```{r computeRFCV}
-  rfcv <- computeRandomForest_CVPC(data=dataPCAAge, K=10, outcome='Class',unit='Person',repeatedId=NULL, metaNames=c('Age'),cellData= TNBC[,-3], syntheticKs=100, syntheticMetas=100, generalSyntheticK=T,alpha=0.05,curvedSigSims = 100, silent=F,subsetPlotSize = 25, nTrees=1000)
+  rfcv <- computeRandomForest_CVPC(data=dataPCAAge, K=10, outcome='Class',unit='Person',repeatedId=NULL, metaNames=c('Age'),cellData= TNBC[,-3], synthetics=100, generalSyntheticK=T, alpha=0.05,curvedSigSims = 100, silent=F,subsetPlotSize = 25, nTrees=500)
 ```
 
 And finally the resulting plots-both full and subsetted--can be examined.
@@ -49,4 +619,111 @@ And finally the resulting plots-both full and subsetted--can be examined.
 
 ```{r viewSubPlot, fig.width=10, fig.height=11, fig.cap="Top 25 Variables"}
   rfcv$multIntVI$subset_viPlot
+```
+
+I use the following code to improve plots
+```{r, improvedPlots}
+# saveRDS(rfcv,'C:/Users/jerem/Downloads/Paper/UpdatedCode/rfcv_Effect.rds')
+
+giniData=rfcv$Gini 
+viData=rfcv$VI
+accData=rfcv$Accuracy
+noiseMap=rfcv$AddDataToCVVarImpPlot$noiseMap 
+KFunctions=rfcv$AddDataToCVVarImpPlot$KFunctions
+metaNames=rfcv$AddDataToCVVarImpPlot$metaNames
+alpha=rfcv$AddDataToCVVarImpPlot$alpha 
+alignmentMethod = 'Mult'
+curveData=rfcv$AddDataToCVVarImpPlot$curveData
+subsetPlotSize=rfcv$AddDataToCVVarImpPlot$subsetPlotSize
+
+## .generateCVVariableImportancePlot
+
+cutoffs <- .getIndividualCutoffs(noiseMap,viData,alignmentMethod,
+                                 alpha)
+
+standardizedData <- .standardizeVarImpData(viData,
+                                           KFunctions, metaNames,
+                                           cutoffs$viCutoff_df,
+                                           alignmentMethod)
+
+## Full
+underlyingData = standardizedData$stdVI
+ylabel = 'Variable Importance'
+cutoff = max(cutoffs$viCutoff_df$cutoff)
+curveDat = curveData[,2]
+
+## .plotCVVariableImportance
+maxVal <- max(underlyingData$avgVal,curveDat)
+ggplot2::ggplot(data=underlyingData,
+                mapping=ggplot2::aes(x=factor(reorder(var,avgVal)),
+                                     y=ifelse(avgVal/maxVal>1,1,
+                                              ifelse(avgVal/maxVal<0,0,
+                                                     avgVal/maxVal)),
+                                     group=1)) +
+  ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal),
+                                      ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)),
+                         color='darkgray', width=0.2) +
+  ggplot2::geom_point(color='black') +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
+                      color='red', linetype='dotted',linewidth=2) +
+  ggplot2::coord_flip(ylim = c(0,1)) +
+  ggplot2::xlab(NULL) +#'Variables') +
+  ggplot2::ylim(c(0,1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text.y=ggplot2::element_blank(),
+                 axis.ticks.y=ggplot2::element_blank(),
+                 panel.grid.major.y = ggplot2::element_blank(),
+                 axis.text.x = ggplot2::element_text(size=18),
+                 axis.title = ggplot2::element_text(size=22)) +
+  ggplot2::geom_line(ggplot2::aes(
+    x=ordered(underlyingData[order(-avgVal),'var']),
+    y=curveDat/maxVal),color='orange', linetype='dashed',size=2)
+
+
+## Subset
+
+tmpStdVI <- standardizedData$stdVI[order(-standardizedData$stdVI$avg),]
+
+underlyingData = tmpStdVI[1:subsetPlotSize,]
+ylabel = 'Variable Importance'
+cutoff = max(cutoffs$viCutoff_df$cutoff)
+curveDat =curveData[1:subsetPlotSize,2]
+
+
+## .plotCVVariableImportance
+maxVal <- max(underlyingData$avgVal,curveDat)
+ggplot2::ggplot(data=underlyingData,
+                mapping=ggplot2::aes(x=factor(reorder(var,avgVal)),
+                                     y=ifelse(avgVal/maxVal>1,1,
+                                              ifelse(avgVal/maxVal<0,0,
+                                                     avgVal/maxVal)),
+                                     group=1)) +
+  ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal),
+                                      ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)),
+                         color='darkgray', width=0.4, size=1.5) +
+  ggplot2::geom_point(color='black', size=3) +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))),
+                      color='red', linetype='dotted',linewidth=2) +
+  ggplot2::coord_flip(ylim = c(0,1)) +
+  ggplot2::xlab(NULL) +
+  ggplot2::ylim(c(0,1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text=ggplot2::element_text(size=18),
+                 axis.ticks.y=ggplot2::element_blank(),
+                 panel.grid.major.y = ggplot2::element_blank(),
+                 axis.title = ggplot2::element_text(size=22)) +
+  ggplot2::geom_line(ggplot2::aes(
+    x=ordered(underlyingData[order(-avgVal),'var']),
+    y=curveDat/maxVal),color='orange', linetype='dashed',size=2) +
+  ggplot2::ylab(paste0('OOB (',
+                       .specify_decimal(accData$OOB,2),
+                       '), Guess (',
+                       .specify_decimal(accData$guess,2),
+                       '), Bias (',
+                       .specify_decimal(accData$bias,2),')'))
+
+
+
 ```
