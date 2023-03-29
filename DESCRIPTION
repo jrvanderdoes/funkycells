@@ -1,10 +1,10 @@
 Package: funkycells
-Title: What the Package Does (One Line, Title Case)
+Title: Functional K Function Analysis of Multiplexed Images of Cells
 Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+Description: Analyzes many interactions to determine variables of interest in cells, markers, and related information, particularly focused on spatial effects. Implements a random forest model with functional and spatial data components. Includes data preparation, like K function summary, and implementation, allows for mutliple functional components from methods like FPCA.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
