@@ -19,8 +19,8 @@ Imports:
     ggplot2,
     gridExtra,
     rpart,
-    spatstat.core,
     spatstat.geom,
+    spatstat.model,
     stats,
     tidyr
 Suggests: 

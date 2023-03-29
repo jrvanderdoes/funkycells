@@ -129,7 +129,7 @@ getKFunction <- function(data, agents, unit,
         agent1Counts[j] <- nrow(data_repeat[data_repeat[,agents[1]],])
       } else{
         K <- tryCatch({
-          spatstat.core::Kcross(data_ppp,
+          spatstat.model::Kcross(data_ppp,
                            agents[1], agents[2],
                            correction = edgeCorrection,
                            r=rCheckVals)
