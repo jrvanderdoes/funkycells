@@ -1,4 +1,4 @@
-nSims <- 2
+nSims <- 100
 changes <- c(1/25,1/50,1/100)
 results <- list()
 

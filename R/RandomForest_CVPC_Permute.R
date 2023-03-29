@@ -341,7 +341,7 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
     # Order Data to take top
     tmpStdVI <- viData[order(-viData$est),]
 
-    viPlot <- .plotVI(viData[1:subsetPlotSize,], accData, NoiseCutoff,
+    viPlot <- .plotVI(tmpStdVI[1:subsetPlotSize,], accData, NoiseCutoff,
                       InterpolationCutoff[1:subsetPlotSize])
 
     data_return <- append(
