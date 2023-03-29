@@ -118,7 +118,7 @@ getKFunction <- function(data, agents, unit,
         # we return the vector r as well, as it will be different for each patient.
         f1 = function(X){which(spatstat.geom::marks(X)[,agents[1]]==TRUE)}
         f2 = function(X){which(spatstat.geom::marks(X)[,agents[2]]==TRUE)}
-        K <- tryCatch({spatstat.core::Kmulti(data_ppp,f1,f2,
+        K <- tryCatch({spatstat.explore::Kmulti(data_ppp,f1,f2,
                              correction = edgeCorrection,
                              r=rCheckVals)
         }, error=function(e){
@@ -129,7 +129,7 @@ getKFunction <- function(data, agents, unit,
         agent1Counts[j] <- nrow(data_repeat[data_repeat[,agents[1]],])
       } else{
         K <- tryCatch({
-          spatstat.model::Kcross(data_ppp,
+          spatstat.explore::Kcross(data_ppp,
                            agents[1], agents[2],
                            correction = edgeCorrection,
                            r=rCheckVals)
