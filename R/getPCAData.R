@@ -69,7 +69,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                                                              unique(data[,4]))),
                        xRange=NULL, yRange=NULL,
                        edgeCorrection="isotropic", nbasis=21,
-                       silent=F){
+                       silent=F, displayTVE=F){
   # Define pcaData
   pcaData <- unique(data[,c(outcome, unit)])
 
@@ -101,7 +101,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                           K_pca_scores <- .getPCs(
                             rKData=evaled_fd_K,
                             agents=agents, nPCs=nPCs,
-                            nbasis=nbasis)
+                            nbasis=nbasis, silent=!displayTVE)
 
                           # Set up data (add counts as desired)
                           retData <- cbind('Unit'=unique(data[,unit]),
@@ -138,7 +138,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #' @examples
 #' # See code for getPCAData. This is not an outward function so won't be
 #' #     viewable.
-.getPCs <- function(rKData, agents,  nPCs, nbasis=21){
+.getPCs <- function(rKData, agents,  nPCs, nbasis=21,silent=F){
   # Setup Data
   KData <- rKData[,-1]
   evalPts <- rKData[[1]]
@@ -163,6 +163,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                       fda::create.bspline.basis(rangeval = range(evalPts),
                                                 nbasis = nbasis))
   K_pca <- fda::pca.fd(K_func, nharm = nPCs)
+  if(!silent) cat(paste0('(TVE: ', format(round(sum(K_pca$varprop),3),nsmall=3),') '))
 
   if(length(dropIdx)>0){
     K_pca_scores <- .insertMissingRows(K_pca$scores, dropIdx)
