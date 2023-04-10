@@ -204,7 +204,10 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
                                         DF=data)))
 
     # Get RF and VI
-    RF <- computeRandomForest_PC(data=data_permute,
+    numDrop <- as.integer(nrow(data)/K) +
+                  rbinom(1,1,nrow(data_permute)/K-as.integer(nrow(data)/K))
+    drop3Idx <- sample(1:nrow(data_permute),numDrop)
+    RF <- computeRandomForest_PC(data=data_permute[-drop3Idx,],
                                  outcome = outcome,
                                  unit=unit, repeatedId=repeatedId,
                                  varImpPlot = F,
@@ -216,6 +219,8 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
     avgVI_perm <- merge(avgVI_perm, data_merge, by='var')
   }
   if(!silent) cat('\n')
+  mean(colSums(avgVI[-1]))
+  mean(colSums(avgVI_perm[-1]))
 
   # Summarize Data
   data_summ <- .summData(avgVI)
