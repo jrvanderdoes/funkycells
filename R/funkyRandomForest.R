@@ -92,14 +92,14 @@
 #'
 #' @examples
 #' dat <- simulatePP(cellVarData=
-#'             data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/50)),
-#'             cellKappaData=data.frame(
-#'                   'cell'=c('A','B'),
-#'                   'clusterCell'=c(NA,'A'),
-#'                   'kappa'=c(20,5)),
-#'             peoplePerStage=100,
-#'             imagesPerPerson=1,
-#'             silent=F )
+#'                     data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/50)),
+#'                   cellKappaData=data.frame(
+#'                                       'cell'=c('A','B'),
+#'                                       'clusterCell'=c(NA,'A'),
+#'                                       'kappa'=c(20,5)),
+#'                   peoplePerStage=100,
+#'                   imagesPerPerson=1,
+#'                   silent=F )
 #' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
 #' pcaMeta <- simulateMeta(pcaData,
@@ -108,19 +108,18 @@
 #'                            'rdist'=c('runif','rbinom','rnorm'),
 #'                            'Stage_0'=c('0.5','0.5','1'),
 #'                            'Stage_1'=c('0.5','0.5','2')))
-#' rfcv <- computeRandomForest_CVPC_Permute(data=pcaMeta,repeatedId='Image',
-#'                             metaNames=c('randUnif','randBin','corrNorm'),
-#'                             cellData=dat)
+#' rfcv <- funkyRandomForest(data=pcaMeta,outcome = 'Stage',unit='Person',
+#'                           metaNames=c('randUnif','randBin','corrNorm'))
 #'
 #' dat <- simulatePP(cellVarData=
-#'                      data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/100)),
-#'                  cellKappaData=data.frame(
-#'                      'cell'=c('A','B'),
-#'                      'clusterCell'=c(NA,'A'),
-#'                      'kappa'=c(20,5)),
-#'                  peoplePerStage=100,
-#'                  imagesPerPerson=1,
-#'                  silent=F )
+#'                     data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/100)),
+#'                   cellKappaData=data.frame(
+#'                                      'cell'=c('A','B'),
+#'                                      'clusterCell'=c(NA,'A'),
+#'                                      'kappa'=c(20,5)),
+#'                   peoplePerStage=100,
+#'                   imagesPerPerson=1,
+#'                   silent=F )
 #' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
 #' pcaMeta <- simulateMeta(pcaData,
@@ -129,9 +128,8 @@
 #'                             'rdist'=c('runif','rbinom','rnorm'),
 #'                             'Stage_0'=c('0.5','0.5','1'),
 #'                             'Stage_1'=c('0.5','0.5','2')))
-#' rfcv <- funkyRandomForest(data=pcaMeta,repeatedId='Image',
-#'                     metaNames=c('randUnif','randBin','corrNorm'),
-#'                     cellData=dat)
+#' rfcv <- funkyRandomForest(data=pcaMeta,outcome = 'Stage',unit='Person',
+#'                           metaNames=c('randUnif','randBin','corrNorm'))
 funkyRandomForest <- function(data, K=10,
                               outcome=colnames(data)[1],
                               unit=colnames(data)[2],
@@ -145,7 +143,7 @@ funkyRandomForest <- function(data, K=10,
   repeatedId=NULL
 
   ## Error checking
-  #.checkData(alignmentMethod)
+  #.checkData(alignmentMethod) ## TODO:: Add something in
 
   ## Generate Synthetics And Connect
   components <- colnames(data)[!(colnames(data)%in%c(outcome,unit,repeatedId,metaNames))]
@@ -157,7 +155,7 @@ funkyRandomForest <- function(data, K=10,
   underlyingVars <- underlyingVars[!(underlyingVars %in%
                                        c(outcome,unit,repeatedId))]
 
-  avgVI <- data.frame('var'=underlyingVars)
+  avgVI <- avgVI_full <- data.frame('var'=underlyingVars)
   oobAcc <- rep(NA,K)
   groups <- .getFolds(1:nrow(data), K)
 
@@ -181,29 +179,20 @@ funkyRandomForest <- function(data, K=10,
                                                data_pred = data[groups[[i]],],
                                                type = 'pred', data = data)) /
       nrow(data[groups[[i]],])
-  }
-  if(!silent) cat('\n')
 
-  # Average on Full for estimate
-  avgVI_old <- data.frame('var'=underlyingVars)
-  for(i in 1:K){
-
-    RF_old <- computeRandomForest_PC(data=data,
+    # Run on all for VI estimate
+    RF_full <- computeRandomForest_PC(data=data,
                                      outcome = outcome,
                                      unit=unit, repeatedId=repeatedId,
                                      varImpPlot = F,
                                      metaNames=c(metaNames),
                                      nTrees=nTrees)
 
-    data_merge <- RF_old$varImportanceData[,c('var','avgVI')]
+    data_merge <- RF_full$varImportanceData[,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',i))
-    avgVI_old <- merge(avgVI_old, data_merge, by='var')
+    avgVI_full <- merge(avgVI_full, data_merge, by='var')
   }
-  data_summ <- .summData(avgVI_old)[,c('var','est')]
-  tmp <- .summData(avgVI)
-  data_summ <- merge(data_summ,
-                     tmp[,c('var','sd')])
-
+  if(!silent) cat('\n')
 
   ## Permutation
   avgVI_perm <- data.frame('var'=underlyingVars)
@@ -240,11 +229,12 @@ funkyRandomForest <- function(data, K=10,
   }
   if(!silent) cat('\n')
 
-  # Check rescaling
-  #   No meta-vars and no rescaling
-
   # Summarize Data
-  #data_summ <- .summData(avgVI)
+  data_summ <- .summData(avgVI_full)[,c('var','est')]
+  tmp <- .summData(avgVI)
+  data_summ <- merge(data_summ,
+                     tmp[,c('var','sd')])
+
   data_perm_summ <- .summData(avgVI_perm)
   tmp <- as.data.frame(t(sapply(X = data_perm_summ$var,
                                 FUN = function(var, alpha, data_vi){
@@ -328,15 +318,16 @@ funkyRandomForest <- function(data, K=10,
              'sd'=apply(dat[-1],MARGIN=1,FUN=function(x){sd(x)}))
 }
 
-#' Title
+#' Compute Model Accuracy
 #'
-#' @param oobAcc
-#' @param outcomes
-#' @param rGuessSims
+#' This (internal) function compute model accuracy based on results from CV.
 #'
-#' @return
+#' @param oobAcc Vector of OOB for each iteration
+#' @param outcomes Vector of outcomes for the data modeled
+#' @param rGuessSims Integer indicating the number of iterations used in guess
+#'     method
 #'
-#' @examples
+#' @return Data.frame with OOB, guess, and bias accuracy estimates
 .computeModelAccuracy <- function(oobAcc, outcomes, rGuessSims=500){
 
   optVals <- as.numeric(table(outcomes))
@@ -367,17 +358,20 @@ funkyRandomForest <- function(data, K=10,
   accData
 }
 
-#' Title
+#' Generate VI Plot
 #'
-#' @param viData
-#' @param accData
-#' @param NoiseCutoff
-#' @param InterpolationCutoff
-#' @param subsetPlotSize
+#' This (internal) function is used in creation of the VI plot.
 #'
-#' @return
+#' @param viData Data.frame with var, est, and sd
+#' @param accData Data.frame with oob, bias, and guess estimates of model
+#'     accuracy
+#' @param NoiseCutoff Numeric indicating the vertical noise cutoff
+#' @param InterpolationCutoff Vector of numerics for the curved cutoff
+#' @param subsetPlotSize Integer indicating number of interactions to have on
+#'     the subset plot. Note if there are fewer in the base, no subset plot will
+#'     be created
 #'
-#' @examples
+#' @return List with VI figures (one or two)
 .generateVIPlot <- function(viData, accData, NoiseCutoff,
                             InterpolationCutoff, subsetPlotSize){
   viPlot <- .plotVI(viData, accData, NoiseCutoff, InterpolationCutoff)
@@ -401,25 +395,28 @@ funkyRandomForest <- function(data, K=10,
 }
 
 
-#' Title
+#' Plot VI
 #'
-#' @param viData
-#' @param accData
-#' @param NoiseCutoff
-#' @param InterpolationCutoff
+#' This (internal) function standardizing and plots the variable importance
+#'     values.
 #'
-#' @return
+#' @param viData Data.frame with var, est, and sd
+#' @param accData Data.frame with oob, bias, and guess estimates of model
+#'     accuracy
+#' @param NoiseCutoff Numeric indicating the vertical noise cutoff
+#' @param InterpolationCutoff Vector of numerics for the curved cutoff
 #'
-#' @examples
+#' @return ggplot2 figure object for the VI plot
 .plotVI <- function(viData, accData, NoiseCutoff,
                     InterpolationCutoff){
   maxVal <- max(InterpolationCutoff,NoiseCutoff,viData$est)
-  returnPlot <- ggplot2::ggplot(data=viData,
-                                mapping=ggplot2::aes(x=factor(reorder(var,est)),
-                                                     y=ifelse(est/maxVal>1,1,
-                                                              ifelse(est/maxVal<0,0,
-                                                                     est/maxVal)),
-                                                     group=1)) +
+
+  ggplot2::ggplot(data=viData,
+                  mapping=ggplot2::aes(x=factor(reorder(var,est)),
+                                       y=ifelse(est/maxVal>1,1,
+                                                ifelse(est/maxVal<0,0,
+                                                       est/maxVal)),
+                                       group=1)) +
     ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((est-sd)/maxVal<0,0,(est-sd)/maxVal),
                                         ymax = ifelse((est+sd)/maxVal>1,1,(est+sd)/maxVal)),
                            color='black', width=0.2) +
