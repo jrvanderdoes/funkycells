@@ -539,3 +539,26 @@ RFm$multIntVI$subset_viPlot
 #                                  generalFakeCell=T)
 #
 
+
+data$Phenotype <- gsub('[ &//]','', data$Phenotype)
+data_pca <- getPCAData(data[,c('Class','Person','cellx','celly','Phenotype')],
+                       outcome = "Class", unit='Person', repeatedUniqueId=NULL,
+                       rCheckVals=seq(0,50,0.05), nPCs=2,
+                       agents_df = expand.grid(unique(data$Phenotype),unique(data$Phenotype)),
+                       xRange=NULL, yRange=NULL,
+                       edgeCorrection="isotropic", nbasis=21,
+                       silent=F)
+
+data_pca <- merge(data_pca,tnbc_clinical01[c('InternalId','AGE_AT_DX')],
+                  by.x='Person',by.y='InternalId')
+colnames(data_pca) <- c(colnames(data_pca)[-length(colnames(data_pca))],'Age')
+
+
+data$cellType <- data$Phenotype
+rf <- funkyRandomForest(data = data_pca,
+                        K = 10,outcome = 'Class',unit = 'Person',
+                        metaNames = c('Age'),synthetics = 100)
+rf$subset_viPlot
+
+
+
