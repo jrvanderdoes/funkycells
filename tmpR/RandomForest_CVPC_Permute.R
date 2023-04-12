@@ -132,6 +132,7 @@
 #' rfcv <- computeRandomForest_CVPC_Permute(data=pcaMeta,repeatedId='Image',
 #'                     metaNames=c('randUnif','randBin','corrNorm'),
 #'                     cellData=dat)
+#' #funkyRandomForest
 computeRandomForest_CVPC_Permute <- function(data, K=10,
                                              outcome=colnames(data)[1],
                                              unit=colnames(data)[2],
@@ -184,6 +185,26 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
   }
   if(!silent) cat('\n')
 
+  # Average on Full for estimate
+  avgVI_old <- data.frame('var'=underlyingVars)
+  for(i in 1:K){
+
+    RF_old <- computeRandomForest_PC(data=data,
+                                     outcome = outcome,
+                                     unit=unit, repeatedId=repeatedId,
+                                     varImpPlot = F,
+                                     metaNames=c(metaNames),
+                                     nTrees=nTrees)
+
+    data_merge <- RF_old$varImportanceData[,c('var','avgVI')]
+    colnames(data_merge) <- c('var',paste0('avgVIK',i))
+    avgVI_old <- merge(avgVI_old, data_merge, by='var')
+  }
+  data_summ <- .summData(avgVI_old)[,c('var','est')]
+  tmp <- .summData(avgVI)
+  data_summ <- merge(data_summ,
+                     tmp[,c('var','sd')])
+
 
   ## Permutation
   avgVI_perm <- data.frame('var'=underlyingVars)
@@ -193,7 +214,7 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
     if(!silent) cat(sim,', ',sep='')
 
     # Permute but do the functional components together
-    data_permute <- data[,colnames(data) %in% c(outcome,unit,repeatedId)]
+    data_permute <- data[colnames(data) %in% c(outcome,unit,repeatedId)]
     data_permute <- cbind(data_permute,
                    as.data.frame(sapply(1:length(underlyingVars),
                                         function(idx, DF) {
@@ -202,12 +223,14 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
                                              drop=FALSE]
                                         }, simplify = 'array',
                                         DF=data)))
+    ## Ensure 3 are permuted together
+    #   Set PC to 1
 
     # Get RF and VI
-    numDrop <- as.integer(nrow(data)/K) +
-                  rbinom(1,1,nrow(data_permute)/K-as.integer(nrow(data)/K))
-    drop3Idx <- sample(1:nrow(data_permute),numDrop)
-    RF <- computeRandomForest_PC(data=data_permute[-drop3Idx,],
+    #numDrop <- as.integer(nrow(data)/K) +
+    #              rbinom(1,1,nrow(data_permute)/K-as.integer(nrow(data)/K))
+    #drop3Idx <- sample(1:nrow(data_permute),numDrop)
+    RF <- computeRandomForest_PC(data=data_permute,#[-drop3Idx,],
                                  outcome = outcome,
                                  unit=unit, repeatedId=repeatedId,
                                  varImpPlot = F,
@@ -219,11 +242,12 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
     avgVI_perm <- merge(avgVI_perm, data_merge, by='var')
   }
   if(!silent) cat('\n')
-  mean(colSums(avgVI[-1]))
-  mean(colSums(avgVI_perm[-1]))
+
+  # Check rescaling
+  #   No meta-vars and no rescaling
 
   # Summarize Data
-  data_summ <- .summData(avgVI)
+  #data_summ <- .summData(avgVI)
   data_perm_summ <- .summData(avgVI_perm)
   tmp <- as.data.frame(t(sapply(X = data_perm_summ$var,
                   FUN = function(var, alpha, data_vi){
@@ -235,19 +259,39 @@ computeRandomForest_CVPC_Permute <- function(data, K=10,
   tmp$upAlpha <- as.numeric(tmp$upAlpha)
   data_perm_summ <- merge(data_perm_summ,tmp)
 
+  ## Standardize Data
   # Get Noise cutoff
-  noiseCO <- max(data_perm_summ$upAlpha)
+  cutoffs_noise <- data.frame('Type'=c('KFunction',metaNames),
+                        'Cutoff'=c(max(data_perm_summ[data_perm_summ$var %in% KFunctions,'upAlpha']),
+                                   rep(NA,length(metaNames))),
+                        'Adj'=NA)
 
-  # Standardize Data
-  data_perm_summ$adj <- noiseCO/data_perm_summ$upAlpha
+  for(meta in metaNames){
+    cutoffs_noise[cutoffs_noise$Type==meta,'Cutoff'] <-
+            data_perm_summ[data_perm_summ$var==meta,'upAlpha']
+  }
+  cutoffs_noise$Adj <- max(cutoffs_noise$Cutoff)/cutoffs_noise$Cutoff
+
+  noiseCO <- max(cutoffs_noise$Cutoff)
+
+  data_perm_summ[data_perm_summ$var%in%KFunctions,'AdjAmt'] <-
+    cutoffs_noise[cutoffs_noise$Type=='KFunction','Adj']
+  if(length(metaNames)>0){
+    for(var in metaNames){
+      data_perm_summ[data_perm_summ$var==var,'AdjAmt'] <-
+        cutoffs_noise[cutoffs_noise$Type==var,'Adj']
+    }
+  }
+
+  data_perm_summ$adj <- data_perm_summ$est*data_perm_summ$AdjAmt
   data_perm_summ$adj <- ifelse(is.infinite(data_perm_summ$adj),0,data_perm_summ$adj)
 
   data_summ_std <- data_summ
-  data_summ_std$est <- data_summ_std$est * data_perm_summ$adj
-  data_summ_std$sd <- data_summ_std$sd * data_perm_summ$adj
+  data_summ_std$est <- data_summ_std$est * data_perm_summ$AdjAmt
+  data_summ_std$sd <- data_summ_std$sd * data_perm_summ$AdjAmt
 
   avgVI_perm_std <- avgVI_perm
-  avgVI_perm_std[-1] <- avgVI_perm_std[-1] * data_perm_summ$adj
+  avgVI_perm_std[-1] <- avgVI_perm_std[-1] * data_perm_summ$AdjAmt
 
   # Get Interpolation cutoff
   interpolationCO <- apply(apply(avgVI_perm_std[-1], MARGIN=2, FUN=sort, decreasing = T),

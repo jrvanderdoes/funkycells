@@ -91,7 +91,7 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
     data_rf <- cbind(data_rf[outcome],data_rf_vars[,sample(1:ncol(data_rf_vars))])
 
     # Fit CART
-    model <- rpart::rpart(paste0(outcome,' ~ .'), data=data_rf, method="class",
+    model <- rpart::rpart(paste0(outcome,' ~ .-',outcome), data=data_rf, method="class", ## TODO:: Change this for other
                           control=rpart::rpart.control(minsplit =1,minbucket=1, cp=0))
 
     # Get Var importance
