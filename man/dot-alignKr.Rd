@@ -30,7 +30,6 @@ list of three data.frames
 This (internal) function makes a master r vector and ensures all K functions
 are defined at each r.
 }
-\examples{
-# See code for getKFunction This is not an outward function so won't be
-#     viewable.
+\details{
+See use in getKFunction.
 }

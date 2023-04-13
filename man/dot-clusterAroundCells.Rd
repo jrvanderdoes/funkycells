@@ -8,7 +8,6 @@
   clusterData,
   cellVarData,
   stageName,
-  reduceEdge,
   cells,
   clusterCells,
   kappas,
@@ -20,9 +19,6 @@
 Stage. These names are required.}
 
 \item{stageName}{String inidicating the outcome name that should be given.}
-
-\item{reduceEdge}{Numeric indicating how far from edge agents
-should be placed. Note the current figure size is \link{0,1}x\link{0,1}.}
 
 \item{cells}{Vector indicating the agents that are clustering.}
 
@@ -50,10 +46,8 @@ This (internal) function generates cells that cluster around the given
 points.
 }
 \details{
+See usage in simulatePP.
+
 Upcoming: Convert from cells to agents. Allow different clusterData column
 names.
-}
-\examples{
-# See code for simulatePP. This is not an outward function so won't be
-#     viewable.
 }

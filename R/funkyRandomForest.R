@@ -55,39 +55,27 @@
 #'
 #' @return List with the following items:
 #'     \enumerate{
-#'         \item Gini: Data.frame with the results of gini indices from the
-#'                     models and CV. The columns are var, avg, sd, lower, and
-#'                     upper. The columns lower and upper are made with
-#'                     significance alpha.
-#'         \item VI: Data.frame with the results of variable importance indices
-#'                   from the models and CV. The columns are var, avg, sd,
-#'                   lower, and upper. The columns lower and upper are made with
+#'         \item VariableImportance: Data.frame with the results of variable
+#'                   importance indices from the models and CV. The columns are
+#'                   var, est, and sd. The columns lower and upper are made with
 #'                   significance alpha.
-#'         \item Accuracy: Data.frame with results of cross validation. The
-#'                         columns are avg, sd, lower and upper.
-#'         \item NoiseCurve: (Optional) Contains columns for noise curve (orange)
-#'         \item varImpPlot: ggplot2 object (may be in list or seperate) for a
-#'                           plot of both gini and vi plots. See following
-#'                           descriptions.
-#'               \enumerate{
-#'                   \item viPlot: ggplot2 object for a plot of vi plot. This
-#'                                 will display ordered underlying functions and
-#'                                 meta-variables with point estimates,
-#'                                 intervals, and the red (standardized) noise
-#'                                 cutoff. Values are based on variable
-#'                                 importance values.
-#'                   \item giniPlot: ggplot2 object for a plot of gini plot.
-#'                                   This will display ordered underlying
-#'                                   functions and meta-variables with point
-#'                                   estimates, intervals, and the red
-#'                                   (standardized) noise cutoff. Values are
-#'                                   based on gini index values.
-#'               }
-#'         \item Subset (Optional) These next parts are similar to the previous
-#'               part, but subset figures. Only the top subsetPlotSize number of
-#'               variables are displayed in the graph - for better seeing
-#'               interesting patterns.
-#'            }
+#'         \item AccuracyEstimate: Data.frame with model accuracy estimates:
+#'                   out-of-bag accuracy (OOB), biased estimate (bias), and
+#'                   random guess (guess). The columns are OOB, bias, and guess.
+#'         \item NoiseCutoff: Numeric indicating noise cutoff (vertical line)
+#'         \item InterpolationCutoff: Vector of numerics indicating the
+#'                   interpolation cutoff (curved line)
+#'         \item AdditionalParams: List of additional params for reference:
+#'                   Alpha and subsetPlotSize.
+#'         \item viPlot: ggplot2 object for vi plot with standardized results.
+#'                   It displays ordered underlying functions and meta-variables
+#'                   with point estimates, sd, noise cutoff, and interpolation
+#'                   cutoff all based on variable importance values
+#'         \item subset_viPlot: ggplot2 object for vi plot with standardized
+#'                   results and only top subsetPlotSize variables. It displays
+#'                   ordered underlying functions and meta-variables with point
+#'                   estimates, sd, noise cutoff, and interpolation cutoff all
+#'                   based on variable importance values
 #' @export
 #'
 #' @examples
@@ -129,7 +117,8 @@
 #'                             'Stage_0'=c('0.5','0.5','1'),
 #'                             'Stage_1'=c('0.5','0.5','2')))
 #' rfcv <- funkyRandomForest(data=pcaMeta,outcome = 'Stage',unit='Person',
-#'                           metaNames=c('randUnif','randBin','corrNorm'))
+#'                           metaNames=c('randUnif','randBin','corrNorm'),
+#'                           subsetPlotSize = 2)
 funkyRandomForest <- function(data, K=10,
                               outcome=colnames(data)[1],
                               unit=colnames(data)[2],
@@ -138,7 +127,8 @@ funkyRandomForest <- function(data, K=10,
                               alpha=0.05,
                               silent=F,
                               rGuessSims=500,
-                              subsetPlotSize=25, nTrees=500){
+                              subsetPlotSize=25, nTrees=500,
+                              method="class"){
   ## From moving code over, will remove
   repeatedId=NULL
 
@@ -163,12 +153,12 @@ funkyRandomForest <- function(data, K=10,
   if(!silent) cat('CV Trials (',K,'): ',sep='')
   for(i in 1:K){
     if(!silent) cat(i,', ',sep='')
-    RF <- computeRandomForest_PC(data=data[-groups[[i]],],
+    RF <- PCRandomForest(data=data[-groups[[i]],],
                                  outcome = outcome,
                                  unit=unit, repeatedId=repeatedId,
                                  varImpPlot = F,
                                  metaNames=c(metaNames),
-                                 nTrees=nTrees)
+                                 nTrees=nTrees, method=method)
 
     data_merge <- RF$varImportanceData[,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',i))
@@ -181,7 +171,7 @@ funkyRandomForest <- function(data, K=10,
       nrow(data[groups[[i]],])
 
     # Run on all for VI estimate
-    RF_full <- computeRandomForest_PC(data=data,
+    RF_full <- PCRandomForest(data=data,
                                      outcome = outcome,
                                      unit=unit, repeatedId=repeatedId,
                                      varImpPlot = F,
@@ -216,7 +206,7 @@ funkyRandomForest <- function(data, K=10,
     #numDrop <- as.integer(nrow(data)/K) +
     #              rbinom(1,1,nrow(data_permute)/K-as.integer(nrow(data)/K))
     #drop3Idx <- sample(1:nrow(data_permute),numDrop)
-    RF <- computeRandomForest_PC(data=data_permute,#[-drop3Idx,],
+    RF <- PCRandomForest(data=data_permute,#[-drop3Idx,],
                                  outcome = outcome,
                                  unit=unit, repeatedId=repeatedId,
                                  varImpPlot = F,

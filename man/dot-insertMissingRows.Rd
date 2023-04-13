@@ -20,7 +20,6 @@ This (internal) function inserting missing observations back into PCA data.
 The data was dropped in order to allow PCA, but the NA need to be
 re-inserted in order to correctly analyze the data.
 }
-\examples{
-# See code for .getPCs. This is not an outward function so won't be
-#     viewable.
+\details{
+See .getPCs for use.
 }

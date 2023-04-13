@@ -9,7 +9,6 @@
   cell,
   numPts,
   varValue,
-  reduceEdge,
   xRange = c(0, 1),
   yRange = c(0, 1)
 )
@@ -25,9 +24,6 @@ normal distribution}
 
 \item{varValue}{Numeric giving the variance of the normal distribution for
 placement of the agents.}
-
-\item{reduceEdge}{Numeric indicating how far from edge agents
-should be placed. Note the current figure size is \link{0,1}x\link{0,1}.}
 
 \item{xRange}{(Optional) Vector of two values indicating the x range of the
 region. Default is c(0,1).}
@@ -45,9 +41,7 @@ This (internal) function places points following a normal distribution around
 some given corridinates.
 }
 \details{
+See usage in simulatePP.
+
 Upcoming: Generalize naming
-}
-\examples{
-# See code for simulatePP. This is not an outward function so won't be
-#     viewable.
 }

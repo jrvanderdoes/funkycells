@@ -6,7 +6,6 @@
 \usage{
 .generateCSRPatterns(
   stageName,
-  reduceEdge,
   peoplePerStage,
   imagesPerPerson,
   kappas,
@@ -18,9 +17,6 @@
 }
 \arguments{
 \item{stageName}{String inidicating the outcome name that should be given.}
-
-\item{reduceEdge}{(Optional) Numeric indicating how far from edge agents
-should be placed. Note the current figure size is \link{0,1}x\link{0,1}.}
 
 \item{peoplePerStage}{Numeric indicating the number of units per
 outcome.}
@@ -49,9 +45,7 @@ This (internal) function is used to generate CSR point patterns. It calls
 be entered into the function.
 }
 \details{
+See usage in simulatePP.
+
 Upcoming: Try to eliminate or indicate when kappaSep is used.
-}
-\examples{
-# See code for simulatePP. This is not an outward function so won't be
-#     viewable.
 }

@@ -43,7 +43,6 @@ This (internal) function generating a completely spatially random (CSR)
 process on some region. Some Poisson number of points are placed
 uniformly in the region by both x and y.
 }
-\examples{
-# See code for simulatePP_Mult_PCA_Meta. This is not an outward function so
-#     won't be viewable.
+\details{
+See use in simulatePP_Mult_PCA_Meta.
 }

@@ -177,6 +177,8 @@ getKFunction <- function(data, agents, unit,
 #' This (internal) function makes a master r vector and ensures all K functions
 #'     are defined at each r.
 #'
+#' See use in getKFunction.
+#'
 #' @param K Data.frame of (potentially) columns of K functions for each previous
 #'     unit (i.e. the previous K matrix). These are evaluated at the values in r.
 #' @param newKData.frame of column of K functions for current unit, evaluated
@@ -191,10 +193,6 @@ getKFunction <- function(data, agents, unit,
 #'         \item newK: newK evaluated at the (potentially) new r values
 #'         \item r: new master vector of evaluated radius r values
 #'     }
-#'
-#' @examples
-#' # See code for getKFunction This is not an outward function so won't be
-#' #     viewable.
 .alignKr <- function(K, newK, r, newr){
   # On the first loop (i.e. no existing data)
   if(is.null(K) && is.null(r)){
@@ -244,6 +242,8 @@ getKFunction <- function(data, agents, unit,
 #' This converts the r and K matrices from different units into a single
 #'     data.frame.
 #'
+#' See use in getKFunction.
+#'
 #' @param K_list List of data.frames from each unit. Each data.frame has the
 #'     K function for each unit evaluated at the corresponding r in r_list.
 #' @param r_list List of data.frames from each unit. Each data.frame has the
@@ -251,10 +251,6 @@ getKFunction <- function(data, agents, unit,
 #'
 #' @return Data.frame with the first column being the evaluated r and the rest
 #'     being the evaluted K functions for each unit.
-#'
-#' @examples
-#' # See code for getKFunction This is not an outward function so won't be
-#' #     viewable.
 .rK2DF <- function(K_list, r_list){
   # Define r
   r <- c()

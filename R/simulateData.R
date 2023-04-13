@@ -246,6 +246,8 @@ simulateMeta <- function(pcaData,
 #'     .generateCSRData while also adding necessary data and allowing vectors to
 #'     be entered into the function.
 #'
+#' See usage in simulatePP.
+#'
 #' Upcoming: Try to eliminate or indicate when kappaSep is used.
 #'
 #' @param stageName String inidicating the outcome name that should be given.
@@ -264,10 +266,6 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
-#'
-#' @examples
-#' # See code for simulatePP. This is not an outward function so won't be
-#' #     viewable.
 .generateCSRPatterns <- function(stageName,
                                  peoplePerStage,
                                  imagesPerPerson,
@@ -315,6 +313,8 @@ simulateMeta <- function(pcaData,
 #'     relies on .generateCSRPatterns and .clusterAroundCells, dropping
 #'     unnecessary data.
 #'
+#' See usage in simulatePP.
+#'
 #' Upcoming: Determine (generally) how many clusters and how big of clusters to
 #'     build.
 #'
@@ -340,10 +340,6 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
-#'
-#' @examples
-#' # See code for simulatePP. This is not an outward function so won't be
-#' #     viewable.
 .generateInvClusterPatterns <- function(stageName,
                                         peoplePerStage,
                                         imagesPerPerson,
@@ -385,6 +381,8 @@ simulateMeta <- function(pcaData,
 #' This (internal) function generates cells that cluster around the given
 #'     points.
 #'
+#' See usage in simulatePP.
+#'
 #' Upcoming: Convert from cells to agents. Allow different clusterData column
 #'     names.
 #'
@@ -407,10 +405,6 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
-#'
-#' @examples
-#' # See code for simulatePP. This is not an outward function so won't be
-#' #     viewable.
 .clusterAroundCells <- function(clusterData, cellVarData,
                                 stageName,
                                 cells, clusterCells, kappas,
@@ -467,6 +461,8 @@ simulateMeta <- function(pcaData,
 #' This (internal) function places points following a normal distribution around
 #'     some given corridinates.
 #'
+#' See usage in simulatePP.
+#'
 #' Upcoming: Generalize naming
 #'
 #' @param currXY Vector of two numerics, the first relating the x coordinate
@@ -484,11 +480,6 @@ simulateMeta <- function(pcaData,
 #' @return Data.frame with placed cells.
 #'
 #' The data.frame has 3 columns, x, y, and cellType.
-#' @export
-#'
-#' @examples
-#' # See code for simulatePP. This is not an outward function so won't be
-#' #     viewable.
 .placeClusteredPts <- function(currXY, cell, numPts, varValue,
                                xRange=c(0,1), yRange=c(0,1)){
   if(numPts<=0) return()

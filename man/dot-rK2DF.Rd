@@ -21,7 +21,6 @@ being the evaluted K functions for each unit.
 This converts the r and K matrices from different units into a single
 data.frame.
 }
-\examples{
-# See code for getKFunction This is not an outward function so won't be
-#     viewable.
+\details{
+See use in getKFunction.
 }

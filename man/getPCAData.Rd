@@ -16,7 +16,8 @@ getPCAData(
   yRange = NULL,
   edgeCorrection = "isotropic",
   nbasis = 21,
-  silent = F
+  silent = F,
+  displayTVE = F
 )
 }
 \arguments{
@@ -75,21 +76,23 @@ of agent1s.
 }
 \examples{
 
-data_list_NA <- simulatePP_PCA_Meta(
-                   AB_Effect = FALSE,
-                   age_Effect = FALSE,
-                   imagesPerPerson = 5,
-                   peoplePerStage = 10)
-data <- data_list_NA[[2]]
-data <- data[!(data$cellType=='B' & data$Person=='p1'),]
-data <- data[!(data$cellType=='B' & data$Person=='p4'),]
-data <- data[!(data$cellType=='B' & data$Image=='6'),]
+data <- simulatePP(cellVarData=
+                       data.frame('stage'=c(0,1),
+                                  'A'=c(0,0),
+                                  'B'=c(1/50,1/50)),
+                   cellKappaData=data.frame(
+                                  'cell'=c('A','B'),
+                                  'clusterCell'=c(NA,'A'),
+                                  'kappa'=c(20,5)),
+                   peoplePerStage=100,
+                   imagesPerPerson=1,
+                   silent=F )
 agents_df_tmp <- as.data.frame(expand.grid(
                        unique(data$cellType),
                        unique(data$cellType),stringsAsFactors=F))
-agents_df_tmp[5,] <- c('C','C')
 dat_pca <- getPCAData(data = data, outcome = 'Stage', unit = 'Person',
                       repeatedUniqueId = 'Image',
                       rCheckVals = seq(0,0.25,0.01), nPCs = 3,
-                      agents_df = agents_df_tmp )
+                      agents_df = agents_df_tmp,
+                      xRange = c(0,1), yRange = c(0,1) )
 }

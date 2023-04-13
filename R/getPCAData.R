@@ -124,6 +124,8 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #' This function coverts the radius and K functions into principal components
 #'     and recturns the scores.
 #'
+#' See getPCAData for use.
+#'
 #' @param rKData data.frame with the first column being the checked radius and the
 #'     rest relating to the K function for each unit at those points. NA columns
 #'     for any K functions that could not be computed will be handled.
@@ -134,10 +136,6 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #'    the data to a bspline basis.
 #'
 #' @return Data.frame with the outcomes, units, then principal component scores.
-#'
-#' @examples
-#' # See code for getPCAData. This is not an outward function so won't be
-#' #     viewable.
 .getPCs <- function(rKData, agents,  nPCs, nbasis=21,silent=F){
   # Setup Data
   KData <- rKData[,-1]
@@ -182,15 +180,13 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #'     The data was dropped in order to allow PCA, but the NA need to be
 #'     re-inserted in order to correctly analyze the data.
 #'
+#' See .getPCs for use.
+#'
 #' @param data_add A data.frame with the PCs.
 #' @param insertRows Numeric vector indicating the original rows that were
 #'     dropped.
 #'
 #' @return A data.frame with the PCs, now including the NA rows.
-#'
-#' @examples
-#' # See code for .getPCs. This is not an outward function so won't be
-#' #     viewable.
 .insertMissingRows <- function(data_add, insertRows){
   data_return <- matrix(ncol=ncol(data_add), #nPCs
                         nrow=(nrow(data_add)+length(insertRows)))

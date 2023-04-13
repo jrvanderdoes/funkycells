@@ -27,6 +27,10 @@
 #' This (internal) function converts a list into a data.frame, either by row or
 #'     column binding. Some error handling exists, but care should be taken.
 #'
+#' See usage in .getPCs or simulatePP.
+#'
+#' TODO:: See if this is used in latest refactor
+#'
 #' @param data_list List of data.frames to be combined
 #' @param typeBind String of row or col indicating if the lists should be
 #'     combined using the rows or columns.
@@ -34,10 +38,6 @@
 #'     default is FALSE.
 #'
 #' @return Data.frame with the data from the list.
-#'
-#' @examples
-#' # See code for .getPCs or simulatePP. This is not an outward function so
-#' #     won't be viewable.
 .convertList2Dataframe <- function(data_list,
                                    typeBind=c('row','col'),
                                    na.omit=F){
@@ -81,6 +81,10 @@
 #' This (internal) function appends items in list to a data.frame by the given
 #'     column names.
 #'
+#' See usage in getPCAData.
+#'
+#' TODO:: Verify use in latest refactor
+#'
 #' @param df Data.frame with a column named by baseCol
 #' @param lists Lists of data.frames with each containing listCol column
 #'              matching the values in df$baseCol.
@@ -88,11 +92,6 @@
 #' @param listsDFCol String with column name for matching column in lists
 #'
 #' @return Data.frame df with values from lists appended
-#' @export
-#'
-#' @examples
-#' # See code for getPCAData. This is not an outward function so
-#' #     won't be viewable.
 .mergeListsToDF <- function(df, lists, dfCol, listsDFCol){
 
   for(i in 1:length(lists)){

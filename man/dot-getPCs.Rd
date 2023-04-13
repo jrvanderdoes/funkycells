@@ -4,7 +4,7 @@
 \alias{.getPCs}
 \title{Get Principal Components}
 \usage{
-.getPCs(rKData, agents, nPCs, nbasis = 21)
+.getPCs(rKData, agents, nPCs, nbasis = 21, silent = F)
 }
 \arguments{
 \item{rKData}{data.frame with the first column being the checked radius and the
@@ -26,7 +26,6 @@ Data.frame with the outcomes, units, then principal component scores.
 This function coverts the radius and K functions into principal components
 and recturns the scores.
 }
-\examples{
-# See code for getPCAData. This is not an outward function so won't be
-#     viewable.
+\details{
+See getPCAData for use.
 }

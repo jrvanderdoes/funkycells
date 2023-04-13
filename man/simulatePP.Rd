@@ -12,7 +12,6 @@ simulatePP(
     "A", "B", "C", NA, "A"), kappa = c(20, 5, 4, 2, 15, 5)),
   peoplePerStage = 20,
   imagesPerPerson = 5,
-  reduceEdge = 0.025,
   silent = F
 )
 }
@@ -35,9 +34,6 @@ outcome.}
 
 \item{imagesPerPerson}{(Optional) Numeric indicating the number of repeated
 measures.}
-
-\item{reduceEdge}{(Optional) Numeric indicating how far from edge agents
-should be placed. Note the current figure size is \link{0,1}x\link{0,1}.}
 
 \item{silent}{(Optional) Boolean indicating if progress output should be
 printed.}

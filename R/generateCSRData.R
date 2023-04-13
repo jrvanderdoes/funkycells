@@ -5,6 +5,8 @@
 #'     process on some region. Some Poisson number of points are placed
 #'     uniformly in the region by both x and y.
 #'
+#' See use in simulatePP_Mult_PCA_Meta.
+#'
 #' @param xRange (Optional) Two value numeric vector indicating the size of the
 #'     region in the x-direction. Default is c(0,1).
 #' @param yRange (Optional) Two value numeric vector indicating the size of the
@@ -23,14 +25,8 @@
 #'
 #' @return Data.frame with x, y, and cellType specified. Each row is a new
 #'     point.
-#'
-#' @examples
-#' # See code for simulatePP_Mult_PCA_Meta. This is not an outward function so
-#' #     won't be viewable.
 .generateCSRData <- function(xRange = c(0,1), yRange = c(0,1),
                               kappa=25, requireOne=T, cellType='A'){
-  # This generates a simple random point process
-
   area <- (xRange[2]-xRange[1]) * (yRange[2]-yRange[1])
   intensityValue <- kappa*area
   numPts <- rpois(1, intensityValue)
@@ -48,9 +44,6 @@
       }
     }
   }
-
-  # xReduceEdge <- (xRange[2]-xRange[1])*percentAwayFromEdge
-  # yReduceEdge <- (yRange[2]-yRange[1])*percentAwayFromEdge
 
   pointPattern <- data.frame(
     'x'=runif(numPts, min=xRange[1], max=xRange[2]),

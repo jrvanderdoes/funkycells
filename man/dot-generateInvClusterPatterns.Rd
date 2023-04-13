@@ -6,7 +6,6 @@
 \usage{
 .generateInvClusterPatterns(
   stageName,
-  reduceEdge,
   peoplePerStage,
   imagesPerPerson,
   kappas,
@@ -19,9 +18,6 @@
 }
 \arguments{
 \item{stageName}{String inidicating the outcome name that should be given.}
-
-\item{reduceEdge}{Numeric indicating how far from edge agents
-should be placed. Note the current figure size is \link{0,1}x\link{0,1}.}
 
 \item{peoplePerStage}{Numeric indicating the number of units per
 outcome.}
@@ -59,10 +55,8 @@ relies on .generateCSRPatterns and .clusterAroundCells, dropping
 unnecessary data.
 }
 \details{
+See usage in simulatePP.
+
 Upcoming: Determine (generally) how many clusters and how big of clusters to
 build.
-}
-\examples{
-# See code for simulatePP. This is not an outward function so won't be
-#     viewable.
 }

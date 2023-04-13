@@ -22,7 +22,8 @@ Data.frame with the data from the list.
 This (internal) function converts a list into a data.frame, either by row or
 column binding. Some error handling exists, but care should be taken.
 }
-\examples{
-# See code for .getPCs or simulatePP. This is not an outward function so
-#     won't be viewable.
+\details{
+See usage in .getPCs or simulatePP.
+
+TODO:: See if this is used in latest refactor
 }

@@ -38,16 +38,16 @@
 #' data <- simulatePP()
 #' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' RF1 <- computeRandomForest_PC(data=pcaData[-2])
+#' RF1 <- PCRandomForest(data=pcaData[-2])
 #'
 #' pcaMeta <- simulateMeta(pcaData)
-#' RF2 <- computeRandomForest_PC(pcaMeta[-2],
+#' RF2 <- PCRandomForest(pcaMeta[-2],
 #'                                metaNames=c("randUnif","randBin","rNorm",
 #'                                            "corrUnif","corrBin","corrNorm"))
-computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
-                                    unit=colnames(data)[2], repeatedId=NULL,
-                                    nTrees=500, varImpPlot=T, metaNames=NULL,
-                                    keepModels=T, varSelPercent=0.8){
+PCRandomForest  <- function(data, outcome=colnames(data)[1],
+                            unit=colnames(data)[2], repeatedId=NULL,
+                            nTrees=500, varImpPlot=T, metaNames=NULL,
+                            keepModels=T, varSelPercent=0.8, method="class"){
   # Ensure this is worthwhile
   if(length(unique(data[,outcome]))==1)
     stop('Error: Only 1 outcome in data, cannot do RF')
@@ -91,7 +91,7 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
     data_rf <- cbind(data_rf[outcome],data_rf_vars[,sample(1:ncol(data_rf_vars))])
 
     # Fit CART
-    model <- rpart::rpart(paste0(outcome,' ~ .-',outcome), data=data_rf, method="class", ## TODO:: Change this for other
+    model <- rpart::rpart(paste0(outcome,' ~ .-',outcome), data=data_rf, method=method,
                           control=rpart::rpart.control(minsplit =1,minbucket=1, cp=0))
 
     # Get Var importance
@@ -126,72 +126,77 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #' This (internal) function computes the variable importance for a tree model
 #'     and combines it with totVarImportance data.frame.
 #'
+#' See use in PCRandomForest.
+#'
 #' @param tree Model from rpart for fitting a CART tree.
 #' @param totVarImportance Data.frame indicating the total (cumulative) variable
 #'     importance.
 #'
 #' @return Data.frame which is the updated totVarImportance adding in the new
 #'     tree information.
+# .computeTotalVarImportance <- function(tree, totVarImportance){
+#
+#   # Find Error at nodes (Gini is 1-p_1^2-p_2^2)
+#   frame <- tree$frame
+#   frame[['gini']] = 1 - (frame[['dev']] / frame[['n']])^2 -
+#     (1 - frame[['dev']] / frame[['n']])^2
+#   #frame[,c('var','n','dev','gini')]
+#
+#   # Get Decrease for each split
+#   frame[['improve']] = NA
+#   for (j in 1:nrow(frame)) {
+#     name <- frame[j,'var']
+#     if (name == '<leaf>') next
+#
+#     # Get name of bigger group (if exists)
+#     name_sub <- .getUnderlyingVariable(name)
+#
+#     # Get Gini improvement
+#     ind = which(rownames(frame) %in%
+#                   (as.numeric(rownames(frame)[j])*2+c(0,1)))
+#     frame[j,'improve'] = frame[j,'n']*frame[j,'gini'] - frame[ind[1],'n']*
+#       frame[ind[1],'gini'] - frame[ind[2],'n']*frame[ind[2],'gini']
+#
+#     totVarImportance[totVarImportance$var==name_sub,'giniDec'] <-
+#       totVarImportance[totVarImportance$var==name_sub,'giniDec'] +
+#       frame[j,'improve']
+#     # Count split by variable
+#     totVarImportance[totVarImportance$var==name_sub,'splits'] <-
+#       totVarImportance[totVarImportance$var==name_sub,'splits'] + 1
+#   }
+#
+#   # Get and count Var Import
+#   for(j in 1:length(tree$variable.importance)){
+#     name <- names(tree$variable.importance[j])
+#
+#     # Get name of bigger group (if exists)
+#     name_sub <- .getUnderlyingVariable(name)
+#
+#     totVarImportance[totVarImportance$var==name_sub,'varImp'] <-
+#       totVarImportance[totVarImportance$var==name_sub,'varImp'] +
+#       tree$variable.importance[[j]]
+#     totVarImportance[totVarImportance$var==name_sub,'varImpCt'] <-
+#       totVarImportance[totVarImportance$var==name_sub,'varImpCt'] +
+#       1
+#   }
+#
+#   totVarImportance
+# }
+
+
+#' Compute Total Variable Importances
 #'
-#' @examples
-#' # See code for computeRandomForest_PC. This is not an outward function so won't be
-#' #     viewable.
-.computeTotalVarImportance <- function(tree, totVarImportance){
-
-  # Find Error at nodes (Gini is 1-p_1^2-p_2^2)
-  frame <- tree$frame
-  frame[['gini']] = 1 - (frame[['dev']] / frame[['n']])^2 -
-    (1 - frame[['dev']] / frame[['n']])^2
-  #frame[,c('var','n','dev','gini')]
-
-  # Get Decrease for each split
-  frame[['improve']] = NA
-  for (j in 1:nrow(frame)) {
-    name <- frame[j,'var']
-    if (name == '<leaf>') next
-
-    # Get name of bigger group (if exists)
-    name_sub <- .getUnderlyingVariable(name)
-
-    # Get Gini improvement
-    ind = which(rownames(frame) %in%
-                  (as.numeric(rownames(frame)[j])*2+c(0,1)))
-    frame[j,'improve'] = frame[j,'n']*frame[j,'gini'] - frame[ind[1],'n']*
-      frame[ind[1],'gini'] - frame[ind[2],'n']*frame[ind[2],'gini']
-
-    totVarImportance[totVarImportance$var==name_sub,'giniDec'] <-
-      totVarImportance[totVarImportance$var==name_sub,'giniDec'] +
-      frame[j,'improve']
-    # Count split by variable
-    totVarImportance[totVarImportance$var==name_sub,'splits'] <-
-      totVarImportance[totVarImportance$var==name_sub,'splits'] + 1
-  }
-
-  # Get and count Var Import
-  for(j in 1:length(tree$variable.importance)){
-    name <- names(tree$variable.importance[j])
-
-    # Get name of bigger group (if exists)
-    name_sub <- .getUnderlyingVariable(name)
-
-    totVarImportance[totVarImportance$var==name_sub,'varImp'] <-
-      totVarImportance[totVarImportance$var==name_sub,'varImp'] +
-      tree$variable.importance[[j]]
-    totVarImportance[totVarImportance$var==name_sub,'varImpCt'] <-
-      totVarImportance[totVarImportance$var==name_sub,'varImpCt'] +
-      1
-  }
-
-  totVarImportance
-}
-
-
-#' Title
+#' This (internal) function computes the variable importance for a tree model
+#'     and combines it with totVarImportance data.frame.
 #'
-#' @return
-#' @export
+#' See use in PCRandomForest.
 #'
-#' @examples
+#' @param tree Model from rpart for fitting a CART tree.
+#' @param totVarImportance Data.frame indicating the total (cumulative) variable
+#'     importance.
+#'
+#' @return Data.frame which is the updated totVarImportance adding in the new
+#'     tree information.
 .computeTotalVarImportance1 <- function(tree, totVarImportance=NULL){
   tmp1 <- as.data.frame(tree$variable.importance)
   tmp2 <- data.frame('var'=rownames(tmp1),
@@ -215,19 +220,17 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #' Plot Variable Importance (Ensure Data)
 #'
 #' This (internal) function organizes the data to plot the variable importance
-#'     for a computeRandomForest_PC model. One of the inputs is necessary.
+#'     for a PCRandomForest model. One of the inputs is necessary.
+#'
+#' See use in PCRandomForest.
 #'
 #' Upcoming: See TEST comment
 #'
 #' @param varImportanceData (Optional) Data.frame for the variable importance
 #'     information.
-#' @param model (Optional) Random forest model from computeRandomForest_PC.
+#' @param model (Optional) Random forest model from PCRandomForest.
 #'
 #' @return grid.arrange containing two ggplots
-#'
-#' @examples
-#' # See code for computeRandomForest_PC. This is not an outward function so won't be
-#' #     viewable.
 .plotVariableImportance <- function(varImportanceData=NULL, model=NULL){
   if((is.null(varImportanceData) && is.null(model))||
      (!is.null(varImportanceData) && !is.null(model))){
@@ -241,7 +244,8 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
                                     'VI'=0)
 
     for(i in 1:length(model)){
-      varImportanceData <- .computeTotalVarImportance(model[[i]], varImportanceData)
+      varImportanceData <- .computeTotalVarImportance1(model[[i]], varImportanceData)
+      #varImportanceData <- .computeTotalVarImportance(model[[i]], varImportanceData)
     }
 
     # Get mean results for variable importance
@@ -258,26 +262,15 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #' Plot Variable Importance (Plot Data)
 #'
 #' This (internal) function plots the variable importance for a
-#' computeRandomForest_PC model.
+#' PCRandomForest model.
+#'
+#' See use in .plotVariableImportance.
 #'
 #' @param varImportanceData Data.frame for the variable importance information.
 #'
 #' @return grid.arrange containing two ggplots.
-#'
-#' @examples
-#' # See code for .plotVariableImportance. This is not an outward function so won't be
-#' #     viewable.
 .plotImportance <- function(varImportanceData){
-
-  # avgGini <- ggplot2::ggplot() +
-  #   ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgGini), y=avgGini/max(avgGini)),
-  #                       data=varImportanceData) +
-  #   ggplot2::coord_flip() +
-  #   ggplot2::xlab(NULL) +
-  #   ggplot2::ylim(c(0,1)) +
-  #   ggplot2::ylab('Gini') +
-  #   ggplot2::theme_bw()
-  avgVI <- ggplot2::ggplot() +
+  varImportance <- ggplot2::ggplot() +
     ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgVI), y=avgVI/max(avgVI)),
                         data=varImportanceData) +
     ggplot2::coord_flip() +
@@ -286,20 +279,16 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
     ggplot2::ylab('VarImp') +
     ggplot2::theme_bw()
 
-  # varImportance <- gridExtra::arrangeGrob(avgGini,avgVI,
-  #                               layout_matrix = rbind(c(1,2)),
-  #                               bottom = 'Variable Importance - Percent of Max')
-
   varImportance
 }
 
 
-#' Predict Using RandomForest_PC
+#' Predict Using PCRandomForest
 #'
-#' This function gets the predicted value from a RandomForest_PC
+#' This function gets the predicted value from a PCRandomForest
 #'     model.
 #'
-#' @param model RandomForest_PC model. See computeRandomForest_PC. A list of
+#' @param model PCRandomForest model. See PCRandomForest. A list of
 #'     CART models from rpart.
 #' @param data_pred data.frame of the data to be predicted.
 #' @param type (Optional) String indicating type of analysis. Options are pred
@@ -329,11 +318,11 @@ computeRandomForest_PC  <- function(data, outcome=colnames(data)[1],
 #'                     silent=F )
 #' pcaData <- getPCAData(data_pp,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' RF <- computeRandomForest_PC(data=pcaData[-2], nTrees = 5)
-#' pred <- predict.RandomForest_PC(model = RF[[1]], type='all',
+#' RF <- PCRandomForest(data=pcaData[-2], nTrees = 5)
+#' pred <- predict.PCRandomForest(model = RF[[1]], type='all',
 #'                                  data_pred = pcaData[-2],
 #'                                  data=pcaData[-2])
-predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
+predict.PCRandomForest <- function(model, data_pred, type='all', data=NULL){
   # Verification
   #   This checks the data to see if there are any columns that are characters
   #   or factors. This will be used later to manage missing data. We obviously
@@ -439,9 +428,11 @@ predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
 #' Get Underlying Function
 #'
 #' This (internal) function is used to get the underlying functino (i.e. no _PC#
-#'     in it). This is used to centralize called from RandomForest_PC.R and
+#'     in it). This is used to centralize called from PCRandomForest.R and
 #'     RandomForest_CVPC.R. If there is no PC (i.e. in meta-varaiables), the
 #'     meta-variable is returned.
+#'
+#' See use in PCRandomForest.
 #'
 #' Note: The following line is saved temporarily.
 #'     substr(test, 1, max(1,regexpr("_PC[0-9]+$", test)-1))
@@ -449,10 +440,6 @@ predict.RandomForest_PC <- function(model, data_pred, type='all', data=NULL){
 #' @param names Vector of names to get underlying function on each
 #'
 #' @return Vector of underlying functions for each in name.
-#'
-#' @examples
-#' # See code for computeRandomForest_PC. This is not an outward function so
-#' #     won't be viewable.
 .getUnderlyingVariable <- function(names, returnUnique=T){
   if(returnUnique)
     return(unique(stringr::str_remove(names,'(_PC)[0-9]+$')))
