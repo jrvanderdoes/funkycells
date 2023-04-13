@@ -44,7 +44,7 @@ for(c in 1:length(changes)){
                               'Stage_0'=c('0.5','25'),
                               'Stage_1'=c('0.5','25')))
     # Fit RF
-    rfcv <- computeRandomForest_CVPC_Permute(data=pcaMeta,
+    rfcv <- funk(data=pcaMeta,
                                              outcome = 'Stage',
                                              unit = 'Person',
                                              metaNames=c('gender','age'),
