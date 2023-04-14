@@ -9,7 +9,7 @@ for(c in 1:length(changes)){
     VarVI_r <- VarLVI_r <-
     VarVI_o <- VarLVI_o <-
     data.frame('var'=c('age',
-                       as.vector(sapply(paste0('c',1:4,'_'),FUN = function(x){paste0(x,1:18)})),
+                       as.vector(sapply(paste0('c',1:18,'_'),FUN = function(x){paste0(x,'c',1:18)})),
                        'gender'))
   RedVI1 <- RedLVI1 <- OrangeVI1 <- OrangeLVI1 <-
     RedVI2 <- RedLVI2 <- OrangeVI2 <- OrangeLVI2 <- rep(NA,nSims)
@@ -23,14 +23,24 @@ for(c in 1:length(changes)){
                         data.frame('stage'=c(0,1),
                                    'c1'=c(0,0),
                                    'c2'=c(1/25,changes[c]), 'c3'=c(1/50,1/50),
-                                   'c4'=c(0,0)),
+                                   'c4'=c(0,0), 'c5'=c(0,0), 'c6'=c(0,0),
+                                   'c7'=c(0,0), 'c8'=c(0,0), 'c9'=c(0,0),
+                                   'c10'=c(0,0), 'c11'=c(0,0), 'c12'=c(0,0),
+                                   'c13'=c(0,0), 'c14'=c(0,0), 'c15'=c(0,0),
+                                   'c16'=c(0,0), 'c17'=c(0,0), 'c18'=c(0,0)),
                       cellKappaData=data.frame(
-                        'cell'=paste0('c',1:4),
-                        'clusterCell'=c(NA,'c1','c1', NA),
+                        'cell'=paste0('c',1:18),
+                        'clusterCell'=c(NA,'c1','c1', NA,rep(NA,14)),
                         'kappa'=c(rbinom(1,50,0.5),
                                   rbinom(2,20,0.5),
                                   rbinom(1,50,0.5),
-                                  rbinom(1,50,0.5))),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5),
+                                  rbinom(1,50,0.5), rbinom(1,50,0.5))),
                       peoplePerStage=17,
                       imagesPerPerson=1,
                       silent=T)
@@ -44,7 +54,7 @@ for(c in 1:length(changes)){
                               'Stage_0'=c('0.5','25'),
                               'Stage_1'=c('0.5','25')))
     # Fit RF
-    rfcv <- funk(data=pcaMeta,
+    rfcv <- funkyRandomForest(data=pcaMeta,
                                              outcome = 'Stage',
                                              unit = 'Person',
                                              metaNames=c('gender','age'),

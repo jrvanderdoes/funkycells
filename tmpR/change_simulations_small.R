@@ -9,7 +9,7 @@ for(c in 1:length(changes)){
     VarVI_r <- VarLVI_r <-
     VarVI_o <- VarLVI_o <-
     data.frame('var'=c('age',
-                       as.vector(sapply(paste0('c',1:4,'_'),FUN = function(x){paste0(x,1:4)})),
+                       as.vector(sapply(paste0('c',1:4,'_'),FUN = function(x){paste0(x,'c',1:4)})),
                        'gender'))
   RedVI1 <- RedLVI1 <- OrangeVI1 <- OrangeLVI1 <-
     RedVI2 <- RedLVI2 <- OrangeVI2 <- OrangeLVI2 <- rep(NA,nSims)
@@ -44,10 +44,10 @@ for(c in 1:length(changes)){
                               'Stage_1'=c('0.5','25')))
     # Fit RF
     rfcv <- funkyRandomForest(data=pcaMeta,
-                                             outcome = 'Stage',
-                                             unit = 'Person',
-                                             metaNames=c('gender','age'),
-                                             silent = T)
+                              outcome = 'Stage',
+                              unit = 'Person',
+                              metaNames=c('gender','age'),
+                              silent = T)
 
     # Org Data
     tmp <- rfcv$VariableImportance[,c('var','est','sd')]
