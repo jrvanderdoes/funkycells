@@ -1,14 +1,14 @@
-#' Triple Negative Breast Cancer Data
+#' Triple Negative Breast Cancer Data - Indicators
 #'
 #' A subset of triple negative breast cancer data from patients indicating
-#'     cell information for each person.
+#'     cell information for each person. The proteins are coded as T/F values.
 #'
 #' @format ## `TNBC`
 #' A data frame with 170,171 rows and 60 columns:
 #' \describe{
 #'   \item{Class}{Outcome of each patient}
 #'   \item{Person}{Person for each image}
-#'   \item{cellLabelInImage}{Classified cell type?}
+#'   \item{cellLabelInImage}{Label of cell}
 #'   \item{cellx, celly}{x and y location for each cell}
 #'   \item{C,Na,Si,P,Ca,Fe,dsDNA,Vimentin,SMA,Background,B7H3,FoxP3,Lag3,CD4,
 #'         CD16,CD56,OX40,PD1,CD31,PD.L1,EGFR,Ki67,CD209,CD11c,CD138,CD163,CD68,
