@@ -165,7 +165,7 @@ funkyRandomForest <- function(data, K=10,
     avgVI <- merge(avgVI, data_merge, by='var')
 
     oobAcc[i] <- sum(data[groups[[i]],outcome]==
-                       predict.RandomForest_PC(model = RF$model,
+                       predict.PCRandomForest(model = RF$model,
                                                data_pred = data[groups[[i]],],
                                                type = 'pred', data = data)) /
       nrow(data[groups[[i]],])
