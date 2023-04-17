@@ -116,10 +116,10 @@
 #'                             'rdist'=c('runif','rbinom','rnorm'),
 #'                             'Stage_0'=c('0.5','0.5','1'),
 #'                             'Stage_1'=c('0.5','0.5','2')))
-#' rfcv <- funkyRandomForest(data=pcaMeta,outcome = 'Stage',unit='Person',
+#' rfcv <- funkyForest(data=pcaMeta,outcome = 'Stage',unit='Person',
 #'                           metaNames=c('randUnif','randBin','corrNorm'),
 #'                           subsetPlotSize = 2)
-funkyRandomForest <- function(data, K=10,
+funkyForest <- function(data, K=10,
                               outcome=colnames(data)[1],
                               unit=colnames(data)[2],
                               metaNames=NULL,
