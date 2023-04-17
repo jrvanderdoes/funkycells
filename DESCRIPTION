@@ -4,7 +4,7 @@ Version: 1.1.1.0000
 Authors@R: 
     person("Jeremy", "VanderDoes", , "jeremy.vanderdoes@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: Analyzes many interactions to determine variables of interest in cells, markers, and related information, particularly focused on spatial effects. Implements a random forest model with functional and spatial data components. Includes data preparation, like K function summary, and implementation, allows for mutliple functional components from methods like FPCA.
+Description: Analyzes many interactions to determine variables of interest in cells, markers, and related information, particularly focused on spatial effects. Implements a random forest model, with required preparation, for functional and spatial data analysis.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
