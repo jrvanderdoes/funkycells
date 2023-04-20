@@ -14,7 +14,8 @@ organizeTNBCs <- function(CDir){
   #       0: (mixed) tumor mixed with immune cells
   #       1: (compartmentalized) tumor cells and immune cells spatially separated
   #       2: (cold): no infiltrate
-  tnbc_class <- read.csv(paste0(CDir, "/downloaded/patient_class.csv"), header=F)
+  tnbc_class <- read.csv(paste0(CDir, "/downloaded/patient_class.csv"),
+                         header=FALSE)
   colnames(tnbc_class) <- c("Person","Class")
 
   # Read clinical data:
@@ -194,7 +195,7 @@ TNBC_basic <- generateTNBCs(
           CDir="~/School/Waterloo/Research/RPackages/funkycells/data-raw/TNBC/")
 TNBC_pheno <- generatePheno(
           CDir="~/School/Waterloo/Research/RPackages/funkycells/data-raw/TNBC/")
-TNBC_int <- cleanTNBC(TNBC_basic$int)
+# TNBC_int <- cleanTNBC(TNBC_basic$int)
 TNBC <- cleanTNBC(TNBC_basic$fact)
 
 # Get Meta-Info
@@ -205,8 +206,8 @@ TNBC_Meta <- tnbc_clinical01[,c('InternalId','AGE_AT_DX')]
 colnames(TNBC_Meta) <- c('Person','Age')
 
 # Save files
-usethis::use_data(TNBC, overwrite = TRUE)
-usethis::use_data(TNBC_int, overwrite = TRUE)
-usethis::use_data(TNBC_pheno, overwrite = TRUE)
-usethis::use_data(TNBC_Meta, overwrite = TRUE)
+usethis::use_data(TNBC, overwrite = TRUE,compress = "xz")
+# usethis::use_data(TNBC_int, overwrite = TRUE,compress = "xz")
+usethis::use_data(TNBC_pheno, overwrite = TRUE,compress = "xz")
+usethis::use_data(TNBC_Meta, overwrite = TRUE,compress = "xz")
 

@@ -35,4 +35,5 @@ getDiabetesData <- function(){
 }
 diabetes <- getDiabetesData()
 
-usethis::use_data(diabetes, overwrite = TRUE)
+usethis::use_data(diabetes, overwrite = TRUE,compress = 'bzip2')
+
