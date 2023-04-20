@@ -1,8 +1,8 @@
 Package: funkycells
 Title: Functional K Function Analysis of Multiplexed Images of Cells
-Version: 1.1.1.0000
+Version: 0.0.0.9004
 Authors@R: 
-    person("Jeremy", "VanderDoes", , "jeremy.vanderdoes@gmail.com", role = c("aut", "cre"),
+    person("Jeremy", "VanderDoes", , "jeremy.vanderdoes@gmail.com", role = c("aut", "cre","cph"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: Analyzes many interactions to determine variables of interest in cells, markers, and related information, particularly focused on spatial effects. Implements a random forest model, with required preparation, for functional and spatial data analysis.
 License: GPL (>= 3)
@@ -17,13 +17,17 @@ LazyData: true
 Imports: 
     fda,
     ggplot2,
-    gridExtra,
     rpart,
     spatstat.explore,
     spatstat.geom,
     stats,
-    tidyr
+    stringr,
+    tidyr,
+    utils
 Suggests: 
     knitr,
-    rmarkdown
+    pROC,
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
