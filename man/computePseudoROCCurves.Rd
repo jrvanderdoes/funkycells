@@ -11,21 +11,16 @@ computePseudoROCCurves(trueOutcomes, modelPercents)
 
 \item{modelPercents}{Data.frame with columns named after the true outcomes,
 giving the percent of selecting that outcome. This is what is returned
-predict.RandomForest_PC when type='all' and look at PredPerc\link{-1} (first
+predict.RandomForest_PC when type='all' and look at \code{PredPerc[-1]} (first
 column is the predictions).}
 }
 \value{
-NULL. See plot of ROC curves.
+ggplot object for the ROC curves.
 }
 \description{
 True ROC can only be computed for two-options, but we can consider each one
 as right or wrong and overlay the plots. Note this means the lines may
 cover each other
-}
-\details{
-Upcoming: Suggests for pROC and RCOlorBrewer then check. See the following:
-- https://stackoverflow.com/questions/6895852/load-a-package-only-when-needed-in-r-packagesee
-- https://r-pkgs.org/metadata.html#sec-description
 }
 \examples{
 data_pp_roc <- simulatePP(cellVarData=
@@ -36,14 +31,14 @@ data_pp_roc <- simulatePP(cellVarData=
                                        'cell'=c('A','B'),
                                        'clusterCell'=c(NA,'A'),
                                        'kappa'=c(20,5)),
-                          peoplePerStage=100,
+                          peoplePerStage=20,
                           imagesPerPerson=1,
-                          reduceEdge=0.025,
-                          silent=F )
+                          silent=FALSE )
+# Caution, in general use more than 5 nTrees (Default is 500)
 pcaData_roc <- getPCAData(data_pp_roc,repeatedUniqueId='Image',
-                          xRange = c(0,1),  yRange = c(0,1), silent=F)
-RF_roc <- computeRandomForest_PC(data=pcaData_roc[-2], nTrees = 5)
-pred_roc <- predict.RandomForest_PC(model = RF_roc[[1]],
+                          xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
+RF_roc <- funkyForest(data=pcaData_roc[-2], nTrees = 5)
+pred_roc <- predict_funkyForest(model = RF_roc$model,
                                      data_pred = pcaData_roc[-2],
                                      data=pcaData_roc[-2])
 computePseudoROCCurves(pcaData_roc$Stage,pred_roc$PredPerc[-1])

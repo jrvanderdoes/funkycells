@@ -57,6 +57,7 @@ This function computes the K function between the two agents for each unit,
 potentially averaging over repeated measures.
 }
 \examples{
+\dontrun{
 data1 <- simulatePP(cellVarData=
                       data.frame('stage'=c(0,1,2),
                       'A'=c(0,0,0),
@@ -65,7 +66,6 @@ data1 <- simulatePP(cellVarData=
                       'cell'=c('A','B'),
                       'clusterCell'=c(NA,'A'),
                       'kappa'=c(20,5)))
-# Select the data
 KData <- data1[data1$Person=='p1',colnames(data1)!='Stage']
 KFunction <- getKFunction(agents=c('A','B'), unit='Person',
              repeatedUniqueId='Image',
@@ -73,5 +73,12 @@ KFunction <- getKFunction(agents=c('A','B'), unit='Person',
              rCheckVals=seq(0,0.25,0.01),
              xRange=c(0,1),yRange=c(0,1),
              edgeCorrection="isotropic")
+plot(KFunction, type='l')
+}
+
+KFunction <- getKFunction(agents=c('B','Tumour'), unit='Person',
+                          data=TNBC_pheno[TNBC_pheno$Person==1,-1],
+                          rCheckVals=seq(0,50,1),
+                          edgeCorrection="isotropic")
 plot(KFunction, type='l')
 }

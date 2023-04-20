@@ -12,7 +12,7 @@ simulatePP(
     "A", "B", "C", NA, "A"), kappa = c(20, 5, 4, 2, 15, 5)),
   peoplePerStage = 20,
   imagesPerPerson = 5,
-  silent = F
+  silent = FALSE
 )
 }
 \arguments{
@@ -53,5 +53,17 @@ possible.
 Upcoming: cellVarData unnamed. Rename to general names (agent, unit, etc.)
 }
 \examples{
-data <- simulatePP()
+\dontrun{ data <- simulatePP() }
+data <- simulatePP(cellVarData=data.frame('stage'=c(0,1),
+                                          'A'=c(0,0),
+                                          'B'=c(1/100,1/500),
+                                          'C'=c(1/500,1/250),
+                                          'D'=c(1/100,1/100),
+                                          'E'=c(1/500,1/500)),
+                   cellKappaData=data.frame(
+                              'cell'=c('A','B','C','D','E'),
+                              'clusterCell'=c(NA,'A','B','C',NA),
+                              'kappa'=c(10,3,2,1,8)),
+                   peoplePerStage=4,
+                   imagesPerPerson=1)
 }

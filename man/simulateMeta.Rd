@@ -50,6 +50,6 @@ Notes: runif may induce useless information so don't recommend correlating it
 \examples{
 data <- simulatePP()
 pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-                      xRange = c(0,1),  yRange = c(0,1), silent=F)
+                      xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
 pcaMeta <- simulateMeta(pcaData)
 }

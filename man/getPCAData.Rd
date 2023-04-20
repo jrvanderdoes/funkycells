@@ -16,8 +16,8 @@ getPCAData(
   yRange = NULL,
   edgeCorrection = "isotropic",
   nbasis = 21,
-  silent = F,
-  displayTVE = F
+  silent = FALSE,
+  displayTVE = FALSE
 )
 }
 \arguments{
@@ -63,6 +63,9 @@ use in spatStat for computation of K functions.}
 K functions in order to compute PCA.}
 
 \item{silent}{(optional) Boolean indicating if progress should be printed}
+
+\item{displayTVE}{(Optional) Boolean to  indicate if total variance explained
+(TvE) should be displayed. Default is FALSE.}
 }
 \value{
 Data.frame with the outcome, unit and principle components of
@@ -75,7 +78,7 @@ the K functions will be (weighted) averaged together based on the number
 of agent1s.
 }
 \examples{
-
+\dontrun{
 data <- simulatePP(cellVarData=
                        data.frame('stage'=c(0,1),
                                   'A'=c(0,0),
@@ -86,13 +89,19 @@ data <- simulatePP(cellVarData=
                                   'kappa'=c(20,5)),
                    peoplePerStage=100,
                    imagesPerPerson=1,
-                   silent=F )
+                   silent=FALSE )
 agents_df_tmp <- as.data.frame(expand.grid(
                        unique(data$cellType),
-                       unique(data$cellType),stringsAsFactors=F))
+                       unique(data$cellType),stringsAsFactors=FALSE))
 dat_pca <- getPCAData(data = data, outcome = 'Stage', unit = 'Person',
                       repeatedUniqueId = 'Image',
                       rCheckVals = seq(0,0.25,0.01), nPCs = 3,
                       agents_df = agents_df_tmp,
                       xRange = c(0,1), yRange = c(0,1) )
+}
+
+dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
+                            agents_df=data.frame('B','FAKE'),
+                            nPCs = 3,
+                            rCheckVals = seq(0,50,1))
 }
