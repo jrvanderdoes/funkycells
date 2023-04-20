@@ -36,13 +36,15 @@
 #' @param nbasis (optional) Numeric indicating number of basis functions to fit
 #'     K functions in order to compute PCA.
 #' @param silent (optional) Boolean indicating if progress should be printed
+#' @param displayTVE (Optional) Boolean to  indicate if total variance explained
+#'   (TvE) should be displayed. Default is FALSE.
 #'
 #' @return Data.frame with the outcome, unit and principle components of
 #'     computed K functions.
 #' @export
 #'
 #' @examples
-#'
+#' \dontrun{
 #' data <- simulatePP(cellVarData=
 #'                        data.frame('stage'=c(0,1),
 #'                                   'A'=c(0,0),
@@ -53,15 +55,21 @@
 #'                                   'kappa'=c(20,5)),
 #'                    peoplePerStage=100,
 #'                    imagesPerPerson=1,
-#'                    silent=F )
+#'                    silent=FALSE )
 #' agents_df_tmp <- as.data.frame(expand.grid(
 #'                        unique(data$cellType),
-#'                        unique(data$cellType),stringsAsFactors=F))
+#'                        unique(data$cellType),stringsAsFactors=FALSE))
 #' dat_pca <- getPCAData(data = data, outcome = 'Stage', unit = 'Person',
 #'                       repeatedUniqueId = 'Image',
 #'                       rCheckVals = seq(0,0.25,0.01), nPCs = 3,
 #'                       agents_df = agents_df_tmp,
 #'                       xRange = c(0,1), yRange = c(0,1) )
+#' }
+#'
+#' dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
+#'                             agents_df=data.frame('B','FAKE'),
+#'                             nPCs = 3,
+#'                             rCheckVals = seq(0,50,1))
 getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                        repeatedUniqueId=NULL,
                        rCheckVals=NULL, nPCs=3,
@@ -69,7 +77,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
                                                              unique(data[,4]))),
                        xRange=NULL, yRange=NULL,
                        edgeCorrection="isotropic", nbasis=21,
-                       silent=F, displayTVE=F){
+                       silent=FALSE, displayTVE=FALSE){
   # Define pcaData
   pcaData <- unique(data[,c(outcome, unit)])
 
@@ -136,7 +144,8 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #'    the data to a bspline basis.
 #'
 #' @return Data.frame with the outcomes, units, then principal component scores.
-.getPCs <- function(rKData, agents,  nPCs, nbasis=21,silent=F){
+#' @noRd
+.getPCs <- function(rKData, agents,  nPCs, nbasis=21,silent=FALSE){
   # Setup Data
   KData <- rKData[,-1]
   evalPts <- rKData[[1]]
@@ -187,6 +196,7 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #'     dropped.
 #'
 #' @return A data.frame with the PCs, now including the NA rows.
+#' @noRd
 .insertMissingRows <- function(data_add, insertRows){
   data_return <- matrix(ncol=ncol(data_add), #nPCs
                         nrow=(nrow(data_add)+length(insertRows)))

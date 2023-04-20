@@ -1,57 +1,29 @@
 #' Fit a Random Forest model with PC data (Using CV for Improvements)
 #'
 #' The function fits a random forest model to the data along with using cross-
-#'     validation to quantify variable importance.
-#'
-#' Warning: If there are no sythentics, this may break (will fix it eventually)
+#'     validation to quantify variable importance. Warning, if there are no
+#'     synthetics, this may break (will fix it eventually).
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Generally use the results from getPCAData, potentially with meta-
 #'     variables attached.
 #' @param K (Optional) Numeric indicating the number of folds to use in K-fold
 #'     CV. The default is 10.
-#' @param outcome (Optional) String indicating the column name with the outcome
-#'     in both data and cellData. Default is the first column of data.
-#' @param unit (Optional) String indicating the column name with the unit in
-#'     both data and cellData. Default is the second column of data.
-#' @param repeatedId (Optional) String indicating the column name with the
-#'     unique id from repeated measures in both data and cellData. Default is
-#'     NULL.
 #' @param metaNames (Optional) Vector indicating the meta-variables to be
 #'     considered. Default is NULL.
-#' @param cellData (Optional) Data.frame indicating the cells used to create
-#'     data. It contains outcome, unit, (possibly) repeatedId, agentType.
-#' @param syntheticKs (Optional) Numeric indicating the number of variables
-#'     in the K noise groups. If the value is 0, no K noise variables are
-#'     generated. Default is 100.
-#' @param syntheticMetas (Optional) Numeric indicating the number of variables
-#'     in the meta noise groups. If the value is 0, no meta noise variables are
-#'     generated. Default is 100.
-#' @param generalSyntheticK (Optional) Boolean indicating if a general K noise
-#'     group should be used or specialized K noise groups should be used.
-#'     Default is TRUE.
-#' @param curvedSigSims (Optional) Numeric indicating the number of simulations
-#'     used to create the curved lines. Default is 100.
+#' @param synthetics (Optional)
 #' @param alpha (Optional) Numeric in (0,1) indicating the significance used
-#'     throughout the analysis. Default is 0.05.
-#'
-#' This is used in selection of noise variables and in building the CV
-#'     intervals.
-#'
+#'     throughout the analysis. Default is 0.05.#'
 #' @param silent (Optional) Boolean indicating if output should be suppressed
 #'     when the function is running. Default is FALSE.
 #' @param rGuessSims (Optional) Numeric value indicating the number of
 #'     simulations used for guessing and creating the guess estimate on the
 #'     plot. Default is 500.
-#' @param alignmentMethod (Optional) String indicating the method of aligning
-#'     variables via noise variables. The options are 'Add', 'Mult', or c('Add',
-#'     'Mult'). The default value is c('Add','Mult').
 #' @param subsetPlotSize (Optional) Numeric indicating the number of top
 #'     variables to include in a subset graph (note if there are less variables)
 #'     than this value indicates then no subset graph will be produced. Default
 #'     is 25.
-#' @param nTrees (Optional) Numeric indicating the number of trees in each
-#'     forest. The default is 500.
+#' @inheritParams funkyForest
 #'
 #' @return List with the following items:
 #'     \enumerate{
@@ -76,20 +48,22 @@
 #'                   ordered underlying functions and meta-variables with point
 #'                   estimates, sd, noise cutoff, and interpolation cutoff all
 #'                   based on variable importance values
+#'         }
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' dat <- simulatePP(cellVarData=
 #'                     data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/50)),
 #'                   cellKappaData=data.frame(
 #'                                       'cell'=c('A','B'),
 #'                                       'clusterCell'=c(NA,'A'),
 #'                                       'kappa'=c(20,5)),
-#'                   peoplePerStage=100,
+#'                   peoplePerStage=50,
 #'                   imagesPerPerson=1,
-#'                   silent=F )
+#'                   silent=FALSE )
 #' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
+#'                       xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
 #' pcaMeta <- simulateMeta(pcaData,
 #'                         metaInfo = data.frame(
 #'                            'var'=c('randUnif','randBin','corrNorm'),
@@ -105,11 +79,11 @@
 #'                                      'cell'=c('A','B'),
 #'                                      'clusterCell'=c(NA,'A'),
 #'                                      'kappa'=c(20,5)),
-#'                   peoplePerStage=100,
-#'                   imagesPerPerson=1,
-#'                   silent=F )
+#'                   peoplePerStage=20,
+#'                   imagesPerPerson=3,
+#'                   silent=FALSE )
 #' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
+#'                       xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
 #' pcaMeta <- simulateMeta(pcaData,
 #'                         metaInfo = data.frame(
 #'                             'var'=c('randUnif','randBin','corrNorm'),
@@ -119,13 +93,14 @@
 #' rfcv <- funkyModel(data=pcaMeta,outcome = 'Stage',unit='Person',
 #'                           metaNames=c('randUnif','randBin','corrNorm'),
 #'                           subsetPlotSize = 2)
+#' }
 funkyModel <- function(data, K=10,
                               outcome=colnames(data)[1],
                               unit=colnames(data)[2],
                               metaNames=NULL,
                               synthetics=100,
                               alpha=0.05,
-                              silent=F,
+                              silent=FALSE,
                               rGuessSims=500,
                               subsetPlotSize=25, nTrees=500,
                               method="class"){
@@ -138,9 +113,9 @@ funkyModel <- function(data, K=10,
   ## Generate Synthetics And Connect
   components <- colnames(data)[!(colnames(data)%in%c(outcome,unit,repeatedId,metaNames))]
   KFunctions <- .getUnderlyingVariable(components)
-  # Get Var and data column alignmnet
+  # Get Var and data column alignment
   underlyingDataAlignedFunctions <- .getUnderlyingVariable(colnames(data),
-                                                           returnUnique = F)
+                                                           returnUnique = FALSE)
   underlyingVars <- unique(underlyingDataAlignedFunctions)
   underlyingVars <- underlyingVars[!(underlyingVars %in%
                                        c(outcome,unit,repeatedId))]
@@ -156,7 +131,7 @@ funkyModel <- function(data, K=10,
     RF <- funkyForest(data=data[-groups[[i]],],
                                  outcome = outcome,
                                  unit=unit, repeatedId=repeatedId,
-                                 varImpPlot = F,
+                                 varImpPlot = FALSE,
                                  metaNames=c(metaNames),
                                  nTrees=nTrees, method=method)
 
@@ -165,7 +140,7 @@ funkyModel <- function(data, K=10,
     avgVI <- merge(avgVI, data_merge, by='var')
 
     oobAcc[i] <- sum(data[groups[[i]],outcome]==
-                       predict.funkyForest(model = RF$model,
+                       predict_funkyForest(model = RF$model,
                                                data_pred = data[groups[[i]],],
                                                type = 'pred', data = data)) /
       nrow(data[groups[[i]],])
@@ -174,7 +149,7 @@ funkyModel <- function(data, K=10,
     RF_full <- funkyForest(data=data,
                                      outcome = outcome,
                                      unit=unit, repeatedId=repeatedId,
-                                     varImpPlot = F,
+                                     varImpPlot = FALSE,
                                      metaNames=c(metaNames),
                                      nTrees=nTrees)
 
@@ -209,9 +184,9 @@ funkyModel <- function(data, K=10,
     RF <- funkyForest(data=data_permute,#[-drop3Idx,],
                                  outcome = outcome,
                                  unit=unit, repeatedId=repeatedId,
-                                 varImpPlot = F,
+                                 varImpPlot = FALSE,
                                  metaNames=metaNames,
-                                 nTrees=nTrees,keepModels=F)
+                                 nTrees=nTrees,keepModels=FALSE)
 
     data_merge <- RF$varImportanceData[,c('var','avgVI')]
     colnames(data_merge) <- c('var',paste0('avgVIK',sim))
@@ -271,8 +246,9 @@ funkyModel <- function(data, K=10,
   avgVI_perm_std[-1] <- avgVI_perm_std[-1] * data_perm_summ$AdjAmt
 
   # Get Interpolation cutoff
-  interpolationCO <- apply(apply(avgVI_perm_std[-1], MARGIN=2, FUN=sort, decreasing = T),
-                           MARGIN = 1, FUN = quantile, probs = 1-alpha)
+  interpolationCO <- apply(apply(avgVI_perm_std[-1], MARGIN=2, FUN=sort,
+                                 decreasing = TRUE),
+                           MARGIN = 1, FUN = stats::quantile, probs = 1-alpha)
 
   # Model accuracy estimates
   data_modelAcc <- .computeModelAccuracy(oobAcc=oobAcc, outcomes=data[,outcome])
@@ -302,10 +278,11 @@ funkyModel <- function(data, K=10,
 #'     variables.
 #'
 #' @return Data.frame with var, est, and sd as columns
+#' @noRd
 .summData <- function(dat){
   data.frame('var'=dat$var,
              'est'=rowMeans(dat[-1]),
-             'sd'=apply(dat[-1],MARGIN=1,FUN=function(x){sd(x)}))
+             'sd'=apply(dat[-1],MARGIN=1,FUN=function(x){stats::sd(x)}))
 }
 
 #' Compute Model Accuracy
@@ -318,6 +295,7 @@ funkyModel <- function(data, K=10,
 #'     method
 #'
 #' @return Data.frame with OOB, guess, and bias accuracy estimates
+#' @noRd
 .computeModelAccuracy <- function(oobAcc, outcomes, rGuessSims=500){
 
   optVals <- as.numeric(table(outcomes))
@@ -338,8 +316,8 @@ funkyModel <- function(data, K=10,
     acc <- rep(NA, rGuessSims)
     for(i in 1:rGuessSims){
       # Columns relate to outcomes
-      guesses <- rmultinom(length(outcomes),size=1,optVals/sum(optVals))
-      acc[i] <- sum(which(guesses==1,arr.ind = T)[,1] ==
+      guesses <- stats::rmultinom(length(outcomes),size=1,optVals/sum(optVals))
+      acc[i] <- sum(which(guesses==1,arr.ind = TRUE)[,1] ==
                       as.integer(as.factor(outcomes)))/n
     }
     accData$guess <- mean(acc)
@@ -362,6 +340,7 @@ funkyModel <- function(data, K=10,
 #'     be created
 #'
 #' @return List with VI figures (one or two)
+#' @noRd
 .generateVIPlot <- function(viData, accData, NoiseCutoff,
                             InterpolationCutoff, subsetPlotSize){
   viPlot <- .plotVI(viData, accData, NoiseCutoff, InterpolationCutoff)
@@ -397,18 +376,19 @@ funkyModel <- function(data, K=10,
 #' @param InterpolationCutoff Vector of numerics for the curved cutoff
 #'
 #' @return ggplot2 figure object for the VI plot
+#' @noRd
 .plotVI <- function(viData, accData, NoiseCutoff,
                     InterpolationCutoff){
   maxVal <- max(InterpolationCutoff,NoiseCutoff,viData$est)
 
   ggplot2::ggplot(data=viData,
-                  mapping=ggplot2::aes(x=factor(reorder(var,est)),
-                                       y=ifelse(est/maxVal>1,1,
-                                                ifelse(est/maxVal<0,0,
-                                                       est/maxVal)),
+                  mapping=ggplot2::aes(x=factor(stats::reorder(`var`,`est`)),
+                                       y=ifelse(`est`/maxVal>1,1,
+                                                ifelse(`est`/maxVal<0,0,
+                                                       `est`/maxVal)),
                                        group=1)) +
-    ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((est-sd)/maxVal<0,0,(est-sd)/maxVal),
-                                        ymax = ifelse((est+sd)/maxVal>1,1,(est+sd)/maxVal)),
+    ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((`est`-`sd`)/maxVal<0,0,(`est`-`sd`)/maxVal),
+                                        ymax = ifelse((`est`+`sd`)/maxVal>1,1,(`est`+`sd`)/maxVal)),
                            color='black', width=0.2) +
     ggplot2::geom_point(color='black') +
     ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,NoiseCutoff/maxVal))),

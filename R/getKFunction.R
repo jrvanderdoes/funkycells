@@ -33,6 +33,7 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' data1 <- simulatePP(cellVarData=
 #'                       data.frame('stage'=c(0,1,2),
 #'                       'A'=c(0,0,0),
@@ -41,7 +42,6 @@
 #'                       'cell'=c('A','B'),
 #'                       'clusterCell'=c(NA,'A'),
 #'                       'kappa'=c(20,5)))
-#' # Select the data
 #' KData <- data1[data1$Person=='p1',colnames(data1)!='Stage']
 #' KFunction <- getKFunction(agents=c('A','B'), unit='Person',
 #'              repeatedUniqueId='Image',
@@ -49,6 +49,13 @@
 #'              rCheckVals=seq(0,0.25,0.01),
 #'              xRange=c(0,1),yRange=c(0,1),
 #'              edgeCorrection="isotropic")
+#' plot(KFunction, type='l')
+#' }
+#'
+#' KFunction <- getKFunction(agents=c('B','Tumour'), unit='Person',
+#'                           data=TNBC_pheno[TNBC_pheno$Person==1,-1],
+#'                           rCheckVals=seq(0,50,1),
+#'                           edgeCorrection="isotropic")
 #' plot(KFunction, type='l')
 getKFunction <- function(data, agents, unit,
                          repeatedUniqueId=NULL,
@@ -193,6 +200,7 @@ getKFunction <- function(data, agents, unit,
 #'         \item newK: newK evaluated at the (potentially) new r values
 #'         \item r: new master vector of evaluated radius r values
 #'     }
+#' @noRd
 .alignKr <- function(K, newK, r, newr){
   # On the first loop (i.e. no existing data)
   if(is.null(K) && is.null(r)){
@@ -218,7 +226,7 @@ getKFunction <- function(data, agents, unit,
                     'r'=r))
   }
 
-  bigr <- na.omit(unique(c(r, newr)))
+  bigr <- stats::na.omit(unique(c(r, newr)))
   bigr <- bigr[order(bigr)]
 
   K_ret <- merge(data.frame('r'=bigr),
@@ -251,13 +259,14 @@ getKFunction <- function(data, agents, unit,
 #'
 #' @return Data.frame with the first column being the evaluated r and the rest
 #'     being the evaluted K functions for each unit.
+#' @noRd
 .rK2DF <- function(K_list, r_list){
   # Define r
   r <- c()
   for(i in 1:length(r_list)){
     r <- c(r, r_list[[i]][,1])
   }
-  r <- unique(na.omit(r))
+  r <- unique(stats::na.omit(r))
 
   # Define K and set up
   data_ret <- data.frame('r'=r[order(r)])

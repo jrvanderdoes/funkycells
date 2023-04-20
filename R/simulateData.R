@@ -31,7 +31,19 @@
 #' @export
 #'
 #' @examples
-#' data <- simulatePP()
+#' \dontrun{ data <- simulatePP() }
+#' data <- simulatePP(cellVarData=data.frame('stage'=c(0,1),
+#'                                           'A'=c(0,0),
+#'                                           'B'=c(1/100,1/500),
+#'                                           'C'=c(1/500,1/250),
+#'                                           'D'=c(1/100,1/100),
+#'                                           'E'=c(1/500,1/500)),
+#'                    cellKappaData=data.frame(
+#'                               'cell'=c('A','B','C','D','E'),
+#'                               'clusterCell'=c(NA,'A','B','C',NA),
+#'                               'kappa'=c(10,3,2,1,8)),
+#'                    peoplePerStage=4,
+#'                    imagesPerPerson=1)
 simulatePP <- function(cellVarData=
                            data.frame('stage'=c(0,1,2),
                                       'A'=c(0,0,0),
@@ -46,8 +58,7 @@ simulatePP <- function(cellVarData=
                            'kappa'=c(20,5,4,2,15,5)),
                         peoplePerStage=20,
                         imagesPerPerson=5,
-                        silent=F
-                       ){
+                        silent=FALSE ){
   ## Setup
   data_stages <- list()
   data_stages1 <- list()
@@ -82,7 +93,7 @@ simulatePP <- function(cellVarData=
                              imagesPerPerson=imagesPerPerson,
                              kappas=nonClusterCells_data$kappa,
                              cellTypes=nonClusterCells_data$cell,
-                             kappaSep=T, imageAdj=imageAdj, personAdj=personAdj)
+                             kappaSep=TRUE, imageAdj=imageAdj, personAdj=personAdj)
 
     }
     ## Inv-clustering
@@ -102,7 +113,7 @@ simulatePP <- function(cellVarData=
                                             kappas=invClusterCells_data$kappa,
                                             cellTypes=invClusterCells_data$cell,
                                             cellVars=invClusterCells_data$var,
-                                            kappaSep=T, imageAdj=imageAdj,
+                                            kappaSep=TRUE, imageAdj=imageAdj,
                                             personAdj=personAdj)
           )
     }
@@ -180,7 +191,7 @@ simulatePP <- function(cellVarData=
 #' @examples
 #' data <- simulatePP()
 #' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
+#'                       xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
 #' pcaMeta <- simulateMeta(pcaData)
 simulateMeta <- function(pcaData,
                          outcome = colnames(pcaData)[1],
@@ -266,12 +277,13 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
+#' @noRd
 .generateCSRPatterns <- function(stageName,
                                  peoplePerStage,
                                  imagesPerPerson,
                                  kappas,
                                  cellTypes,
-                                 kappaSep=T,
+                                 kappaSep=TRUE,
                                  imageAdj=0,
                                  personAdj=0){
 
@@ -340,13 +352,14 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
+#' @noRd
 .generateInvClusterPatterns <- function(stageName,
                                         peoplePerStage,
                                         imagesPerPerson,
                                         kappas,
                                         cellTypes,
                                         cellVars,
-                                        kappaSep=F,
+                                        kappaSep=FALSE,
                                         imageAdj=0,
                                         personAdj=0){
 
@@ -361,7 +374,7 @@ simulateMeta <- function(pcaData,
                                     imagesPerPerson,
                                     clusterKappas,
                                     paste0(cellTypes,'_Cluster'),
-                                    kappaSep=T,
+                                    kappaSep=TRUE,
                                     imageAdj=imageAdj,
                                     personAdj=personAdj)
   # Cluster data
@@ -405,6 +418,7 @@ simulateMeta <- function(pcaData,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and unique repeated measure id.
+#' @noRd
 .clusterAroundCells <- function(clusterData, cellVarData,
                                 stageName,
                                 cells, clusterCells, kappas,
@@ -418,7 +432,7 @@ simulateMeta <- function(pcaData,
     for(j in 1:nrow(clusterCellData)){
       data_pts <- .placeClusteredPts(currXY=as.numeric(clusterCellData[j, c('x','y')]),
                            cell=cells[i],
-                           numPts=rpois(1,kappas[i]),
+                           numPts=stats::rpois(1,kappas[i]),
                            varValue=cellVarData[i])
       if(!is.null(data_pts)){
         data_pts$Image <- clusterCellData[j,'Image']
@@ -435,13 +449,13 @@ simulateMeta <- function(pcaData,
       # Select a point from previous iteration
       preItrPt <- sample(nrow(clusterCellData),1)
       # Fill with enough pts
-      numPts <- rpois(1,kappas[i])
+      numPts <- stats::rpois(1,kappas[i])
       if(numPts+nrow(newData[newData$cellType==cells[i],]<minPts))
         numPts <- minPts - nrow(newData[newData$cellType==cells[i],])
 
       data_pts <- .placeClusteredPts(currXY=as.numeric(clusterCellData[j, c('x','y')]),
                            cell=cells[i],
-                           numPts=rpois(1,kappas[i]),
+                           numPts=stats::rpois(1,kappas[i]),
                            varValue=cellVarData[i])
       data_pts$Image <- clusterCellData[j,'Image']
       data_pts$Person <- clusterCellData[j,'Person']
@@ -480,6 +494,7 @@ simulateMeta <- function(pcaData,
 #' @return Data.frame with placed cells.
 #'
 #' The data.frame has 3 columns, x, y, and cellType.
+#' @noRd
 .placeClusteredPts <- function(currXY, cell, numPts, varValue,
                                xRange=c(0,1), yRange=c(0,1)){
   if(numPts<=0) return()
@@ -488,8 +503,8 @@ simulateMeta <- function(pcaData,
 
   compPts <- 0
   while(compPts < numPts){
-    data_ret[compPts+1,'x'] <- rnorm(1,mean=currXY[1],sd=sqrt(varValue))
-    data_ret[compPts+1,'y'] <- rnorm(1,mean=currXY[2],sd=sqrt(varValue))
+    data_ret[compPts+1,'x'] <- stats::rnorm(1,mean=currXY[1],sd=sqrt(varValue))
+    data_ret[compPts+1,'y'] <- stats::rnorm(1,mean=currXY[2],sd=sqrt(varValue))
 
     # Ensure its in boundaries
     if(data_ret[compPts+1,'x'] >= xRange[1] &

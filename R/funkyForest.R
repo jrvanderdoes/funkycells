@@ -13,7 +13,12 @@
 #'     Note, currently Unit or repeated measures should not be included.
 #'     Generally use the results from getPCAData, potentially with meta-
 #'     variables attached.
-#' @param outcome (Optional) String indicating the outcome column name in data
+#' @param outcome (Optional) String indicating the outcome column name in data.
+#'   Default is the first column of data.
+#' @param unit (Optional) String indicating the unit column name in data.
+#'   Default is the second column of data.
+#' @param repeatedId (Optional) String indicating the repeated measure column
+#'   name in data (if present). Default is NULL indicating no repeated measures.
 #' @param nTrees (Optional) Numeric indicating the number of trees to use in the
 #'     random forest model. Default is 500.
 #' @param varImpPlot (Optional) Boolean indicating if variable importance plots
@@ -24,6 +29,8 @@
 #'     should be kept. Can get large in size. Default is TRUE.
 #' @param varSelPercent Numeric in (0,1) indicating (approx) percentage of
 #'     features to keep for each tree.
+#' @param method (Optional) Method for rpart tree to build random forest. Default
+#'   is "class".
 #'
 #' @return A list with  entries
 #'     \enumerate{
@@ -37,17 +44,18 @@
 #' @examples
 #' data <- simulatePP()
 #' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
+#'                       xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
 #' RF1 <- funkyForest(data=pcaData[-2])
-#'
+#' \dontrun{
 #' pcaMeta <- simulateMeta(pcaData)
 #' RF2 <- funkyForest(pcaMeta[-2],
 #'                                metaNames=c("randUnif","randBin","rNorm",
 #'                                            "corrUnif","corrBin","corrNorm"))
+#' }
 funkyForest  <- function(data, outcome=colnames(data)[1],
                             unit=colnames(data)[2], repeatedId=NULL,
-                            nTrees=500, varImpPlot=T, metaNames=NULL,
-                            keepModels=T, varSelPercent=0.8, method="class"){
+                            nTrees=500, varImpPlot=TRUE, metaNames=NULL,
+                            keepModels=TRUE, varSelPercent=0.8, method="class"){
   # Ensure this is worthwhile
   if(length(unique(data[,outcome]))==1)
     stop('Error: Only 1 outcome in data, cannot do RF')
@@ -58,7 +66,7 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
   for(i in 1:length(underlyingDataAlignedFunctions)){
     underlyingDataAlignedFunctions[i] <-
       substr(underlyingDataAlignedFunctions[i],1,
-             tail(unlist(gregexpr('_', underlyingDataAlignedFunctions[i])), n=1)-1)
+             utils::tail(unlist(gregexpr('_', underlyingDataAlignedFunctions[i])), n=1)-1)
   }
   underlyingDataAlignedFunctions <- underlyingDataAlignedFunctions[underlyingDataAlignedFunctions!=""]
   underlyingDataAlignedFunctions <- c(colnames(data)[colnames(data)%in%c(outcome,unit,repeatedId)],
@@ -76,15 +84,16 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
   # To do CART
   for(i in 1:nTrees){
     # Bootstrap observations
-    data_rf <- data[sample(1:nrow(data), nrow(data), replace = T),]
+    data_rf <- data[sample(1:nrow(data), nrow(data), replace = TRUE),]
     # Ensure there are multiple responses in bootstrapped sample.
     while(length(unique(data_rf[,outcome]))==1){
-      data_rf <- data[sample(1:nrow(data), nrow(data), replace = T),]
+      data_rf <- data[sample(1:nrow(data), nrow(data), replace = TRUE),]
     }
 
     # Variable selection
     underlyingVarsSelected <- unique(sample(underlyingVars,
-                                            varSelPercent*length(underlyingVars), replace = F))
+                                            varSelPercent*length(underlyingVars),
+                                            replace = FALSE))
     # Build RF data. Note estimators are scrambled to avoid computational bias
     data_rf_vars <-
       data_rf[underlyingDataAlignedFunctions%in%underlyingVarsSelected]
@@ -95,7 +104,7 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
                           control=rpart::rpart.control(minsplit =1,minbucket=1, cp=0))
 
     # Get Var importance
-    data_result <- .computeTotalVarImportance1(model, data_result)
+    data_result <- .computeTotalVarImportance(model, data_result)
 
     if(keepModels) RF[[i]] <- model # Save model
   }
@@ -134,75 +143,12 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
 #'
 #' @return Data.frame which is the updated totVarImportance adding in the new
 #'     tree information.
-# .computeTotalVarImportance <- function(tree, totVarImportance){
-#
-#   # Find Error at nodes (Gini is 1-p_1^2-p_2^2)
-#   frame <- tree$frame
-#   frame[['gini']] = 1 - (frame[['dev']] / frame[['n']])^2 -
-#     (1 - frame[['dev']] / frame[['n']])^2
-#   #frame[,c('var','n','dev','gini')]
-#
-#   # Get Decrease for each split
-#   frame[['improve']] = NA
-#   for (j in 1:nrow(frame)) {
-#     name <- frame[j,'var']
-#     if (name == '<leaf>') next
-#
-#     # Get name of bigger group (if exists)
-#     name_sub <- .getUnderlyingVariable(name)
-#
-#     # Get Gini improvement
-#     ind = which(rownames(frame) %in%
-#                   (as.numeric(rownames(frame)[j])*2+c(0,1)))
-#     frame[j,'improve'] = frame[j,'n']*frame[j,'gini'] - frame[ind[1],'n']*
-#       frame[ind[1],'gini'] - frame[ind[2],'n']*frame[ind[2],'gini']
-#
-#     totVarImportance[totVarImportance$var==name_sub,'giniDec'] <-
-#       totVarImportance[totVarImportance$var==name_sub,'giniDec'] +
-#       frame[j,'improve']
-#     # Count split by variable
-#     totVarImportance[totVarImportance$var==name_sub,'splits'] <-
-#       totVarImportance[totVarImportance$var==name_sub,'splits'] + 1
-#   }
-#
-#   # Get and count Var Import
-#   for(j in 1:length(tree$variable.importance)){
-#     name <- names(tree$variable.importance[j])
-#
-#     # Get name of bigger group (if exists)
-#     name_sub <- .getUnderlyingVariable(name)
-#
-#     totVarImportance[totVarImportance$var==name_sub,'varImp'] <-
-#       totVarImportance[totVarImportance$var==name_sub,'varImp'] +
-#       tree$variable.importance[[j]]
-#     totVarImportance[totVarImportance$var==name_sub,'varImpCt'] <-
-#       totVarImportance[totVarImportance$var==name_sub,'varImpCt'] +
-#       1
-#   }
-#
-#   totVarImportance
-# }
-
-
-#' Compute Total Variable Importances
-#'
-#' This (internal) function computes the variable importance for a tree model
-#'     and combines it with totVarImportance data.frame.
-#'
-#' See use in funkyForest.
-#'
-#' @param tree Model from rpart for fitting a CART tree.
-#' @param totVarImportance Data.frame indicating the total (cumulative) variable
-#'     importance.
-#'
-#' @return Data.frame which is the updated totVarImportance adding in the new
-#'     tree information.
-.computeTotalVarImportance1 <- function(tree, totVarImportance=NULL){
+#' @noRd
+.computeTotalVarImportance <- function(tree, totVarImportance=NULL){
   tmp1 <- as.data.frame(tree$variable.importance)
   tmp2 <- data.frame('var'=rownames(tmp1),
-                     'VI'=tmp1[,1])#,
-  #'group'=.getUnderlyingVariable(rownames(tmp1),returnUnique = F))
-  tmp2$var <- .getUnderlyingVariable(rownames(tmp1),returnUnique = F)
+                     'VI'=tmp1[,1])
+  tmp2$var <- .getUnderlyingVariable(rownames(tmp1),returnUnique = FALSE)
 
   # Combine Data
   if(is.null(totVarImportance))
@@ -231,27 +177,28 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
 #' @param model (Optional) Random forest model from funkyForest.
 #'
 #' @return grid.arrange containing two ggplots
+#' @noRd
 .plotVariableImportance <- function(varImportanceData=NULL, model=NULL){
   if((is.null(varImportanceData) && is.null(model))||
      (!is.null(varImportanceData) && !is.null(model))){
     stop('Error: Give one varImportanceData or model')
   }
+
   if(is.null(varImportanceData)){
-
-    varImportanceData <- data.frame('var'=cols_preds,
-                                    # 'splits'=0, 'giniDec'=0,
-                                    # 'varImp'=0, 'varImpCt'=0,
-                                    'VI'=0)
-
-    for(i in 1:length(model)){
-      varImportanceData <- .computeTotalVarImportance1(model[[i]], varImportanceData)
-      #varImportanceData <- .computeTotalVarImportance(model[[i]], varImportanceData)
-    }
+    stop('Give Var Importance')
+    # cols_preds never defined
+    # varImportanceData <- data.frame('var'=cols_preds,
+    #                                 # 'splits'=0, 'giniDec'=0,
+    #                                 # 'varImp'=0, 'varImpCt'=0,
+    #                                 'VI'=0)
+    #
+    # for(i in 1:length(model)){
+    #   varImportanceData <- .computeTotalVarImportance(model[[i]], varImportanceData)
+    # }
 
     # Get mean results for variable importance
     #     TEST: Use average over all or just when appears in model
-    # varImportanceData$avgGini <- varImportanceData$giniDec / nTrees#data_result$splits
-    varImportanceData$avgVI <- varImportanceData$VI / nTrees#data_result$varImpCt
+    # varImportanceData$avgVI <- varImportanceData$VI / nTrees#data_result$varImpCt
 
   }
 
@@ -268,10 +215,12 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
 #'
 #' @param varImportanceData Data.frame for the variable importance information.
 #'
-#' @return grid.arrange containing two ggplots.
+#' @return grid.arrange containing ggplot
+#' @noRd
 .plotImportance <- function(varImportanceData){
   varImportance <- ggplot2::ggplot() +
-    ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgVI), y=avgVI/max(avgVI)),
+    ggplot2::geom_point(ggplot2::aes(x=stats::reorder(`var`,`avgVI`),
+                                     y=avgVI/max(avgVI)),
                         data=varImportanceData) +
     ggplot2::coord_flip() +
     ggplot2::xlab(NULL) +
@@ -312,17 +261,16 @@ funkyForest  <- function(data, outcome=colnames(data)[1],
 #'                                  'cell'=c('A','B'),
 #'                                  'clusterCell'=c(NA,'A'),
 #'                                  'kappa'=c(20,5)),
-#'                     peoplePerStage=100,
+#'                     peoplePerStage=50,
 #'                     imagesPerPerson=1,
-#'                     reduceEdge=0.025,
-#'                     silent=F )
+#'                     silent=FALSE )
 #' pcaData <- getPCAData(data_pp,repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
+#'                       xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
 #' RF <- funkyForest(data=pcaData[-2], nTrees = 5)
-#' pred <- predict.funkyForest(model = RF[[1]], type='all',
+#' pred <- predict_funkyForest(model = RF$model, type='all',
 #'                                  data_pred = pcaData[-2],
 #'                                  data=pcaData[-2])
-predict.funkyForest <- function(model, data_pred, type='all', data=NULL){
+predict_funkyForest <- function(model, data_pred, type='all', data=NULL){
   # Verification
   #   This checks the data to see if there are any columns that are characters
   #   or factors. This will be used later to manage missing data. We obviously
@@ -440,7 +388,8 @@ predict.funkyForest <- function(model, data_pred, type='all', data=NULL){
 #' @param names Vector of names to get underlying function on each
 #'
 #' @return Vector of underlying functions for each in name.
-.getUnderlyingVariable <- function(names, returnUnique=T){
+#' @noRd
+.getUnderlyingVariable <- function(names, returnUnique=TRUE){
   if(returnUnique)
     return(unique(stringr::str_remove(names,'(_PC)[0-9]+$')))
   return(stringr::str_remove(names,'(_PC)[0-9]+$'))

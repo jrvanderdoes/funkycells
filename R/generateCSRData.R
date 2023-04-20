@@ -25,11 +25,12 @@
 #'
 #' @return Data.frame with x, y, and cellType specified. Each row is a new
 #'     point.
+#' @noRd
 .generateCSRData <- function(xRange = c(0,1), yRange = c(0,1),
-                              kappa=25, requireOne=T, cellType='A'){
+                              kappa=25, requireOne=TRUE, cellType='A'){
   area <- (xRange[2]-xRange[1]) * (yRange[2]-yRange[1])
   intensityValue <- kappa*area
-  numPts <- rpois(1, intensityValue)
+  numPts <- stats::rpois(1, intensityValue)
   if(numPts==0){
     if(!requireOne ){
       return() # TEST: Not sure how this will work
@@ -38,7 +39,7 @@
     }else{
       idx <- 0
       while(numPts==0){
-        numPts <- rpois(1, intensityValue)
+        numPts <- stats::rpois(1, intensityValue)
         idx <- idx + 1
         if(idx > 5) numPts <- 1 # Avoid long loops if intensityValue is small
       }
@@ -46,8 +47,8 @@
   }
 
   pointPattern <- data.frame(
-    'x'=runif(numPts, min=xRange[1], max=xRange[2]),
-    'y'=runif(numPts, min=yRange[1], max=yRange[2]),
+    'x'=stats::runif(numPts, min=xRange[1], max=xRange[2]),
+    'y'=stats::runif(numPts, min=yRange[1], max=yRange[2]),
     'cellType'=cellType)
 
   if(nrow(unique(pointPattern)) != nrow(pointPattern)){

@@ -4,17 +4,13 @@
 #'     as right or wrong and overlay the plots. Note this means the lines may
 #'     cover each other
 #'
-#' Upcoming: Suggests for pROC and RCOlorBrewer then check. See the following:
-#'     - https://stackoverflow.com/questions/6895852/load-a-package-only-when-needed-in-r-packagesee
-#'     - https://r-pkgs.org/metadata.html#sec-description
-#'
 #' @param trueOutcomes Vector of the true results
 #' @param modelPercents Data.frame with columns named after the true outcomes,
 #'     giving the percent of selecting that outcome. This is what is returned
-#'     predict.RandomForest_PC when type='all' and look at PredPerc[-1] (first
+#'     predict.RandomForest_PC when type='all' and look at `PredPerc[-1]` (first
 #'     column is the predictions).
 #'
-#' @return NULL. See plot of ROC curves.
+#' @return ggplot object for the ROC curves.
 #' @export
 #'
 #' @examples
@@ -26,35 +22,58 @@
 #'                                        'cell'=c('A','B'),
 #'                                        'clusterCell'=c(NA,'A'),
 #'                                        'kappa'=c(20,5)),
-#'                           peoplePerStage=100,
+#'                           peoplePerStage=20,
 #'                           imagesPerPerson=1,
-#'                           reduceEdge=0.025,
-#'                           silent=F )
+#'                           silent=FALSE )
+#' # Caution, in general use more than 5 nTrees (Default is 500)
 #' pcaData_roc <- getPCAData(data_pp_roc,repeatedUniqueId='Image',
-#'                           xRange = c(0,1),  yRange = c(0,1), silent=F)
-#' RF_roc <- computeRandomForest_PC(data=pcaData_roc[-2], nTrees = 5)
-#' pred_roc <- predict.RandomForest_PC(model = RF_roc[[1]],
+#'                           xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
+#' RF_roc <- funkyForest(data=pcaData_roc[-2], nTrees = 5)
+#' pred_roc <- predict_funkyForest(model = RF_roc$model,
 #'                                      data_pred = pcaData_roc[-2],
 #'                                      data=pcaData_roc[-2])
 #' computePseudoROCCurves(pcaData_roc$Stage,pred_roc$PredPerc[-1])
 computePseudoROCCurves <- function(trueOutcomes, modelPercents){
-  options <- colnames(modelPercents)
-  cols <- suppressWarnings(RColorBrewer::brewer.pal(length(options),'Set1'))
-  # 1 ROC curve, mock vs non mock
-  roc.curve <- pROC::roc(ifelse(trueOutcomes==options[1],
-                                options[1], paste0('Not-',options[1])),
-                         as.numeric(modelPercents[,options[1]]),
-                         levels=c(options[1], paste0('Not-',options[1])),
-                         direction='>'
-  )
-  plot(roc.curve, col = cols[1])
-
-  for(i in 2:length(options)){
-    roc.curve <- pROC::roc(ifelse(trueOutcomes==options[i],
-                                  options[i], paste0('Not-',options[i])),
-                           as.numeric(modelPercents[,options[i]]),
-                           levels=c(options[i], paste0('Not-',options[i])),
-                           direction='>')
-    lines(roc.curve, col = cols[i])
+  if (!requireNamespace("pROC", quietly = TRUE)) {
+    stop(
+      "Package \"pROC\" must be installed to use this function.",
+      call. = FALSE
+    )
   }
-}
+
+  if(ncol(modelPercents)<2){
+    stop('Error: Only one outcome (col) in modelPercents')
+  }
+
+  options_roc <- colnames(modelPercents)
+  data_auc <- rep(NA,length(options_roc))
+  data_plot <- data.frame(matrix(nrow=0,ncol = 3))
+  colnames(data_plot) <- c('Type','Spec','Sens')
+
+  for(i in 1:length(options_roc)){
+    roc.curve <- pROC::roc(ifelse(trueOutcomes==options_roc[i],
+                                  options_roc[i], paste0('Not-',options_roc[i])),
+                           as.numeric(modelPercents[,options_roc[i]]),
+                           levels=c(options_roc[i], paste0('Not-',options_roc[i])),
+                           direction='>')
+
+    data_plot <- rbind(data_plot,
+                       data.frame('Type'=options_roc[i],
+                                  'Spec'=roc.curve$specificities,
+                                  'Sens'=roc.curve$sensitivities))
+    data_auc[i] <- roc.curve$auc
+  }
+
+  ggplot2::ggplot(data_plot,
+                  ggplot2::aes(x=`Spec`,y=`Sens`, color=`Type`)) +
+    ggplot2::geom_path(linewidth=0.75) +
+    ggplot2::geom_abline(slope=1,intercept = 1, color='gray') +
+    ggplot2::xlab('Specificity') +
+    ggplot2::ylab('Sensitivity') +
+    ggplot2::xlim(c(1,0)) +
+    ggplot2::ylim(c(0,1)) +
+    ggplot2::theme_bw() +
+    ggplot2::theme(panel.grid = ggplot2::element_blank()) +
+    ggplot2::scale_color_discrete(labels=paste0(options_roc,' (AUC: ',data_auc,')'),
+                                  name ='Outcome')
+  }

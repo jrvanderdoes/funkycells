@@ -13,6 +13,7 @@
 #' .getMode(c('A','B','C','A','B'))
 #' .getMode(c(1,2,3,'A','A'))
 #' .getMode(c(1,2,3,'A','A',2,2,2))
+#' @noRd
 .getMode <- function(x) {
   a <- table(x)
   mode <- names(a)[a == max(a)]
@@ -29,7 +30,7 @@
 #'
 #' See usage in .getPCs or simulatePP.
 #'
-#' TODO:: See if this is used in latest refactor
+#' TODO:: See if this can be change and removed
 #'
 #' @param data_list List of data.frames to be combined
 #' @param typeBind String of row or col indicating if the lists should be
@@ -38,9 +39,10 @@
 #'     default is FALSE.
 #'
 #' @return Data.frame with the data from the list.
+#' @noRd
 .convertList2Dataframe <- function(data_list,
                                    typeBind=c('row','col'),
-                                   na.omit=F){
+                                   na.omit=FALSE){
   if(length(typeBind)!=1 || !(typeBind%in%c('row','col')))
     stop('Error: Select row or col for typeBind')
 
@@ -92,10 +94,13 @@
 #' @param listsDFCol String with column name for matching column in lists
 #'
 #' @return Data.frame df with values from lists appended
+#' @noRd
 .mergeListsToDF <- function(df, lists, dfCol, listsDFCol){
 
   for(i in 1:length(lists)){
-    df <- merge(x=df, by.x=dfCol, y=lists[[i]], by.y=listsDFCol, sort=F
+    df <- merge(x=df, by.x=dfCol,
+                y=lists[[i]], by.y=listsDFCol,
+                sort=FALSE
               )[, union(names(df),names(lists[[i]])[!(names(lists[[i]])%in%listsDFCol)])]
   }
 
@@ -115,6 +120,7 @@
 #'
 #' @examples
 #' .getFolds(1:10,3)
+#' @noRd
 .getFolds <- function(x,K) {
   if(K>length(x))
     warning(paste0('Warning: Only ',length(x),' chunks are used due to data'))
@@ -139,4 +145,5 @@
 #' .specify_decimal(10.123,1)
 #' .specify_decimal(10.123,3)
 #' .specify_decimal(10.123,5)
+#' @noRd
 .specify_decimal <- function(x, k) {trimws(format(round(x, k), nsmall=k))}

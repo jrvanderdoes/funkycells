@@ -19,25 +19,13 @@
 #' @export
 #'
 #' @examples
-#' dat <- simulatePP(cellVarData=
-#'                        data.frame('stage'=c(0,1),
-#'                                   'A'=c(0,0),
-#'                                   'B'=c(1/50,1/50)),
-#'                    cellKappaData=data.frame(
-#'                                   'cell'=c('A','B'),
-#'                                   'clusterCell'=c(NA,'A'),
-#'                                   'kappa'=c(20,5)),
-#'                    peoplePerStage=100,
-#'                    imagesPerPerson=1,
-#'                    reduceEdge=0.025,
-#'                    silent=F )
-#' plotPP(dat[dat$Image==1,c('x','y','cellType')])
+#' plotPP(TNBC_pheno[TNBC_pheno$Person==1,c("cellx",'celly','Phenotype')])
+#' plotPP(diabetes[diabetes$Image=='E37',c('x','y','cellType')])
 plotPP <- function(data, colorGuide = NULL,ptSize=1,
                    xlim=c(min(data[,1]),max(data[,1])),
                    ylim=c(min(data[,2]),max(data[,2])),
-                   dropAxes=F,
+                   dropAxes=FALSE,
                    colors=NULL){
-  ## This is used to plot point process data
 
   retPlot <- ggplot2::ggplot() +
     ggplot2::geom_point(mapping=ggplot2::aes(x=data[,1],y=data[,2],
