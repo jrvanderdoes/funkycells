@@ -34,88 +34,100 @@
 #'
 #' @examples
 #' \dontrun{
-#' data1 <- simulatePP(cellVarData=
-#'                       data.frame('stage'=c(0,1,2),
-#'                       'A'=c(0,0,0),
-#'                       'B'=c(1/100,1/500,1/500)),
-#'                    cellKappaData=data.frame(
-#'                       'cell'=c('A','B'),
-#'                       'clusterCell'=c(NA,'A'),
-#'                       'kappa'=c(20,5)))
-#' KData <- data1[data1$Person=='p1',colnames(data1)!='Stage']
-#' KFunction <- getKFunction(agents=c('A','B'), unit='Person',
-#'              repeatedUniqueId='Image',
-#'              data=KData,
-#'              rCheckVals=seq(0,0.25,0.01),
-#'              xRange=c(0,1),yRange=c(0,1),
-#'              edgeCorrection="isotropic")
-#' plot(KFunction, type='l')
+#' data1 <- simulatePP(
+#'   cellVarData =
+#'     data.frame(
+#'       "stage" = c(0, 1, 2),
+#'       "A" = c(0, 0, 0),
+#'       "B" = c(1 / 100, 1 / 500, 1 / 500)
+#'     ),
+#'   cellKappaData = data.frame(
+#'     "cell" = c("A", "B"),
+#'     "clusterCell" = c(NA, "A"),
+#'     "kappa" = c(20, 5)
+#'   )
+#' )
+#' KData <- data1[data1$Person == "p1", colnames(data1) != "Stage"]
+#' KFunction <- getKFunction(
+#'   agents = c("A", "B"), unit = "Person",
+#'   repeatedUniqueId = "Image",
+#'   data = KData,
+#'   rCheckVals = seq(0, 0.25, 0.01),
+#'   xRange = c(0, 1), yRange = c(0, 1),
+#'   edgeCorrection = "isotropic"
+#' )
+#' plot(KFunction, type = "l")
 #' }
 #'
-#' KFunction <- getKFunction(agents=c('B','Tumour'), unit='Person',
-#'                           data=TNBC_pheno[TNBC_pheno$Person==1,-1],
-#'                           rCheckVals=seq(0,50,1),
-#'                           edgeCorrection="isotropic")
-#' plot(KFunction, type='l')
+#' KFunction <- getKFunction(
+#'   agents = c("B", "Tumour"), unit = "Person",
+#'   data = TNBC_pheno[TNBC_pheno$Person == 1, -1],
+#'   rCheckVals = seq(0, 50, 1),
+#'   edgeCorrection = "isotropic"
+#' )
+#' plot(KFunction, type = "l")
 getKFunction <- function(data, agents, unit,
-                         repeatedUniqueId=NULL,
-                         rCheckVals=NULL,
-                         xRange=NULL, yRange=NULL,
-                         edgeCorrection="isotropic"){
-
+                         repeatedUniqueId = NULL,
+                         rCheckVals = NULL,
+                         xRange = NULL, yRange = NULL,
+                         edgeCorrection = "isotropic") {
   ## Must save as a list to ensure multiple sizes are handled (rCheckVals=NULL)
   matrix_r <- matrix_K <- list()
-  units <- unique(data[,unit])
+  units <- unique(data[, unit])
 
-  for(i in 1:length(units)){
+  for (i in 1:length(units)) {
     # Unit Data
-    data_unit <- data[data[,unit]==units[i],]
-    data_unit <- data_unit[,colnames(data_unit)!=unit]
+    data_unit <- data[data[, unit] == units[i], ]
+    data_unit <- data_unit[, colnames(data_unit) != unit]
 
     ## Handle repeated measures (including if none)
     repeats <- NA
-    if(!is.null(repeatedUniqueId))
-      repeats <- unique(data_unit[,repeatedUniqueId])
+    if (!is.null(repeatedUniqueId)) {
+      repeats <- unique(data_unit[, repeatedUniqueId])
+    }
     # Set up var
     matrix_K_tmp <- matrix_r_tmp <- NULL
     agent1Counts <- rep(NA, length(repeats))
 
-    for(j in 1:length(repeats)){
+    for (j in 1:length(repeats)) {
       # Unit's Repeat Data
-      if(length(repeats)>1){
-        data_repeat <- data_unit[data_unit[,repeatedUniqueId]==repeats[j],]
-      }else{
+      if (length(repeats) > 1) {
+        data_repeat <- data_unit[data_unit[, repeatedUniqueId] == repeats[j], ]
+      } else {
         data_repeat <- data_unit
       }
-      if(!is.null(repeatedUniqueId))
-        data_repeat <- data_repeat[,colnames(data_unit)!=repeatedUniqueId]
+      if (!is.null(repeatedUniqueId)) {
+        data_repeat <- data_repeat[, colnames(data_unit) != repeatedUniqueId]
+      }
 
       # Make marks all factors
-      for(k in 3:ncol(data_repeat)){
-        if(is.character(data_repeat[[k]]))
+      for (k in 3:ncol(data_repeat)) {
+        if (is.character(data_repeat[[k]])) {
           data_repeat[[k]] <- as.factor(data_repeat[[k]])
+        }
       }
 
       # Define xRange and yRange for this image. Take given if exists
-      if(is.null(xRange)){
-        xRange_rm <- c(min(data_repeat[,1]),max(data_repeat[,1]))
-      } else{
+      if (is.null(xRange)) {
+        xRange_rm <- c(min(data_repeat[, 1]), max(data_repeat[, 1]))
+      } else {
         xRange_rm <- xRange
       }
-      if(is.null(yRange)) {
-        yRange_rm <- c(min(data_repeat[,2]),max(data_repeat[,2]))
-      } else{
+      if (is.null(yRange)) {
+        yRange_rm <- c(min(data_repeat[, 2]), max(data_repeat[, 2]))
+      } else {
         yRange_rm <- yRange
       }
 
-      # Define the marked point pattern using the data set for an individual person.
-      # For this data the person data has had the marks listed as True/False, as factors.
-      # as.ppp interprets the first two columns as x-y coordinates and remaining columns as marks
+      # Define the marked point pattern
+      #   as.ppp interprets the first two columns as x-y coordinates and
+      #   remaining columns as marks
       data_ppp <- spatstat.geom::as.ppp(data_repeat,
-                                        W=spatstat.geom::as.owin(c(xRange_rm,yRange_rm)))
+        W = spatstat.geom::as.owin(c(xRange_rm, yRange_rm))
+      )
 
       ## Marked since additional properties
-      if(ncol(data_repeat)>3){
+      if (ncol(data_repeat) > 3) {
         # Apply Kmulti, which generates Kcross functions for subsets of cells that we can
         # define by functions of the cell marks.
         # Since we have Marks as T/F, we set the functions f1 and f2 to return the
@@ -123,50 +135,65 @@ getKFunction <- function(data, agents, unit,
 
         # Because we may be defining different window sizes for each person
         # we return the vector r as well, as it will be different for each patient.
-        f1 = function(X){which(spatstat.geom::marks(X)[,agents[1]]==TRUE)}
-        f2 = function(X){which(spatstat.geom::marks(X)[,agents[2]]==TRUE)}
-        K <- tryCatch({spatstat.explore::Kmulti(data_ppp,f1,f2,
-                             correction = edgeCorrection,
-                             r=rCheckVals)
-        }, error=function(e){
-          list(NA,NA,NA)
-        })
+        f1 <- function(X) {
+          which(spatstat.geom::marks(X)[, agents[1]] == TRUE)
+        }
+        f2 <- function(X) {
+          which(spatstat.geom::marks(X)[, agents[2]] == TRUE)
+        }
+        K <- tryCatch(
+          {
+            spatstat.explore::Kmulti(data_ppp, f1, f2,
+              correction = edgeCorrection,
+              r = rCheckVals
+            )
+          },
+          error = function(e) {
+            list(NA, NA, NA)
+          }
+        )
 
         # Save weights
-        agent1Counts[j] <- nrow(data_repeat[data_repeat[,agents[1]],])
-      } else{
-        K <- tryCatch({
-          spatstat.explore::Kcross(data_ppp,
-                           agents[1], agents[2],
-                           correction = edgeCorrection,
-                           r=rCheckVals)
-        }, error=function(e){
-          list(NA,NA,NA)
-        })
+        agent1Counts[j] <- nrow(data_repeat[data_repeat[, agents[1]], ])
+      } else {
+        K <- tryCatch(
+          {
+            spatstat.explore::Kcross(data_ppp,
+              agents[1], agents[2],
+              correction = edgeCorrection,
+              r = rCheckVals
+            )
+          },
+          error = function(e) {
+            list(NA, NA, NA)
+          }
+        )
 
         # Save weights
-        agent1Counts[j] <- nrow(data_repeat[data_repeat[,3]==agents[1],])
+        agent1Counts[j] <- nrow(data_repeat[data_repeat[, 3] == agents[1], ])
       }
 
       ## AlignK and r
-      result <- .alignKr(K = matrix_K_tmp, newK = K[[3]],
-                         r = matrix_r_tmp, newr = K[[1]])
-      matrix_K_tmp <- cbind(result[[1]],result[[2]])
+      result <- .alignKr(
+        K = matrix_K_tmp, newK = K[[3]],
+        r = matrix_r_tmp, newr = K[[1]]
+      )
+      matrix_K_tmp <- cbind(result[[1]], result[[2]])
       matrix_r_tmp <- result[[3]]
-
     }
     # Drop any NA
-    dropIdxs <- which(colSums(is.na(matrix_K_tmp))!=0)
-    if(length(dropIdxs)>0){
-      matrix_K_tmp <- matrix_K_tmp[,-dropIdxs]
+    dropIdxs <- which(colSums(is.na(matrix_K_tmp)) != 0)
+    if (length(dropIdxs) > 0) {
+      matrix_K_tmp <- matrix_K_tmp[, -dropIdxs]
       agent1Counts <- agent1Counts[-dropIdxs]
     }
 
-    if(length(matrix_K_tmp)!=0){
+    if (length(matrix_K_tmp) != 0) {
       ## Take weighted average
-      matrix_K[[i]] <- (as.matrix(matrix_K_tmp) %*% agent1Counts)/sum(agent1Counts)
+      matrix_K[[i]] <-
+        (as.matrix(matrix_K_tmp) %*% agent1Counts) / sum(agent1Counts)
       matrix_r[[i]] <- data.frame(matrix_r_tmp)
-    } else{
+    } else {
       matrix_K[[i]] <- data.frame(NA)
       matrix_r[[i]] <- data.frame(NA)
     }
@@ -201,47 +228,57 @@ getKFunction <- function(data, agents, unit,
 #'         \item r: new master vector of evaluated radius r values
 #'     }
 #' @noRd
-.alignKr <- function(K, newK, r, newr){
+.alignKr <- function(K, newK, r, newr) {
   # On the first loop (i.e. no existing data)
-  if(is.null(K) && is.null(r)){
+  if (is.null(K) && is.null(r)) {
     # If failure in K function computation
-    if(length(newK)==1 && length(newr)==1 &&
-       is.na(newK) && is.na(newr)){
-          ## Check, this may not work
-          return(list('K'=NA,
-                      'newK'=NULL,
-                      'r'=NA))
-    }else{
-          return(list('K'=NULL,
-                      'newK'=newK,
-                      'r'=newr))
+    if (length(newK) == 1 && length(newr) == 1 &&
+      is.na(newK) && is.na(newr)) {
+      ## Check, this may not work
+      return(list(
+        "K" = NA,
+        "newK" = NULL,
+        "r" = NA
+      ))
+    } else {
+      return(list(
+        "K" = NULL,
+        "newK" = newK,
+        "r" = newr
+      ))
     }
   }
 
   # Failure in K function computation
-  if(length(newK)==1 && length(newr)==1 &&
-     is.na(newK) && is.na(newr)){
-        return(list('K'=K,
-                    'newK'=rep(NA, length(r)),
-                    'r'=r))
+  if (length(newK) == 1 && length(newr) == 1 &&
+    is.na(newK) && is.na(newr)) {
+    return(list(
+      "K" = K,
+      "newK" = rep(NA, length(r)),
+      "r" = r
+    ))
   }
 
   bigr <- stats::na.omit(unique(c(r, newr)))
   bigr <- bigr[order(bigr)]
 
-  K_ret <- merge(data.frame('r'=bigr),
-               data.frame('r'=r,K),
-               by=c("r"), all.x=TRUE)
-  K_ret <- tidyr::fill(K_ret,-r,.direction='down')#K_ret %>% fill (-r,.direction='down')
+  K_ret <- merge(data.frame("r" = bigr),
+    data.frame("r" = r, K),
+    by = c("r"), all.x = TRUE
+  )
+  K_ret <- tidyr::fill(K_ret, -r, .direction = "down")
 
-  newK_ret <- merge(data.frame('r'=bigr),
-                data.frame('r'=newr,'K'=newK),
-                by=c("r"), all.x=TRUE)
-  newK_ret <- tidyr::fill(newK_ret, K,.direction='down')#newK_ret %>% fill(K,.direction='down')
+  newK_ret <- merge(data.frame("r" = bigr),
+    data.frame("r" = newr, "K" = newK),
+    by = c("r"), all.x = TRUE
+  )
+  newK_ret <- tidyr::fill(newK_ret, K, .direction = "down")
 
-  list('K'=K_ret[-1],
-       'newK'=newK_ret[-1],
-       'r'=bigr)
+  list(
+    "K" = K_ret[-1],
+    "newK" = newK_ret[-1],
+    "r" = bigr
+  )
 }
 
 
@@ -260,24 +297,27 @@ getKFunction <- function(data, agents, unit,
 #' @return Data.frame with the first column being the evaluated r and the rest
 #'     being the evaluted K functions for each unit.
 #' @noRd
-.rK2DF <- function(K_list, r_list){
+.rK2DF <- function(K_list, r_list) {
   # Define r
   r <- c()
-  for(i in 1:length(r_list)){
-    r <- c(r, r_list[[i]][,1])
+  for (i in 1:length(r_list)) {
+    r <- c(r, r_list[[i]][, 1])
   }
   r <- unique(stats::na.omit(r))
 
   # Define K and set up
-  data_ret <- data.frame('r'=r[order(r)])
-  for(i in 1:length(K_list)){
-    tmp <- data.frame('r'=r_list[[i]][[1]],
-                      'K'=K_list[[i]][,1])
-    colnames(tmp) <- c('r',paste0('K',i))
+  data_ret <- data.frame("r" = r[order(r)])
+  for (i in 1:length(K_list)) {
+    tmp <- data.frame(
+      "r" = r_list[[i]][[1]],
+      "K" = K_list[[i]][, 1]
+    )
+    colnames(tmp) <- c("r", paste0("K", i))
     data_ret <- merge(data_ret, tmp,
-                      by=c("r"), all.x=TRUE)
+      by = c("r"), all.x = TRUE
+    )
   }
-  data_ret <- tidyr::fill(data_ret, -r,.direction='down')#data_ret %>% fill (-r,.direction='down')
+  data_ret <- tidyr::fill(data_ret, -r, .direction = "down")
 
   data_ret
 }

@@ -9,16 +9,17 @@
 #' @return The mode(s) of the vector
 #'
 #' @examples
-#' .getMode(c(1,2,3,1))
-#' .getMode(c('A','B','C','A','B'))
-#' .getMode(c(1,2,3,'A','A'))
-#' .getMode(c(1,2,3,'A','A',2,2,2))
+#' .getMode(c(1, 2, 3, 1))
+#' .getMode(c("A", "B", "C", "A", "B"))
+#' .getMode(c(1, 2, 3, "A", "A"))
+#' .getMode(c(1, 2, 3, "A", "A", 2, 2, 2))
 #' @noRd
 .getMode <- function(x) {
   a <- table(x)
   mode <- names(a)[a == max(a)]
-  if(is.numeric(x))
+  if (is.numeric(x)) {
     mode <- as.numeric(mode)
+  }
   mode
 }
 
@@ -41,39 +42,41 @@
 #' @return Data.frame with the data from the list.
 #' @noRd
 .convertList2Dataframe <- function(data_list,
-                                   typeBind=c('row','col'),
-                                   na.omit=FALSE){
-  if(length(typeBind)!=1 || !(typeBind%in%c('row','col')))
-    stop('Error: Select row or col for typeBind')
+                                   typeBind = c("row", "col"),
+                                   na.omit = FALSE) {
+  if (length(typeBind) != 1 || !(typeBind %in% c("row", "col"))) {
+    stop("Error: Select row or col for typeBind")
+  }
 
   data_df <- data.frame()
 
-  if(typeBind=='row'){
+  if (typeBind == "row") {
     # No error checking. See simulatePP or .generateCSRPatterns
-    for(i in 1:length(data_list)){
-      data_df <- rbind(data_df,data_list[[i]])
+    for (i in 1:length(data_list)) {
+      data_df <- rbind(data_df, data_list[[i]])
     }
-  }else if(typeBind=='col'){
+  } else if (typeBind == "col") {
     # See if first column is DF or not. Can occur based on getPCAData
-    if(dim(data_list[[1]])[[1]]>1){
+    if (dim(data_list[[1]])[[1]] > 1) {
       data_df <- data_list[[1]]
-    }else{
-      data_df <- data.frame('V1'=t(data_list[[1]]))
+    } else {
+      data_df <- data.frame("V1" = t(data_list[[1]]))
     }
 
-    if(length(data_list)!=1){
-      for(ii in 2:length(data_list)){
-        if(dim(data_list[[ii]])[[1]]>1){
-          data_df <- cbind(data_df,data_list[[ii]])
-        }else{
+    if (length(data_list) != 1) {
+      for (ii in 2:length(data_list)) {
+        if (dim(data_list[[ii]])[[1]] > 1) {
+          data_df <- cbind(data_df, data_list[[ii]])
+        } else {
           data_df <- cbind(data_df, t(data_list[[ii]]))
         }
       }
     }
   }
 
-  if(na.omit)
+  if (na.omit) {
     data_df <- na.omit(data_df)
+  }
 
   data_df
 }
@@ -95,13 +98,13 @@
 #'
 #' @return Data.frame df with values from lists appended
 #' @noRd
-.mergeListsToDF <- function(df, lists, dfCol, listsDFCol){
-
-  for(i in 1:length(lists)){
-    df <- merge(x=df, by.x=dfCol,
-                y=lists[[i]], by.y=listsDFCol,
-                sort=FALSE
-              )[, union(names(df),names(lists[[i]])[!(names(lists[[i]])%in%listsDFCol)])]
+.mergeListsToDF <- function(df, lists, dfCol, listsDFCol) {
+  for (i in 1:length(lists)) {
+    df <- merge(
+      x = df, by.x = dfCol,
+      y = lists[[i]], by.y = listsDFCol,
+      sort = FALSE
+    )[, union(names(df), names(lists[[i]])[!(names(lists[[i]]) %in% listsDFCol)])]
   }
 
   df
@@ -119,13 +122,15 @@
 #'     same number of points
 #'
 #' @examples
-#' .getFolds(1:10,3)
+#' .getFolds(1:10, 3)
 #' @noRd
-.getFolds <- function(x,K) {
-  if(K>length(x))
-    warning(paste0('Warning: Only ',length(x),' chunks are used due to data'))
-  if(K<2)
+.getFolds <- function(x, K) {
+  if (K > length(x)) {
+    warning(paste0("Warning: Only ", length(x), " chunks are used due to data"))
+  }
+  if (K < 2) {
     return(sample(x))
+  }
   split(x, sample(cut(x, K, labels = FALSE)))
 }
 
@@ -142,8 +147,10 @@
 #' @return String with numeric x to k decimal places
 #'
 #' @examples
-#' .specify_decimal(10.123,1)
-#' .specify_decimal(10.123,3)
-#' .specify_decimal(10.123,5)
+#' .specify_decimal(10.123, 1)
+#' .specify_decimal(10.123, 3)
+#' .specify_decimal(10.123, 5)
 #' @noRd
-.specify_decimal <- function(x, k) {trimws(format(round(x, k), nsmall=k))}
+.specify_decimal <- function(x, k) {
+  trimws(format(round(x, k), nsmall = k))
+}

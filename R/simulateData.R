@@ -31,127 +31,147 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{ data <- simulatePP() }
-#' data <- simulatePP(cellVarData=data.frame('stage'=c(0,1),
-#'                                           'A'=c(0,0),
-#'                                           'B'=c(1/100,1/500),
-#'                                           'C'=c(1/500,1/250),
-#'                                           'D'=c(1/100,1/100),
-#'                                           'E'=c(1/500,1/500)),
-#'                    cellKappaData=data.frame(
-#'                               'cell'=c('A','B','C','D','E'),
-#'                               'clusterCell'=c(NA,'A','B','C',NA),
-#'                               'kappa'=c(10,3,2,1,8)),
-#'                    peoplePerStage=4,
-#'                    imagesPerPerson=1)
-simulatePP <- function(cellVarData=
-                           data.frame('stage'=c(0,1,2),
-                                      'A'=c(0,0,0),
-                                      'B'=c(1/100,1/500,1/500),
-                                      'C'=c(1/500,1/250,1/100),
-                                      'D'=c(1/100,1/100,1/100),
-                                      'E'=c(1/500,1/500,1/500),
-                                      'F'=c(1/250,1/250,1/250)),
-                        cellKappaData=data.frame(
-                           'cell'=c('A','B','C','D','E','F'),
-                           'clusterCell'=c(NA,'A','B','C',NA,'A'),
-                           'kappa'=c(20,5,4,2,15,5)),
-                        peoplePerStage=20,
-                        imagesPerPerson=5,
-                        silent=FALSE ){
+#' \dontrun{
+#' data <- simulatePP()
+#' }
+#' data <- simulatePP(
+#'   cellVarData = data.frame(
+#'     "stage" = c(0, 1),
+#'     "A" = c(0, 0),
+#'     "B" = c(1 / 100, 1 / 500),
+#'     "C" = c(1 / 500, 1 / 250),
+#'     "D" = c(1 / 100, 1 / 100),
+#'     "E" = c(1 / 500, 1 / 500)
+#'   ),
+#'   cellKappaData = data.frame(
+#'     "cell" = c("A", "B", "C", "D", "E"),
+#'     "clusterCell" = c(NA, "A", "B", "C", NA),
+#'     "kappa" = c(10, 3, 2, 1, 8)
+#'   ),
+#'   peoplePerStage = 4,
+#'   imagesPerPerson = 1
+#' )
+simulatePP <- function(cellVarData =
+                         data.frame(
+                           "stage" = c(0, 1, 2),
+                           "A" = c(0, 0, 0),
+                           "B" = c(1 / 100, 1 / 500, 1 / 500),
+                           "C" = c(1 / 500, 1 / 250, 1 / 100),
+                           "D" = c(1 / 100, 1 / 100, 1 / 100),
+                           "E" = c(1 / 500, 1 / 500, 1 / 500),
+                           "F" = c(1 / 250, 1 / 250, 1 / 250)
+                         ),
+                       cellKappaData = data.frame(
+                         "cell" = c("A", "B", "C", "D", "E", "F"),
+                         "clusterCell" = c(NA, "A", "B", "C", NA, "A"),
+                         "kappa" = c(20, 5, 4, 2, 15, 5)
+                       ),
+                       peoplePerStage = 20,
+                       imagesPerPerson = 5,
+                       silent = FALSE) {
   ## Setup
   data_stages <- list()
   data_stages1 <- list()
   # Go through each stage
-  for(stageIdx in 1:nrow(cellVarData)){
+  for (stageIdx in 1:nrow(cellVarData)) {
     # General Vars
     stage <- cellVarData$stage[stageIdx] # Current Stage
-    imageAdj <- (stageIdx-1)*(peoplePerStage*imagesPerPerson) # Adjustment for images due to stage
-    personAdj <- (stageIdx-1)*(peoplePerStage) # Adjustment for person due to stage
+    imageAdj <- (stageIdx - 1) * (peoplePerStage * imagesPerPerson) # Adjustment for images due to stage
+    personAdj <- (stageIdx - 1) * (peoplePerStage) # Adjustment for person due to stage
 
-    if(!silent)
-      cat(paste0('Stage: ',stage, ' (',stageIdx,'/',nrow(cellVarData),')\n'))
+    if (!silent) {
+      cat(paste0("Stage: ", stage, " (", stageIdx, "/", nrow(cellVarData), ")\n"))
+    }
 
     ## Do all non-clustering or inv-clustering first
     clusterCellsNA_cKD_Idx <- which(is.na(cellKappaData$clusterCell))
     clusterCellsNA_Names <- cellKappaData$cell[clusterCellsNA_cKD_Idx]
     clusterCellsNA_Vars <-
-          cellVarData[cellVarData[,'stage']==stage,clusterCellsNA_Names]
+      cellVarData[cellVarData[, "stage"] == stage, clusterCellsNA_Names]
 
-    nonClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars==0]
-    invClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars>0]
+    nonClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars == 0]
+    invClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars > 0]
 
     ## Non-clustering
-    if(length(nonClusterCells_cKD_Idx)>0){
+    if (length(nonClusterCells_cKD_Idx) > 0) {
       nonClusterCells_data <-
-        data.frame('cell'=cellKappaData[nonClusterCells_cKD_Idx,'cell'],
-                   'kappa'=cellKappaData[nonClusterCells_cKD_Idx,'kappa'])
+        data.frame(
+          "cell" = cellKappaData[nonClusterCells_cKD_Idx, "cell"],
+          "kappa" = cellKappaData[nonClusterCells_cKD_Idx, "kappa"]
+        )
 
       data_stages[[stageIdx]] <-
-        .generateCSRPatterns(stageName=stage,
-                             peoplePerStage=peoplePerStage,
-                             imagesPerPerson=imagesPerPerson,
-                             kappas=nonClusterCells_data$kappa,
-                             cellTypes=nonClusterCells_data$cell,
-                             kappaSep=TRUE, imageAdj=imageAdj, personAdj=personAdj)
-
+        .generateCSRPatterns(
+          stageName = stage,
+          peoplePerStage = peoplePerStage,
+          imagesPerPerson = imagesPerPerson,
+          kappas = nonClusterCells_data$kappa,
+          cellTypes = nonClusterCells_data$cell,
+          kappaSep = TRUE, imageAdj = imageAdj, personAdj = personAdj
+        )
     }
     ## Inv-clustering
-    if(length(invClusterCells_cKD_Idx)>0){
+    if (length(invClusterCells_cKD_Idx) > 0) {
       invClusterCells_data <-
-        data.frame('cell'=cellKappaData[invClusterCells_cKD_Idx,'cell'],
-                   'kappa'=cellKappaData[invClusterCells_cKD_Idx,'kappa'],
-                   'var'=NA)
+        data.frame(
+          "cell" = cellKappaData[invClusterCells_cKD_Idx, "cell"],
+          "kappa" = cellKappaData[invClusterCells_cKD_Idx, "kappa"],
+          "var" = NA
+        )
       invClusterCells_data$var <-
-        as.numeric(cellVarData[cellVarData[,'stage']==stage,invClusterCells_data$cell])
+        as.numeric(cellVarData[cellVarData[, "stage"] == stage, invClusterCells_data$cell])
 
-      data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
-                                       .generateInvClusterPatterns(
-                                            stageName=stage,
-                                            peoplePerStage=peoplePerStage,
-                                            imagesPerPerson=imagesPerPerson,
-                                            kappas=invClusterCells_data$kappa,
-                                            cellTypes=invClusterCells_data$cell,
-                                            cellVars=invClusterCells_data$var,
-                                            kappaSep=TRUE, imageAdj=imageAdj,
-                                            personAdj=personAdj)
-          )
+      data_stages[[stageIdx]] <- rbind(
+        data_stages[[stageIdx]],
+        .generateInvClusterPatterns(
+          stageName = stage,
+          peoplePerStage = peoplePerStage,
+          imagesPerPerson = imagesPerPerson,
+          kappas = invClusterCells_data$kappa,
+          cellTypes = invClusterCells_data$cell,
+          cellVars = invClusterCells_data$var,
+          kappaSep = TRUE, imageAdj = imageAdj,
+          personAdj = personAdj
+        )
+      )
     }
 
     ## Recursively plot clusters
     completeCells <- clusterCellsNA_Names # Record completed cell generation
-    while(length(completeCells) != nrow(cellKappaData)){
-
+    while (length(completeCells) != nrow(cellKappaData)) {
       # See all cells that cluster around newly added (not previously added)
       nextCell_cKD_Idx <- which(cellKappaData$clusterCell %in% completeCells &
-                             !(cellKappaData$cell %in% completeCells))
-      nextCell_cKD <- cellKappaData[nextCell_cKD_Idx,]
+        !(cellKappaData$cell %in% completeCells))
+      nextCell_cKD <- cellKappaData[nextCell_cKD_Idx, ]
       nextCell_Vars <-
-        cellVarData[cellVarData[,'stage']==stage,nextCell_cKD$cell]
+        cellVarData[cellVarData[, "stage"] == stage, nextCell_cKD$cell]
 
-      if(nrow(nextCell_cKD)==0)
-        stop('Error: There is an impossibility in cell placement')
+      if (nrow(nextCell_cKD) == 0) {
+        stop("Error: There is an impossibility in cell placement")
+      }
 
-      data_stages[[stageIdx]] <- rbind(data_stages[[stageIdx]],
-         .clusterAroundCells(
-             clusterData=data_stages[[stageIdx]][
-               data_stages[[stageIdx]]$cellType %in% unique(nextCell_cKD$clusterCell),],
-             cellVarData=as.numeric(nextCell_Vars),
-             stageName=stage,
-             cells=nextCell_cKD$cell,
-             clusterCells=nextCell_cKD$clusterCell,
-             kappas=nextCell_cKD$kappa,
-             minPts=1)
-         )
+      data_stages[[stageIdx]] <- rbind(
+        data_stages[[stageIdx]],
+        .clusterAroundCells(
+          clusterData = data_stages[[stageIdx]][
+            data_stages[[stageIdx]]$cellType %in% unique(nextCell_cKD$clusterCell),
+          ],
+          cellVarData = as.numeric(nextCell_Vars),
+          stageName = stage,
+          cells = nextCell_cKD$cell,
+          clusterCells = nextCell_cKD$clusterCell,
+          kappas = nextCell_cKD$kappa,
+          minPts = 1
+        )
+      )
 
       # Record generation
       completeCells <- c(completeCells, nextCell_cKD$cell)
     }
-
   }
 
   ## Organize and return
-  data_ret <- .convertList2Dataframe(data_stages, typeBind = 'row')[,c(6,1:3,5,4)]
+  data_ret <- .convertList2Dataframe(data_stages, typeBind = "row")[, c(6, 1:3, 5, 4)]
   data_ret$Stage <- as.character(data_ret$Stage)
   data_ret
 }
@@ -189,69 +209,91 @@ simulatePP <- function(cellVarData=
 #' @export
 #'
 #' @examples
-#' data <- simulatePP(cellVarData=data.frame('stage'=c(0,1,2),
-#'                                           'A'=c(0,0,0),
-#'                                           'B'=c(1/100,1/500,1/1000)),
-#'                    cellKappaData=data.frame(
-#'                               'cell'=c('A','B'),
-#'                               'clusterCell'=c(NA,'A'),
-#'                               'kappa'=c(10,3)),
-#'                    peoplePerStage=5,
-#'                    imagesPerPerson=1)
-#' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1))
+#' data <- simulatePP(
+#'   cellVarData = data.frame(
+#'     "stage" = c(0, 1, 2),
+#'     "A" = c(0, 0, 0),
+#'     "B" = c(1 / 100, 1 / 500, 1 / 1000)
+#'   ),
+#'   cellKappaData = data.frame(
+#'     "cell" = c("A", "B"),
+#'     "clusterCell" = c(NA, "A"),
+#'     "kappa" = c(10, 3)
+#'   ),
+#'   peoplePerStage = 5,
+#'   imagesPerPerson = 1
+#' )
+#' pcaData <- getPCAData(
+#'   data = data, repeatedUniqueId = "Image",
+#'   xRange = c(0, 1), yRange = c(0, 1)
+#' )
 #' pcaMeta <- simulateMeta(pcaData)
 simulateMeta <- function(pcaData,
                          outcome = colnames(pcaData)[1],
                          metaInfo = data.frame(
-                              'var'=c('randUnif','randBin','rNorm',
-                                      'corrUnif','corrBin','corrNorm'),
-                              'rdist'=c('runif','rbinom','rnorm',
-                                        'runif','rbinom','rnorm'),
-                              'Stage_0'=c('0.5','0.5','1',
-                                         '0.5','0.6','1'),
-                              'Stage_1'=c('0.5','0.5','1',
-                                         '0.75','0.65','1.5'),
-                              'Stage_2'=c('0.5','0.5','1',
-                                         '0.95','0.75','1.5'))){
-
+                           "var" = c(
+                             "randUnif", "randBin", "rNorm",
+                             "corrUnif", "corrBin", "corrNorm"
+                           ),
+                           "rdist" = c(
+                             "runif", "rbinom", "rnorm",
+                             "runif", "rbinom", "rnorm"
+                           ),
+                           "Stage_0" = c(
+                             "0.5", "0.5", "1",
+                             "0.5", "0.6", "1"
+                           ),
+                           "Stage_1" = c(
+                             "0.5", "0.5", "1",
+                             "0.75", "0.65", "1.5"
+                           ),
+                           "Stage_2" = c(
+                             "0.5", "0.5", "1",
+                             "0.95", "0.75", "1.5"
+                           )
+                         )) {
   # Setup Outcome_df
-  outcomes_df <- data.frame('outcome'=unique(pcaData[[outcome]]),
-                            'MetaInfoCol'=NA)
-  for(i in 1:nrow(outcomes_df)){
+  outcomes_df <- data.frame(
+    "outcome" = unique(pcaData[[outcome]]),
+    "MetaInfoCol" = NA
+  )
+  for (i in 1:nrow(outcomes_df)) {
     outcomes_df$MetaInfoCol[i] <-
-      which(colnames(metaInfo)==paste0('Stage_',outcomes_df[i,'outcome']))
+      which(colnames(metaInfo) == paste0("Stage_", outcomes_df[i, "outcome"]))
   }
 
 
-  for(i in 1:nrow(metaInfo)){
+  for (i in 1:nrow(metaInfo)) {
     # Setup
-    pcaData[[metaInfo[i,1]]] <- NA
-    typeDist <- metaInfo[i,2]
+    pcaData[[metaInfo[i, 1]]] <- NA
+    typeDist <- metaInfo[i, 2]
 
     # Stages
-    for(j in 1:nrow(outcomes_df)){
-      EX <- as.numeric(metaInfo[i,outcomes_df$MetaInfoCol[j]])
-      n <- nrow(pcaData[pcaData[,outcome]==outcomes_df[j,'outcome'],])
-      if(EX <= 0) stop('Error: EX must be positive')
-      if(typeDist=='runif'){
+    for (j in 1:nrow(outcomes_df)) {
+      EX <- as.numeric(metaInfo[i, outcomes_df$MetaInfoCol[j]])
+      n <- nrow(pcaData[pcaData[, outcome] == outcomes_df[j, "outcome"], ])
+      if (EX <= 0) stop("Error: EX must be positive")
+      if (typeDist == "runif") {
         # 1/2(b-a)=EX -> b = 2*EX
-        parseString <- paste0(typeDist,'(',n,
-                              ', min=0, max=',2*EX,')')
-      }else if(typeDist=='rnorm'){
+        parseString <- paste0(
+          typeDist, "(", n,
+          ", min=0, max=", 2 * EX, ")"
+        )
+      } else if (typeDist == "rnorm") {
         # mu = EX
-        parseString <- paste0(typeDist,'(',n,', mean=',EX,')')
-      }else if(typeDist=='rbinom'){
+        parseString <- paste0(typeDist, "(", n, ", mean=", EX, ")")
+      } else if (typeDist == "rbinom") {
         # EX=p
-        parseString <- paste0(typeDist,'(',n,
-        ', size=1, prob=',EX,')')
-      }else{
-        stop('Error: Only runif, rnorm, and rbinom accepted.')
+        parseString <- paste0(
+          typeDist, "(", n,
+          ", size=1, prob=", EX, ")"
+        )
+      } else {
+        stop("Error: Only runif, rnorm, and rbinom accepted.")
       }
 
-      pcaData[pcaData[,outcome]==outcomes_df[j,'outcome'],metaInfo[i,1]] <-
+      pcaData[pcaData[, outcome] == outcomes_df[j, "outcome"], metaInfo[i, 1]] <-
         eval(parse(text = parseString))
-
     }
   }
 
@@ -291,31 +333,32 @@ simulateMeta <- function(pcaData,
                                  imagesPerPerson,
                                  kappas,
                                  cellTypes,
-                                 kappaSep=TRUE,
-                                 imageAdj=0,
-                                 personAdj=0){
-
+                                 kappaSep = TRUE,
+                                 imageAdj = 0,
+                                 personAdj = 0) {
   data <- NULL
 
-  for(personCt in 1:peoplePerStage){
-    for(imageCt in 1:imagesPerPerson){
+  for (personCt in 1:peoplePerStage) {
+    for (imageCt in 1:imagesPerPerson) {
       data_tmp <- list()
-      for(cell in 1:length(cellTypes)){
-        if(cell==1 || kappaSep){
+      for (cell in 1:length(cellTypes)) {
+        if (cell == 1 || kappaSep) {
           kapVal <- kappas[cell]
-        }else{
+        } else {
           ## Used so that there are more cells when there is no clustering
           #   TODO: See if ever used
-          kapVal <- nrow(data_tmp[[cell-1]])*kappas[cell]
+          kapVal <- nrow(data_tmp[[cell - 1]]) * kappas[cell]
         }
-        data_tmp[[cell]] <- .generateCSRData(xRange = c(0,1), yRange = c(0,1),
-                                             kappa = kapVal,
-                                             cellType=cellTypes[cell])
+        data_tmp[[cell]] <- .generateCSRData(
+          xRange = c(0, 1), yRange = c(0, 1),
+          kappa = kapVal,
+          cellType = cellTypes[cell]
+        )
       }
       # Clean data (with correct info)
-      data_tmp_df <- .convertList2Dataframe(data_tmp,typeBind = 'row')
-      data_tmp_df$Image <- imageCt+(personCt-1)*imagesPerPerson + imageAdj
-      data_tmp_df$Person <- paste0('p',personCt + personAdj)
+      data_tmp_df <- .convertList2Dataframe(data_tmp, typeBind = "row")
+      data_tmp_df$Image <- imageCt + (personCt - 1) * imagesPerPerson + imageAdj
+      data_tmp_df$Person <- paste0("p", personCt + personAdj)
       data_tmp_df$Stage <- stageName
 
       # Save to full data
@@ -367,32 +410,34 @@ simulateMeta <- function(pcaData,
                                         kappas,
                                         cellTypes,
                                         cellVars,
-                                        kappaSep=FALSE,
-                                        imageAdj=0,
-                                        personAdj=0){
-
+                                        kappaSep = FALSE,
+                                        imageAdj = 0,
+                                        personAdj = 0) {
   data <- NULL
   # Consider ways to decide how many clusters
-  clusterKappas <- rep(3,length(kappas))
-  dataKappas <- kappas/clusterKappas
+  clusterKappas <- rep(3, length(kappas))
+  dataKappas <- kappas / clusterKappas
 
   # Generate data to cluster around
   cluster_data <- .generateCSRPatterns(stageName,
-                                    peoplePerStage,
-                                    imagesPerPerson,
-                                    clusterKappas,
-                                    paste0(cellTypes,'_Cluster'),
-                                    kappaSep=TRUE,
-                                    imageAdj=imageAdj,
-                                    personAdj=personAdj)
+    peoplePerStage,
+    imagesPerPerson,
+    clusterKappas,
+    paste0(cellTypes, "_Cluster"),
+    kappaSep = TRUE,
+    imageAdj = imageAdj,
+    personAdj = personAdj
+  )
   # Cluster data
-  data <- .clusterAroundCells(clusterData = cluster_data,
-                              cellVarData = cellVars,
-                              stageName = stageName,
-                              cells = cellTypes,
-                              clusterCells = paste0(cellTypes,'_Cluster'),
-                              kappas = dataKappas,
-                              minPts = 1)
+  data <- .clusterAroundCells(
+    clusterData = cluster_data,
+    cellVarData = cellVars,
+    stageName = stageName,
+    cells = cellTypes,
+    clusterCells = paste0(cellTypes, "_Cluster"),
+    kappas = dataKappas,
+    minPts = 1
+  )
   data
 }
 
@@ -430,22 +475,24 @@ simulateMeta <- function(pcaData,
 .clusterAroundCells <- function(clusterData, cellVarData,
                                 stageName,
                                 cells, clusterCells, kappas,
-                                minPts=1){
+                                minPts = 1) {
   newData <- data.frame()
   # Go through each cell
-  for(i in 1:length(cells)){
-    clusterCellData <- clusterData[clusterData$cellType==clusterCells[i],]
+  for (i in 1:length(cells)) {
+    clusterCellData <- clusterData[clusterData$cellType == clusterCells[i], ]
 
     # Go through each cell and develop clusters
-    for(j in 1:nrow(clusterCellData)){
-      data_pts <- .placeClusteredPts(currXY=as.numeric(clusterCellData[j, c('x','y')]),
-                           cell=cells[i],
-                           numPts=stats::rpois(1,kappas[i]),
-                           varValue=cellVarData[i])
-      if(!is.null(data_pts)){
-        data_pts$Image <- clusterCellData[j,'Image']
-        data_pts$Person <- clusterCellData[j,'Person']
-        data_pts$Stage <- clusterCellData[j,'Stage']
+    for (j in 1:nrow(clusterCellData)) {
+      data_pts <- .placeClusteredPts(
+        currXY = as.numeric(clusterCellData[j, c("x", "y")]),
+        cell = cells[i],
+        numPts = stats::rpois(1, kappas[i]),
+        varValue = cellVarData[i]
+      )
+      if (!is.null(data_pts)) {
+        data_pts$Image <- clusterCellData[j, "Image"]
+        data_pts$Person <- clusterCellData[j, "Person"]
+        data_pts$Stage <- clusterCellData[j, "Stage"]
 
         newData <- rbind(newData, data_pts)
       }
@@ -453,25 +500,27 @@ simulateMeta <- function(pcaData,
 
     # Require minPts
     #     Note, this can change your distribution if not thought about!
-    while(nrow(newData[newData$cellType==cells[i],])<minPts){
+    while (nrow(newData[newData$cellType == cells[i], ]) < minPts) {
       # Select a point from previous iteration
-      preItrPt <- sample(nrow(clusterCellData),1)
+      preItrPt <- sample(nrow(clusterCellData), 1)
       # Fill with enough pts
-      numPts <- stats::rpois(1,kappas[i])
-      if(numPts+nrow(newData[newData$cellType==cells[i],]<minPts))
-        numPts <- minPts - nrow(newData[newData$cellType==cells[i],])
+      numPts <- stats::rpois(1, kappas[i])
+      if (numPts + nrow(newData[newData$cellType == cells[i], ] < minPts)) {
+        numPts <- minPts - nrow(newData[newData$cellType == cells[i], ])
+      }
 
-      data_pts <- .placeClusteredPts(currXY=as.numeric(clusterCellData[j, c('x','y')]),
-                           cell=cells[i],
-                           numPts=stats::rpois(1,kappas[i]),
-                           varValue=cellVarData[i])
-      data_pts$Image <- clusterCellData[j,'Image']
-      data_pts$Person <- clusterCellData[j,'Person']
-      data_pts$Stage <- clusterCellData[j,'Stage']
+      data_pts <- .placeClusteredPts(
+        currXY = as.numeric(clusterCellData[j, c("x", "y")]),
+        cell = cells[i],
+        numPts = stats::rpois(1, kappas[i]),
+        varValue = cellVarData[i]
+      )
+      data_pts$Image <- clusterCellData[j, "Image"]
+      data_pts$Person <- clusterCellData[j, "Person"]
+      data_pts$Stage <- clusterCellData[j, "Stage"]
 
       newData <- rbind(newData, data_pts)
     }
-
   }
 
   newData
@@ -504,25 +553,28 @@ simulateMeta <- function(pcaData,
 #' The data.frame has 3 columns, x, y, and cellType.
 #' @noRd
 .placeClusteredPts <- function(currXY, cell, numPts, varValue,
-                               xRange=c(0,1), yRange=c(0,1)){
-  if(numPts<=0) return()
+                               xRange = c(0, 1), yRange = c(0, 1)) {
+  if (numPts <= 0) {
+    return()
+  }
 
-  data_ret <- data.frame('x'=rep(NA,numPts), 'y'=NA, 'cellType'=cell)
+  data_ret <- data.frame("x" = rep(NA, numPts), "y" = NA, "cellType" = cell)
 
   compPts <- 0
-  while(compPts < numPts){
-    data_ret[compPts+1,'x'] <- stats::rnorm(1,mean=currXY[1],sd=sqrt(varValue))
-    data_ret[compPts+1,'y'] <- stats::rnorm(1,mean=currXY[2],sd=sqrt(varValue))
+  while (compPts < numPts) {
+    data_ret[compPts + 1, "x"] <-
+      stats::rnorm(1, mean = currXY[1], sd = sqrt(varValue))
+    data_ret[compPts + 1, "y"] <-
+      stats::rnorm(1, mean = currXY[2], sd = sqrt(varValue))
 
     # Ensure its in boundaries
-    if(data_ret[compPts+1,'x'] >= xRange[1] &
-       data_ret[compPts+1,'x'] <= xRange[2] &
-       data_ret[compPts+1,'y'] >= yRange[1] &
-       data_ret[compPts+1,'y'] <= yRange[2]){
+    if (data_ret[compPts + 1, "x"] >= xRange[1] &
+      data_ret[compPts + 1, "x"] <= xRange[2] &
+      data_ret[compPts + 1, "y"] >= yRange[1] &
+      data_ret[compPts + 1, "y"] <= yRange[2]) {
       compPts <- compPts + 1
     }
   }
 
   data_ret
 }
-

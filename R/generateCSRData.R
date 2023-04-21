@@ -1,4 +1,3 @@
-
 #' Generate Completely Spatially Random Data (Point Process)
 #'
 #' This (internal) function generating a completely spatially random (CSR)
@@ -26,33 +25,34 @@
 #' @return Data.frame with x, y, and cellType specified. Each row is a new
 #'     point.
 #' @noRd
-.generateCSRData <- function(xRange = c(0,1), yRange = c(0,1),
-                              kappa=25, requireOne=TRUE, cellType='A'){
-  area <- (xRange[2]-xRange[1]) * (yRange[2]-yRange[1])
-  intensityValue <- kappa*area
+.generateCSRData <- function(xRange = c(0, 1), yRange = c(0, 1),
+                             kappa = 25, requireOne = TRUE, cellType = "A") {
+  area <- (xRange[2] - xRange[1]) * (yRange[2] - yRange[1])
+  intensityValue <- kappa * area
   numPts <- stats::rpois(1, intensityValue)
-  if(numPts==0){
-    if(!requireOne ){
+  if (numPts == 0) {
+    if (!requireOne) {
       return() # TEST: Not sure how this will work
-    }else if(intensityValue==0){
+    } else if (intensityValue == 0) {
       numPts <- 1 # 0 intensityValue always gives 0 so just give 1
-    }else{
+    } else {
       idx <- 0
-      while(numPts==0){
+      while (numPts == 0) {
         numPts <- stats::rpois(1, intensityValue)
         idx <- idx + 1
-        if(idx > 5) numPts <- 1 # Avoid long loops if intensityValue is small
+        if (idx > 5) numPts <- 1 # Avoid long loops if intensityValue is small
       }
     }
   }
 
   pointPattern <- data.frame(
-    'x'=stats::runif(numPts, min=xRange[1], max=xRange[2]),
-    'y'=stats::runif(numPts, min=yRange[1], max=yRange[2]),
-    'cellType'=cellType)
+    "x" = stats::runif(numPts, min = xRange[1], max = xRange[2]),
+    "y" = stats::runif(numPts, min = yRange[1], max = yRange[2]),
+    "cellType" = cellType
+  )
 
-  if(nrow(unique(pointPattern)) != nrow(pointPattern)){
-    warning('Points placed on top of each other, so dropped (not replaced)')
+  if (nrow(unique(pointPattern)) != nrow(pointPattern)) {
+    warning("Points placed on top of each other, so dropped (not replaced)")
     pointPattern <- unique(pointPattern)
   }
 

@@ -45,85 +45,108 @@
 #'
 #' @examples
 #' \dontrun{
-#' data <- simulatePP(cellVarData=
-#'                        data.frame('stage'=c(0,1),
-#'                                   'A'=c(0,0),
-#'                                   'B'=c(1/50,1/50)),
-#'                    cellKappaData=data.frame(
-#'                                   'cell'=c('A','B'),
-#'                                   'clusterCell'=c(NA,'A'),
-#'                                   'kappa'=c(20,5)),
-#'                    peoplePerStage=100,
-#'                    imagesPerPerson=1,
-#'                    silent=FALSE )
+#' data <- simulatePP(
+#'   cellVarData =
+#'     data.frame(
+#'       "stage" = c(0, 1),
+#'       "A" = c(0, 0),
+#'       "B" = c(1 / 50, 1 / 50)
+#'     ),
+#'   cellKappaData = data.frame(
+#'     "cell" = c("A", "B"),
+#'     "clusterCell" = c(NA, "A"),
+#'     "kappa" = c(20, 5)
+#'   ),
+#'   peoplePerStage = 100,
+#'   imagesPerPerson = 1,
+#'   silent = FALSE
+#' )
 #' agents_df_tmp <- as.data.frame(expand.grid(
-#'                        unique(data$cellType),
-#'                        unique(data$cellType),stringsAsFactors=FALSE))
-#' dat_pca <- getPCAData(data = data, outcome = 'Stage', unit = 'Person',
-#'                       repeatedUniqueId = 'Image',
-#'                       rCheckVals = seq(0,0.25,0.01), nPCs = 3,
-#'                       agents_df = agents_df_tmp,
-#'                       xRange = c(0,1), yRange = c(0,1) )
+#'   unique(data$cellType),
+#'   unique(data$cellType),
+#'   stringsAsFactors = FALSE
+#' ))
+#' dat_pca <- getPCAData(
+#'   data = data, outcome = "Stage", unit = "Person",
+#'   repeatedUniqueId = "Image",
+#'   rCheckVals = seq(0, 0.25, 0.01), nPCs = 3,
+#'   agents_df = agents_df_tmp,
+#'   xRange = c(0, 1), yRange = c(0, 1)
+#' )
 #' }
 #'
-#' dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
-#'                             agents_df=data.frame('B','FAKE'),
-#'                             nPCs = 3,
-#'                             rCheckVals = seq(0,50,1))
-getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
-                       repeatedUniqueId=NULL,
-                       rCheckVals=NULL, nPCs=3,
-                       agents_df = as.data.frame(expand.grid(unique(data[,4]),
-                                                             unique(data[,4]))),
-                       xRange=NULL, yRange=NULL,
-                       edgeCorrection="isotropic", nbasis=21,
-                       silent=FALSE, displayTVE=FALSE){
+#' dataPCA_pheno <- getPCAData(
+#'   data = TNBC_pheno, unit = "Person",
+#'   agents_df = data.frame("B", "FAKE"),
+#'   nPCs = 3,
+#'   rCheckVals = seq(0, 50, 1)
+#' )
+getPCAData <- function(data, outcome = colnames(data)[1],
+                       unit = colnames(data)[5],
+                       repeatedUniqueId = NULL,
+                       rCheckVals = NULL, nPCs = 3,
+                       agents_df = as.data.frame(expand.grid(
+                         unique(data[, 4]),
+                         unique(data[, 4])
+                       )),
+                       xRange = NULL, yRange = NULL,
+                       edgeCorrection = "isotropic", nbasis = 21,
+                       silent = FALSE, displayTVE = FALSE) {
   # Define pcaData
-  pcaData <- unique(data[,c(outcome, unit)])
+  pcaData <- unique(data[, c(outcome, unit)])
 
   ## Compute PCA for each cell-cell K-function
-  if(!silent) cat('PCA Pairs (',nrow(agents_df),'): ',sep='')
-  pcaData_list <- apply(cbind(1:nrow(agents_df),
-                              as.data.frame(agents_df)),
-                        MARGIN=1,
-                        FUN=function(agents, nPCs, rCheckVals, data,
-                                     outcome, unit,
-                                     repeatedUniqueId,
-                                     xRange, yRange,
-                                     edgeCorrection, nbasis){
-                          if(!silent) cat(trimws(agents[1]),', ',sep='')
-                          agents <- agents[-1]
+  if (!silent) cat("PCA Pairs (", nrow(agents_df), "): ", sep = "")
+  pcaData_list <- apply(
+    cbind(
+      1:nrow(agents_df),
+      as.data.frame(agents_df)
+    ),
+    MARGIN = 1,
+    FUN = function(agents, nPCs, rCheckVals, data,
+                   outcome, unit,
+                   repeatedUniqueId,
+                   xRange, yRange,
+                   edgeCorrection, nbasis) {
+      if (!silent) cat(trimws(agents[1]), ", ", sep = "")
+      agents <- agents[-1]
 
-                          ## Compute K-Function for each unit
-                          #     Reminder, repeated measures -> weighted averages
-                          evaled_fd_K <- getKFunction(
-                                agents=agents,
-                                unit=unit,
-                                repeatedUniqueId=repeatedUniqueId,
-                                data=data[,colnames(data)!=outcome],
-                                rCheckVals=rCheckVals,
-                                xRange=xRange,yRange=yRange,
-                                edgeCorrection=edgeCorrection)
+      ## Compute K-Function for each unit
+      #     Reminder, repeated measures -> weighted averages
+      evaled_fd_K <- getKFunction(
+        agents = agents,
+        unit = unit,
+        repeatedUniqueId = repeatedUniqueId,
+        data = data[, colnames(data) != outcome],
+        rCheckVals = rCheckVals,
+        xRange = xRange, yRange = yRange,
+        edgeCorrection = edgeCorrection
+      )
 
-                          ## Get PCA Scores
-                          K_pca_scores <- .getPCs(
-                            rKData=evaled_fd_K,
-                            agents=agents, nPCs=nPCs,
-                            nbasis=nbasis, silent=!displayTVE)
+      ## Get PCA Scores
+      K_pca_scores <- .getPCs(
+        rKData = evaled_fd_K,
+        agents = agents, nPCs = nPCs,
+        nbasis = nbasis, silent = !displayTVE
+      )
 
-                          # Set up data (add counts as desired)
-                          retData <- cbind('Unit'=unique(data[,unit]),
-                                           as.data.frame(K_pca_scores))
-                        },
-                        nPCs=nPCs, rCheckVals=rCheckVals,
-                        data=data, outcome=outcome, unit=unit,
-                        repeatedUniqueId=repeatedUniqueId,
-                        xRange=xRange, yRange=yRange,
-                        edgeCorrection=edgeCorrection,
-                        nbasis=nbasis)
-  if(!silent) cat('\n')
+      # Set up data (add counts as desired)
+      retData <- cbind(
+        "Unit" = unique(data[, unit]),
+        as.data.frame(K_pca_scores)
+      )
+    },
+    nPCs = nPCs, rCheckVals = rCheckVals,
+    data = data, outcome = outcome, unit = unit,
+    repeatedUniqueId = repeatedUniqueId,
+    xRange = xRange, yRange = yRange,
+    edgeCorrection = edgeCorrection,
+    nbasis = nbasis
+  )
+  if (!silent) cat("\n")
 
-  .mergeListsToDF(df=pcaData, lists=pcaData_list, dfCol=unit, listsDFCol='Unit')
+  .mergeListsToDF(df = pcaData, lists = pcaData_list,
+                  dfCol = unit, listsDFCol = "Unit")
 }
 
 
@@ -145,39 +168,43 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #'
 #' @return Data.frame with the outcomes, units, then principal component scores.
 #' @noRd
-.getPCs <- function(rKData, agents,  nPCs, nbasis=21,silent=FALSE){
+.getPCs <- function(rKData, agents, nPCs, nbasis = 21, silent = FALSE) {
   # Setup Data
-  KData <- rKData[,-1]
+  KData <- rKData[, -1]
   evalPts <- rKData[[1]]
 
   # Check if any are missing
-  dropIdx <- which(colSums(is.na(KData))!=0)
-  if(length(dropIdx)>0){
-    KData <- KData[,-dropIdx]
+  dropIdx <- which(colSums(is.na(KData)) != 0)
+  if (length(dropIdx) > 0) {
+    KData <- KData[, -dropIdx]
   }
 
   # Skip if not atleast 1 nonNA col
-  if(ncol(KData)<=1 || nrow(KData)==0){
+  if (ncol(KData) <= 1 || nrow(KData) == 0) {
     # No multiple people have K-function so no PCA
-    K_pca_scores <- matrix(nrow=ncol(KData), ncol=1)
-    colnames(K_pca_scores) <- paste0(agents[1],'_',agents[2],'_PC')
+    K_pca_scores <- matrix(nrow = ncol(KData), ncol = 1)
+    colnames(K_pca_scores) <- paste0(agents[1], "_", agents[2], "_PC")
     return(K_pca_scores)
   }
 
-  K_func <- fda::Data2fd(argvals = evalPts,
-                    y=as.matrix(KData),
-                    basisobj =
-                      fda::create.bspline.basis(rangeval = range(evalPts),
-                                                nbasis = nbasis))
+  K_func <- fda::Data2fd(
+    argvals = evalPts,
+    y = as.matrix(KData),
+    basisobj =
+      fda::create.bspline.basis(
+        rangeval = range(evalPts),
+        nbasis = nbasis
+      )
+  )
   K_pca <- fda::pca.fd(K_func, nharm = nPCs)
-  if(!silent) cat(paste0('(TVE: ', format(round(sum(K_pca$varprop),3),nsmall=3),') '))
+  if (!silent) cat(paste0("(TVE: ",.specify_decimal(K_pca$varprop,3),") "))
 
-  if(length(dropIdx)>0){
+  if (length(dropIdx) > 0) {
     K_pca_scores <- .insertMissingRows(K_pca$scores, dropIdx)
-  }else{
+  } else {
     K_pca_scores <- K_pca$scores
   }
-  colnames(K_pca_scores) <- paste0(agents[1],'_',agents[2],'_PC',1:nPCs)
+  colnames(K_pca_scores) <- paste0(agents[1], "_", agents[2], "_PC", 1:nPCs)
 
   K_pca_scores
 }
@@ -197,14 +224,16 @@ getPCAData <- function(data, outcome=colnames(data)[1], unit=colnames(data)[5],
 #'
 #' @return A data.frame with the PCs, now including the NA rows.
 #' @noRd
-.insertMissingRows <- function(data_add, insertRows){
-  data_return <- matrix(ncol=ncol(data_add), #nPCs
-                        nrow=(nrow(data_add)+length(insertRows)))
+.insertMissingRows <- function(data_add, insertRows) {
+  data_return <- matrix(
+    ncol = ncol(data_add), # nPCs
+    nrow = (nrow(data_add) + length(insertRows))
+  )
   currentAdd <- 1 # Current row I take data from
 
-  for(i in 1:nrow(data_return)){
-    if(!(i %in% insertRows)){ # If this row shouldn't be NA
-      data_return[i,] <- as.numeric(data_add[currentAdd,])
+  for (i in 1:nrow(data_return)) {
+    if (!(i %in% insertRows)) { # If this row shouldn't be NA
+      data_return[i, ] <- as.numeric(data_add[currentAdd, ])
       currentAdd <- currentAdd + 1
     }
   }

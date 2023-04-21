@@ -19,29 +19,36 @@
 #' @export
 #'
 #' @examples
-#' plotPP(TNBC_pheno[TNBC_pheno$Person==1,c("cellx",'celly','Phenotype')])
-#' plotPP(diabetes[diabetes$Image=='E37',c('x','y','cellType')])
-plotPP <- function(data, colorGuide = NULL,ptSize=1,
-                   xlim=c(min(data[,1]),max(data[,1])),
-                   ylim=c(min(data[,2]),max(data[,2])),
-                   dropAxes=FALSE,
-                   colors=NULL){
-
+#' plotPP(TNBC_pheno[TNBC_pheno$Person == 1, c("cellx", "celly", "Phenotype")])
+#' plotPP(diabetes[diabetes$Image == "E37", c("x", "y", "cellType")])
+plotPP <- function(data, colorGuide = NULL, ptSize = 1,
+                   xlim = c(min(data[, 1]), max(data[, 1])),
+                   ylim = c(min(data[, 2]), max(data[, 2])),
+                   dropAxes = FALSE,
+                   colors = NULL) {
   retPlot <- ggplot2::ggplot() +
-    ggplot2::geom_point(mapping=ggplot2::aes(x=data[,1],y=data[,2],
-                                             col=data[,3]),
-               size=ptSize) +
+    ggplot2::geom_point(
+      mapping = ggplot2::aes(
+        x = data[, 1], y = data[, 2],
+        col = data[, 3]
+      ),
+      size = ptSize
+    ) +
     ggplot2::theme_bw() +
     ggplot2::xlim(xlim) +
     ggplot2::ylim(ylim) +
-    ggplot2::guides(color=colorGuide)
-  if(dropAxes)
+    ggplot2::guides(color = colorGuide)
+  if (dropAxes) {
     retPlot <- retPlot +
-      ggplot2::theme(axis.title = ggplot2::element_blank(),
-            axis.text = ggplot2::element_blank())
-  if(!is.null(colors))
+      ggplot2::theme(
+        axis.title = ggplot2::element_blank(),
+        axis.text = ggplot2::element_blank()
+      )
+  }
+  if (!is.null(colors)) {
     retPlot <- retPlot +
       ggplot2::scale_color_manual(values = colors)
+  }
 
   retPlot
 }
