@@ -65,16 +65,24 @@ meta-variables. This includes proper combination for variable importance.
 Recommend to users to use randomForest_CVPC in general and perhaps just
 this for a final model
 }
-\details{
-Upcoming: See TEST comment
-Drop parts to make smaller memory impact.
-https://rstudio-pubs-static.s3.amazonaws.com/381812_7b5343e0f1a7403fba31ff7d45cf6d88.html
-}
 \examples{
-data <- simulatePP()
+data <- simulatePP(cellVarData=
+                    data.frame('stage'=c(0,1),
+                               'A'=c(0,0),
+                               'B'=c(1/100,1/500),
+                               'C'=c(1/500,1/250),
+                               'D'=c(1/100,1/100),
+                               'E'=c(1/500,1/500)),
+                   cellKappaData=data.frame(
+                               'cell'=c('A','B','C','D','E'),
+                               'clusterCell'=c(NA,'A','B','C',NA),
+                               'kappa'=c(10,3,2,1,8)),
+                   peoplePerStage=4,
+                   imagesPerPerson=1)
 pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-                      xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
+                      xRange = c(0,1),  yRange = c(0,1))
 RF1 <- funkyForest(data=pcaData[-2])
+
 \dontrun{
 pcaMeta <- simulateMeta(pcaData)
 RF2 <- funkyForest(pcaMeta[-2],

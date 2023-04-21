@@ -189,9 +189,17 @@ simulatePP <- function(cellVarData=
 #' @export
 #'
 #' @examples
-#' data <- simulatePP()
+#' data <- simulatePP(cellVarData=data.frame('stage'=c(0,1,2),
+#'                                           'A'=c(0,0,0),
+#'                                           'B'=c(1/100,1/500,1/1000)),
+#'                    cellKappaData=data.frame(
+#'                               'cell'=c('A','B'),
+#'                               'clusterCell'=c(NA,'A'),
+#'                               'kappa'=c(10,3)),
+#'                    peoplePerStage=5,
+#'                    imagesPerPerson=1)
 #' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-#'                       xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
+#'                       xRange = c(0,1),  yRange = c(0,1))
 #' pcaMeta <- simulateMeta(pcaData)
 simulateMeta <- function(pcaData,
                          outcome = colnames(pcaData)[1],

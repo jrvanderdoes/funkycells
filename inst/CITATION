@@ -1,15 +1,16 @@
 citHeader("To cite funkycells in publications use:")
 
 citEntry(
-  entry    = "funkycells",
+  entry    = "Article",
   title    = "funkycells",
-  author   = c("Jeremy VanderDoes","Jack Hywood","Gregory Rice"),
-  journal  = "<Upcoming>",
+  author   = "J. VanderDoes, J. Hywood, G. Rice",
+  journal  = "<Unpublished>",
   year     = "2023",
-  volume   = "<Upcoming>",
-  number   = "<Upcoming>",
-  pages    = "<Upcoming>",
+  volume   = "<Unpublished>",
+  number   = "<Unpublished>",
+  pages    = "<Unpublished>",
   url      = "https://github.com/jrvanderdoes/funkycells",
   textVersion = paste(
+
   )
 )
