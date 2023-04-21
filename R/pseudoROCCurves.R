@@ -80,9 +80,12 @@ computePseudoROCCurves <- function(trueOutcomes, modelPercents) {
     data_auc[i] <- roc.curve$auc
   }
 
+  # Add this to stop NOTEs in building package
+  Spec <- Sens <- Type <- NULL
+
   ggplot2::ggplot(
     data_plot,
-    ggplot2::aes(x = `Spec`, y = `Sens`, color = `Type`)
+    ggplot2::aes(x = Spec, y = Sens, color = Type)
   ) +
     ggplot2::geom_path(linewidth = 0.75) +
     ggplot2::geom_abline(slope = 1, intercept = 1, color = "gray") +

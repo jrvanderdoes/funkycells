@@ -92,45 +92,63 @@ synthetics, this may break (will fix it eventually).
 }
 \examples{
 \dontrun{
-dat <- simulatePP(cellVarData=
-                    data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/50)),
-                  cellKappaData=data.frame(
-                                      'cell'=c('A','B'),
-                                      'clusterCell'=c(NA,'A'),
-                                      'kappa'=c(20,5)),
-                  peoplePerStage=50,
-                  imagesPerPerson=1,
-                  silent=FALSE )
-pcaData <- getPCAData(dat,repeatedUniqueId='Image',
-                      xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
+dat <- simulatePP(
+  cellVarData =
+    data.frame("stage" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 50)),
+  cellKappaData = data.frame(
+    "cell" = c("A", "B"),
+    "clusterCell" = c(NA, "A"),
+    "kappa" = c(20, 5)
+  ),
+  peoplePerStage = 50,
+  imagesPerPerson = 1,
+  silent = FALSE
+)
+pcaData <- getPCAData(dat,
+  repeatedUniqueId = "Image",
+  xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
+)
 pcaMeta <- simulateMeta(pcaData,
-                        metaInfo = data.frame(
-                           'var'=c('randUnif','randBin','corrNorm'),
-                           'rdist'=c('runif','rbinom','rnorm'),
-                           'Stage_0'=c('0.5','0.5','1'),
-                           'Stage_1'=c('0.5','0.5','2')))
-rfcv <- funkyModel(data=pcaMeta,outcome = 'Stage',unit='Person',
-                          metaNames=c('randUnif','randBin','corrNorm'))
+  metaInfo = data.frame(
+    "var" = c("randUnif", "randBin", "corrNorm"),
+    "rdist" = c("runif", "rbinom", "rnorm"),
+    "Stage_0" = c("0.5", "0.5", "1"),
+    "Stage_1" = c("0.5", "0.5", "2")
+  )
+)
+rfcv <- funkyModel(
+  data = pcaMeta, outcome = "Stage", unit = "Person",
+  metaNames = c("randUnif", "randBin", "corrNorm")
+)
 
-dat <- simulatePP(cellVarData=
-                    data.frame('stage'=c(0,1), 'A'=c(0,0), 'B'=c(1/50,1/100)),
-                  cellKappaData=data.frame(
-                                     'cell'=c('A','B'),
-                                     'clusterCell'=c(NA,'A'),
-                                     'kappa'=c(20,5)),
-                  peoplePerStage=20,
-                  imagesPerPerson=3,
-                  silent=FALSE )
-pcaData <- getPCAData(dat,repeatedUniqueId='Image',
-                      xRange = c(0,1),  yRange = c(0,1), silent=FALSE)
+dat <- simulatePP(
+  cellVarData =
+    data.frame("stage" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 100)),
+  cellKappaData = data.frame(
+    "cell" = c("A", "B"),
+    "clusterCell" = c(NA, "A"),
+    "kappa" = c(20, 5)
+  ),
+  peoplePerStage = 20,
+  imagesPerPerson = 3,
+  silent = FALSE
+)
+pcaData <- getPCAData(dat,
+  repeatedUniqueId = "Image",
+  xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
+)
 pcaMeta <- simulateMeta(pcaData,
-                        metaInfo = data.frame(
-                            'var'=c('randUnif','randBin','corrNorm'),
-                            'rdist'=c('runif','rbinom','rnorm'),
-                            'Stage_0'=c('0.5','0.5','1'),
-                            'Stage_1'=c('0.5','0.5','2')))
-rfcv <- funkyModel(data=pcaMeta,outcome = 'Stage',unit='Person',
-                          metaNames=c('randUnif','randBin','corrNorm'),
-                          subsetPlotSize = 2)
+  metaInfo = data.frame(
+    "var" = c("randUnif", "randBin", "corrNorm"),
+    "rdist" = c("runif", "rbinom", "rnorm"),
+    "Stage_0" = c("0.5", "0.5", "1"),
+    "Stage_1" = c("0.5", "0.5", "2")
+  )
+)
+rfcv <- funkyModel(
+  data = pcaMeta, outcome = "Stage", unit = "Person",
+  metaNames = c("randUnif", "randBin", "corrNorm"),
+  subsetPlotSize = 2
+)
 }
 }

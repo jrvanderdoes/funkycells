@@ -439,15 +439,18 @@ funkyModel <- function(data, K = 10,
 #' @noRd
 .plotVI <- function(viData, accData, NoiseCutoff,
                     InterpolationCutoff) {
+  # Add this to stop NOTEs in building package
+  est <- sd <- var <- NULL
+
   maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
 
   ggplot2::ggplot(
     data = viData,
     mapping = ggplot2::aes(
-      x = factor(stats::reorder(`var`, `est`)),
-      y = ifelse(`est` / maxVal > 1, 1,
-        ifelse(`est` / maxVal < 0, 0,
-          `est` / maxVal
+      x = factor(stats::reorder(var, est)),
+      y = ifelse(est / maxVal > 1, 1,
+        ifelse(est / maxVal < 0, 0,
+          est / maxVal
         )
       ),
       group = 1
@@ -455,8 +458,8 @@ funkyModel <- function(data, K = 10,
   ) +
     ggplot2::geom_errorbar(
       ggplot2::aes(
-        ymin = ifelse((`est` - `sd`) / maxVal < 0, 0, (`est` - `sd`) / maxVal),
-        ymax = ifelse((`est` + `sd`) / maxVal > 1, 1, (`est` + `sd`) / maxVal)
+        ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
+        ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
       ),
       color = "black", width = 0.2
     ) +

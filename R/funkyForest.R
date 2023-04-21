@@ -43,6 +43,28 @@
 #'     data.frame(
 #'       "stage" = c(0, 1),
 #'       "A" = c(0, 0),
+#'       "B" = c(1 / 100, 1 / 500)
+#'     ),
+#'   cellKappaData = data.frame(
+#'     "cell" = c("A", "B"),
+#'     "clusterCell" = c(NA, "A"),
+#'     "kappa" = c(6, 5)
+#'   ),
+#'   peoplePerStage = 5,
+#'   imagesPerPerson = 1
+#' )
+#' pcaData <- getPCAData(
+#'   data = data, repeatedUniqueId = "Image",
+#'   xRange = c(0, 1), yRange = c(0, 1)
+#' )
+#' RF <- funkyForest(data = pcaData[-2])
+#'
+#' \dontrun{
+#' data <- simulatePP(
+#'   cellVarData =
+#'     data.frame(
+#'       "stage" = c(0, 1),
+#'       "A" = c(0, 0),
 #'       "B" = c(1 / 100, 1 / 500),
 #'       "C" = c(1 / 500, 1 / 250),
 #'       "D" = c(1 / 100, 1 / 100),
@@ -51,9 +73,9 @@
 #'   cellKappaData = data.frame(
 #'     "cell" = c("A", "B", "C", "D", "E"),
 #'     "clusterCell" = c(NA, "A", "B", "C", NA),
-#'     "kappa" = c(10, 3, 2, 1, 8)
+#'     "kappa" = c(6, 3, 2, 1, 4)
 #'   ),
-#'   peoplePerStage = 4,
+#'   peoplePerStage = 2,
 #'   imagesPerPerson = 1
 #' )
 #' pcaData <- getPCAData(
@@ -62,7 +84,6 @@
 #' )
 #' RF1 <- funkyForest(data = pcaData[-2])
 #'
-#' \dontrun{
 #' pcaMeta <- simulateMeta(pcaData)
 #' RF2 <- funkyForest(pcaMeta[-2],
 #'   metaNames = c(
@@ -142,9 +163,8 @@ funkyForest <- function(data, outcome = colnames(data)[1],
   }
 
   # Get mean results for variable importance
-  #     TEST: Use average over all or just when appears in model
-  # data_result$avgGini <- data_result$giniDec / nTrees#data_result$splits
-  data_result$avgVI <- data_result$VI / nTrees # data_result$varImpCt
+  #   TODO:: See if this is even necessary
+  data_result$avgVI <- data_result$VI / nTrees
 
   returnResults <- list("varImportanceData" = data_result)
 
@@ -255,10 +275,13 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #' @return grid.arrange containing ggplot
 #' @noRd
 .plotImportance <- function(varImportanceData) {
+  # Add this to prevent NOTEs when building package
+  var <- avgVI <- NULL
+
   varImportance <- ggplot2::ggplot() +
     ggplot2::geom_point(
       ggplot2::aes(
-        x = stats::reorder(`var`, `avgVI`),
+        x = stats::reorder(var, avgVI),
         y = avgVI / max(avgVI)
       ),
       data = varImportanceData
@@ -304,9 +327,9 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #'   cellKappaData = data.frame(
 #'     "cell" = c("A", "B"),
 #'     "clusterCell" = c(NA, "A"),
-#'     "kappa" = c(20, 5)
+#'     "kappa" = c(10, 5)
 #'   ),
-#'   peoplePerStage = 50,
+#'   peoplePerStage = 5,
 #'   imagesPerPerson = 1,
 #'   silent = FALSE
 #' )
@@ -314,7 +337,7 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #'   repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
-#' RF <- funkyForest(data = pcaData[-2], nTrees = 5)
+#' RF <- funkyForest(data = pcaData[-2], nTrees = 5) #
 #' pred <- predict_funkyForest(
 #'   model = RF$model, type = "all",
 #'   data_pred = pcaData[-2],

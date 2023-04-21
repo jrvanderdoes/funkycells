@@ -271,7 +271,7 @@ PCRandomForest  <- function(data, outcome=colnames(data)[1],
 #' @return grid.arrange containing two ggplots.
 .plotImportance <- function(varImportanceData){
   varImportance <- ggplot2::ggplot() +
-    ggplot2::geom_point(ggplot2::aes(x=reorder(var,avgVI), y=avgVI/max(avgVI)),
+    ggplot2::geom_point(ggplot2::aes(x=reorder(`var`,`avgVI`), y=avgVI/max(avgVI)),
                         data=varImportanceData) +
     ggplot2::coord_flip() +
     ggplot2::xlab(NULL) +

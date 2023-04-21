@@ -66,27 +66,37 @@ Recommend to users to use randomForest_CVPC in general and perhaps just
 this for a final model
 }
 \examples{
-data <- simulatePP(cellVarData=
-                    data.frame('stage'=c(0,1),
-                               'A'=c(0,0),
-                               'B'=c(1/100,1/500),
-                               'C'=c(1/500,1/250),
-                               'D'=c(1/100,1/100),
-                               'E'=c(1/500,1/500)),
-                   cellKappaData=data.frame(
-                               'cell'=c('A','B','C','D','E'),
-                               'clusterCell'=c(NA,'A','B','C',NA),
-                               'kappa'=c(10,3,2,1,8)),
-                   peoplePerStage=4,
-                   imagesPerPerson=1)
-pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
-                      xRange = c(0,1),  yRange = c(0,1))
-RF1 <- funkyForest(data=pcaData[-2])
+data <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "A" = c(0, 0),
+      "B" = c(1 / 100, 1 / 500),
+      "C" = c(1 / 500, 1 / 250),
+      "D" = c(1 / 100, 1 / 100),
+      "E" = c(1 / 500, 1 / 500)
+    ),
+  cellKappaData = data.frame(
+    "cell" = c("A", "B", "C", "D", "E"),
+    "clusterCell" = c(NA, "A", "B", "C", NA),
+    "kappa" = c(10, 3, 2, 1, 8)
+  ),
+  peoplePerStage = 4,
+  imagesPerPerson = 1
+)
+pcaData <- getPCAData(
+  data = data, repeatedUniqueId = "Image",
+  xRange = c(0, 1), yRange = c(0, 1)
+)
+RF1 <- funkyForest(data = pcaData[-2])
 
 \dontrun{
 pcaMeta <- simulateMeta(pcaData)
 RF2 <- funkyForest(pcaMeta[-2],
-                               metaNames=c("randUnif","randBin","rNorm",
-                                           "corrUnif","corrBin","corrNorm"))
+  metaNames = c(
+    "randUnif", "randBin", "rNorm",
+    "corrUnif", "corrBin", "corrNorm"
+  )
+)
 }
 }
