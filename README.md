@@ -4,6 +4,8 @@
 # funkycells
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/jrvanderdoes/funkycells/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jrvanderdoes/funkycells/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The term funkycells comes from **fun**ctional **K** function
@@ -23,7 +25,7 @@ You can install the development version of funkycells from
 devtools::install_github("jrvanderdoes/funkycells")
 ```
 
-<!-- ## Example
+## Example
 
 This is a basic example which shows you how to solve a common problem:
 
@@ -58,4 +60,3 @@ You can also embed plots, for example:
 
 In that case, don’t forget to commit and push the resulting figure
 files, so they display on GitHub and CRAN.
- -->

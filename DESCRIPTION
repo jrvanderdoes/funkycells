@@ -9,7 +9,8 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-URL: https://github.com/jrvanderdoes/funkycells
+URL: https://github.com/jrvanderdoes/funkycells,
+    https://jrvanderdoes.github.io/funkycells/
 BugReports: https://github.com/jrvanderdoes/funkycells/issues
 Depends: 
     R (>= 2.10)
