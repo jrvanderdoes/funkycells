@@ -71,6 +71,28 @@ data <- simulatePP(
     data.frame(
       "stage" = c(0, 1),
       "A" = c(0, 0),
+      "B" = c(1 / 100, 1 / 500)
+    ),
+  cellKappaData = data.frame(
+    "cell" = c("A", "B"),
+    "clusterCell" = c(NA, "A"),
+    "kappa" = c(6, 5)
+  ),
+  peoplePerStage = 5,
+  imagesPerPerson = 1
+)
+pcaData <- getPCAData(
+  data = data, repeatedUniqueId = "Image",
+  xRange = c(0, 1), yRange = c(0, 1)
+)
+RF <- funkyForest(data = pcaData[-2])
+
+\dontrun{
+data <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "A" = c(0, 0),
       "B" = c(1 / 100, 1 / 500),
       "C" = c(1 / 500, 1 / 250),
       "D" = c(1 / 100, 1 / 100),
@@ -79,9 +101,9 @@ data <- simulatePP(
   cellKappaData = data.frame(
     "cell" = c("A", "B", "C", "D", "E"),
     "clusterCell" = c(NA, "A", "B", "C", NA),
-    "kappa" = c(10, 3, 2, 1, 8)
+    "kappa" = c(6, 3, 2, 1, 4)
   ),
-  peoplePerStage = 4,
+  peoplePerStage = 2,
   imagesPerPerson = 1
 )
 pcaData <- getPCAData(
@@ -90,7 +112,6 @@ pcaData <- getPCAData(
 )
 RF1 <- funkyForest(data = pcaData[-2])
 
-\dontrun{
 pcaMeta <- simulateMeta(pcaData)
 RF2 <- funkyForest(pcaMeta[-2],
   metaNames = c(
