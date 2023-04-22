@@ -78,14 +78,1061 @@
     
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jrvanderdoes/funkycells" class="external-link">funkycells</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/jrvanderdoes/funkycells" class="external-link">funkycells</a></span><span class="op">)</span></span></code></pre></div>
 <p>This vignette documents a sample analysis of Triple Negative Breast
-Cancer (TNBC) data, retrieved from . The data has been preloaded into
-this package. The following two data sets are retrieved.</p>
+Cancer (TNBC) data, retrieved from . We consider the classified
+phenotypes rather than the direct protein data, pre-loaded in this
+package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span>  <span class="va">TNBC</span> <span class="op">&lt;-</span> <span class="va">TNBC</span></span>
-<span>  <span class="va">TNBC_Meta</span> <span class="op">&lt;-</span> <span class="va">TNBC_Meta</span></span>
-<span>  <span class="va">TNBC_pheno</span> <span class="op">&lt;-</span> <span class="va">TNBC_pheno</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">TNBC_pheno</span> <span class="op">&lt;-</span> <span class="va">TNBC_pheno</span></span>
+<span><span class="va">TNBC_Meta</span> <span class="op">&lt;-</span> <span class="va">TNBC_Meta</span></span></code></pre></div>
+<p>We begin by defining the phenotypes of interest as well as the
+related interactions.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="va">phenos</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Phenotype</span><span class="op">)</span></span>
+<span>  <span class="va">pheno_interactions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/combn.html" class="external-link">combn</a></span><span class="op">(</span><span class="va">phenos</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                              <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'X1'</span><span class="op">=</span><span class="va">phenos</span>,<span class="st">'X2'</span><span class="op">=</span><span class="va">phenos</span><span class="op">)</span><span class="op">)</span></span>
+<span>  </span>
+<span>  <span class="va">phenos_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tumour"</span>,<span class="st">"CD3T"</span>, <span class="st">"CD4T"</span>, <span class="st">"CD8T"</span>, <span class="st">"B"</span>, <span class="st">"DC"</span>,</span>
+<span>                       <span class="st">"DCMono"</span>, <span class="st">"Macrophage"</span>, <span class="st">"MonoNeu"</span>, <span class="st">"NK"</span>, <span class="st">"Treg"</span><span class="op">)</span></span>
+<span>  <span class="va">pheno_interactions_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    Var1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"Tumour"</span>,<span class="fl">11</span><span class="op">)</span>,</span>
+<span>    Var2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tumour"</span>, <span class="st">"CD3T"</span>, <span class="st">"CD4T"</span>, <span class="st">"CD8T"</span>, <span class="st">"B"</span>, <span class="st">"DC"</span>,</span>
+<span>             <span class="st">"DCMono"</span>, <span class="st">"Macrophage"</span>, <span class="st">"MonoNeu"</span>, <span class="st">"NK"</span>, <span class="st">"Treg"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>We consider here here there are 16 total phenotypes with 136 total
+interactions. Alternatively, we can also focus on a subset of phenotypes
+(11) and interactions (11) of particular interest. For computational
+time, we only consider the subset of data below.</p>
+<p>In order to build confidence in our approach, we begin by simulating
+data with a similar structure to the full phenotype data and evaluating
+the effectiveness of the approach.</p>
+<p>To start, let us determine the agent information in a typical
+image.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data_pheno_stat_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'pheno'</span><span class="op">=</span><span class="va">phenos_subset</span><span class="op">)</span></span>
+<span><span class="kw">for</span><span class="op">(</span><span class="va">person</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Person</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="va">person</span>,<span class="st">"Phenotype"</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">tmp</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'pheno'</span>,<span class="va">person</span><span class="op">)</span></span>
+<span>  <span class="va">data_pheno_stat_subset</span> <span class="op">&lt;-</span> </span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">data_pheno_stat_subset</span>,y<span class="op">=</span><span class="va">tmp</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span>
+<span><span class="va">agent_info_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">data_pheno_stat_subset</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                <span class="st">'mean'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/colSums.html" class="external-link">rowMeans</a></span><span class="op">(</span><span class="va">data_pheno_stat_subset</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                <span class="st">'med'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/apply.html" class="external-link">apply</a></span><span class="op">(</span><span class="va">data_pheno_stat_subset</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">1</span>, <span class="va">median</span>, na.rm<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Now let us generate two data sets: (1) where no informative
+interactions are present and (2) where some informative interactions are
+present. We generate <span class="math inline">\(34\)</span> patients,
+comparative to the 33 TNBC patients. We generate <span class="math inline">\(15\)</span> for each class with possible
+interactions, if present, and <span class="math inline">\(2\)</span> for
+each class that are indistinguishable to add some noise to the data.</p>
+<p>The non-interactive data is simulated as follows.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span>cellVarData<span class="op">=</span></span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'stage'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c2'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">25</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">25</span><span class="op">)</span>, <span class="st">'c3'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">50</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c4'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">40</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">40</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c5'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,<span class="st">'c6'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   cellKappaData<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>                     <span class="st">'cell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'c'</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'clusterCell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'kappa'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">50</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">100</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">100</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">40</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">400</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">2000</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   peoplePerStage<span class="op">=</span><span class="fl">15</span>,</span>
+<span>                   imagesPerPerson<span class="op">=</span><span class="fl">1</span>,</span>
+<span>                   silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
+<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
+<span><span class="va">dat1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span>cellVarData<span class="op">=</span></span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'stage'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c2'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">25</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">25</span><span class="op">)</span>, <span class="st">'c3'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">50</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c4'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">40</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">40</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c5'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,<span class="st">'c6'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   cellKappaData<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>                     <span class="st">'cell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'c'</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'clusterCell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'kappa'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">50</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">100</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">100</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">40</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">400</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">2000</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   peoplePerStage<span class="op">=</span><span class="fl">2</span>,</span>
+<span>                   imagesPerPerson<span class="op">=</span><span class="fl">1</span>,</span>
+<span>                   silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
+<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p1'</span>,<span class="st">'p31'</span>,</span>
+<span>                      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p2'</span>,<span class="st">'p32'</span>,</span>
+<span>                        <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p3'</span>,<span class="st">'p33'</span>,</span>
+<span>                          <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p4'</span>,<span class="st">'p34'</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'1'</span>,<span class="st">'31'</span>,</span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'2'</span>,<span class="st">'32'</span>,</span>
+<span>                      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'3'</span>,<span class="st">'33'</span>,</span>
+<span>                        <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'4'</span>,<span class="st">'34'</span>,<span class="cn">NA</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">dat0</span>,<span class="va">dat1</span><span class="op">)</span></span></code></pre></div>
+<p>Compare images of the data.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPP.html">plotPP</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="fl">2</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'cellx'</span>,<span class="st">'celly'</span>,<span class="st">"Phenotype"</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>       ptSize <span class="op">=</span> <span class="fl">1</span>, dropAxes <span class="op">=</span> <span class="cn">T</span>, colorGuide <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/compareTNBCFigure-1.png" alt="TNBC Phenotype Image" width="480"><p class="caption">
+TNBC Phenotype Image
+</p>
+</div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPP.html">plotPP</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span><span class="va">dat</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="fl">1</span>,<span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'x'</span>,<span class="st">'y'</span>,<span class="st">'cellType'</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>       ptSize <span class="op">=</span> <span class="fl">1</span>, dropAxes <span class="op">=</span> <span class="cn">T</span>, colorGuide <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/compareSimFigure-1.png" alt="TNBC Phenotype Image" width="480"><p class="caption">
+TNBC Phenotype Image
+</p>
+</div>
+<p>Now we compute PCA and attach an age meta-variable (with no
+effect).</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cells</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'c'</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span></span>
+<span><span class="va">cells_interactions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/combn.html" class="external-link">combn</a></span><span class="op">(</span><span class="va">cells</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                            <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'X1'</span><span class="op">=</span><span class="va">cells</span>,<span class="st">'X2'</span><span class="op">=</span><span class="va">cells</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPCAData.html">getPCAData</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>,repeatedUniqueId<span class="op">=</span><span class="st">'Image'</span>,</span>
+<span>                      agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
+<span>                      xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,  yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                      silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
+<span><span class="co">#&gt; PCA Pairs (21): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,</span></span>
+<span><span class="va">pcaMeta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulateMeta.html">simulateMeta</a></span><span class="op">(</span><span class="va">pcaData</span>,</span>
+<span>                        metaInfo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>                          <span class="st">'var'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span>,</span>
+<span>                          <span class="st">'rdist'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'rnorm'</span><span class="op">)</span>,</span>
+<span>                          <span class="st">'Stage_0'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'25'</span><span class="op">)</span>,</span>
+<span>                          <span class="st">'Stage_1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'25'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>We analyze the data.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pcaMeta</span>,</span>
+<span>                   outcome <span class="op">=</span> <span class="st">'Stage'</span>,</span>
+<span>                   unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
+<span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; CV Trials (10): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, </span></span>
+<span><span class="co">#&gt; Permutation Trials (100): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,</span></span></code></pre></div>
+<p>Resulting in the following figure.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/examineNoEffect-1.png" alt="No Effect Variable Importances" width="480"><p class="caption">
+No Effect Variable Importances
+</p>
+</div>
+<!-- Consider the K functions of the groups (which should be indistinquishable) -->
+<!-- ```{r compareKNoEffect} -->
+<!-- tmp <- getKFunction(dat[dat$Stage==0,-1],c('c1','c2'),unit = 'Person', -->
+<!--                     repeatedUniqueId = 'Image', -->
+<!--                     xRange = c(0,1),yRange = c(0,1)) -->
+<!-- tmp1 <- getKFunction(dat[dat$Stage==1,-1],c('c1','c2'),'Person', -->
+<!--                     repeatedUniqueId = 'Image', -->
+<!--                     xRange = c(0,1),yRange = c(0,1)) -->
+<!-- tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r) -->
+<!-- tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r) -->
+<!-- data_plot <- rbind(data.frame('r'=tmp_1$r, -->
+<!--                               'K'=tmp_1$value, -->
+<!--                               'Unit'=tmp_1$name, -->
+<!--                               'Outcome'="0"), -->
+<!--                    data.frame('r'=tmp1_1$r, -->
+<!--                               'K'=tmp1_1$value, -->
+<!--                               'Unit'=paste0(tmp1_1$name,'_1'), -->
+<!--                               'Outcome'="1")) -->
+<!-- ``` -->
+<!-- Creating the comparison image, -->
+<!-- ```{r noEffectKfunctions, fig.width=5, fig.height=5, fig.cap="No Effect K Functions"} -->
+<!-- plot_K_functions(data_plot) -->
+<!-- ``` -->
+<p>Now we consider the simulated model with effects.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span>cellVarData<span class="op">=</span></span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'stage'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c2'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">25</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">60</span><span class="op">)</span>, <span class="st">'c3'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c4'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">40</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">40</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c5'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,<span class="st">'c6'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   cellKappaData<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>                     <span class="st">'cell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'c'</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'clusterCell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'kappa'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">50</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">100</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">100</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">40</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">400</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">2000</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   peoplePerStage<span class="op">=</span><span class="fl">15</span>,</span>
+<span>                   imagesPerPerson<span class="op">=</span><span class="fl">1</span>,</span>
+<span>                   silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
+<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
+<span><span class="va">dat1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span>cellVarData<span class="op">=</span></span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'stage'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c2'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">25</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">25</span><span class="op">)</span>, <span class="st">'c3'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">50</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">50</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c4'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">/</span><span class="fl">40</span>,<span class="fl">1</span><span class="op">/</span><span class="fl">40</span><span class="op">)</span>,</span>
+<span>                                <span class="st">'c5'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,<span class="st">'c6'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   cellKappaData<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>                     <span class="st">'cell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'c'</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'clusterCell'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="st">'c1'</span>,<span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     <span class="st">'kappa'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">50</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">100</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">3</span>,<span class="fl">5</span>,<span class="fl">0.5</span><span class="op">)</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">100</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">40</span>,</span>
+<span>                               <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">400</span>,<span class="fl">0.5</span><span class="op">)</span><span class="op">+</span><span class="fl">2000</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                   peoplePerStage<span class="op">=</span><span class="fl">2</span>,</span>
+<span>                   imagesPerPerson<span class="op">=</span><span class="fl">1</span>,</span>
+<span>                   silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
+<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p1'</span>,<span class="st">'p31'</span>,</span>
+<span>                      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p2'</span>,<span class="st">'p32'</span>,</span>
+<span>                             <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p3'</span>,<span class="st">'p33'</span>,</span>
+<span>                                    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p4'</span>,<span class="st">'p34'</span>,<span class="cn">NA</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'1'</span>,<span class="st">'31'</span>,</span>
+<span>                     <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'2'</span>,<span class="st">'32'</span>,</span>
+<span>                            <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'3'</span>,<span class="st">'33'</span>,</span>
+<span>                                   <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span><span class="op">==</span><span class="st">'4'</span>,<span class="st">'34'</span>,<span class="cn">NA</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">dat0</span>,<span class="va">dat1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">cells</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'c'</span>,<span class="fl">1</span><span class="op">:</span><span class="fl">6</span><span class="op">)</span></span>
+<span><span class="va">cells_interactions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/combn.html" class="external-link">combn</a></span><span class="op">(</span><span class="va">cells</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                            <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'X1'</span><span class="op">=</span><span class="va">cells</span>,<span class="st">'X2'</span><span class="op">=</span><span class="va">cells</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPCAData.html">getPCAData</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>,repeatedUniqueId<span class="op">=</span><span class="st">'Image'</span>,</span>
+<span>                      agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
+<span>                      xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,  yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
+<span>                      silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
+<span><span class="co">#&gt; PCA Pairs (21): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,</span></span>
+<span><span class="va">pcaMeta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulateMeta.html">simulateMeta</a></span><span class="op">(</span><span class="va">pcaData</span>,</span>
+<span>                        metaInfo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>                          <span class="st">'var'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span>,</span>
+<span>                          <span class="st">'rdist'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'rnorm'</span><span class="op">)</span>,</span>
+<span>                          <span class="st">'Stage_0'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'25'</span><span class="op">)</span>,</span>
+<span>                          <span class="st">'Stage_1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'26'</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pcaMeta</span>,</span>
+<span>                   outcome <span class="op">=</span> <span class="st">'Stage'</span>,</span>
+<span>                   unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
+<span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; CV Trials (10): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, </span></span>
+<span><span class="co">#&gt; Permutation Trials (100): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,</span></span></code></pre></div>
+<p>Creating the variable importance plot as following,</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/plotEffectVI-1.png" alt="Effect Simulation Variable Importance" width="480"><p class="caption">
+Effect Simulation Variable Importance
+</p>
+</div>
+<!-- And we can examine the $K$ functions for an important interaction. -->
+<!-- ```{r effectKFunctions} -->
+<!-- tmp <- getKFunction(dat[dat$Stage==0,-1],c('c1','c2'),unit = 'Person', -->
+<!--                     repeatedUniqueId = 'Image', -->
+<!--                     xRange = c(0,1),yRange = c(0,1)) -->
+<!-- tmp1 <- getKFunction(dat[dat$Stage==1,-1],c('c1','c2'),'Person', -->
+<!--                     repeatedUniqueId = 'Image', -->
+<!--                     xRange = c(0,1),yRange = c(0,1)) -->
+<!-- tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r) -->
+<!-- tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r) -->
+<!-- data_plot <- rbind(data.frame('r'=tmp_1$r, -->
+<!--                               'K'=tmp_1$value, -->
+<!--                               'Unit'=tmp_1$name, -->
+<!--                               'Outcome'="0"), -->
+<!--                    data.frame('r'=tmp1_1$r, -->
+<!--                               'K'=tmp1_1$value, -->
+<!--                               'Unit'=paste0(tmp1_1$name,'_1'), -->
+<!--                               'Outcome'="1")) -->
+<!-- ``` -->
+<!-- With the $K$ function comparison as: -->
+<!-- ```{r plotEffectKs, fig.width=5, fig.height=5, fig.cap="Effect Simulation K Functions"} -->
+<!-- plot_K_functions(data_plot) -->
+<!-- ``` -->
+<p>With this confidence, we now consider the TNBC phenotype data.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span>  <span class="va">dataPCA_pheno</span><span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPCAData.html">getPCAData</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">TNBC_pheno</span>, unit<span class="op">=</span><span class="st">'Person'</span>,</span>
+<span>                              agents_df<span class="op">=</span><span class="va">pheno_interactions_subset</span>,</span>
+<span>                              rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; PCA Pairs (11): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,</span></span>
+<span></span>
+<span>  <span class="va">dataPCAAge_pheno</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">dataPCA_pheno</span>,<span class="va">TNBC_Meta</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span>  <span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">dataPCAAge_pheno</span>, K<span class="op">=</span><span class="fl">10</span>,</span>
+<span>                     outcome<span class="op">=</span><span class="st">'Class'</span>,unit<span class="op">=</span><span class="st">'Person'</span>,</span>
+<span>                     metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Age'</span><span class="op">)</span>, synthetics<span class="op">=</span><span class="fl">100</span>,</span>
+<span>                     alpha<span class="op">=</span><span class="fl">0.05</span>, silent<span class="op">=</span><span class="cn">FALSE</span>,</span>
+<span>                     subsetPlotSize <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
+<span><span class="co">#&gt; CV Trials (10): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, </span></span>
+<span><span class="co">#&gt; Permutation Trials (100): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,</span></span></code></pre></div>
+<p>Creating the variable importance plots as follows.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span>  <span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/viewFullPlot-1.png" alt="TNBC Phenotype Variable Importance" width="480"><p class="caption">
+TNBC Phenotype Variable Importance
+</p>
+</div>
+<!-- ```{r viewSubPlot, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance for Top 25 Variables"} -->
+<!--   rfcv$subset_viPlot -->
+<!-- ``` -->
+<p>Also consider <span class="math inline">\(K\)</span> functions from
+significant and insignificant interactions.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKFunction.html">getKFunction</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Class</span><span class="op">==</span><span class="fl">0</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Tumour'</span>,<span class="st">'Tumour'</span><span class="op">)</span>,unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
+<span>                    rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">tmp1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKFunction.html">getKFunction</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Class</span><span class="op">==</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Tumour'</span>,<span class="st">'Tumour'</span><span class="op">)</span>,unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
+<span>                    rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tmp_1</span> <span class="op">&lt;-</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">tmp</span>,cols <span class="op">=</span> <span class="op">-</span><span class="va">r</span><span class="op">)</span></span>
+<span><span class="va">tmp1_1</span> <span class="op">&lt;-</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">tmp1</span>,cols <span class="op">=</span> <span class="op">-</span><span class="va">r</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">data_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'r'</span><span class="op">=</span><span class="va">tmp_1</span><span class="op">$</span><span class="va">r</span>,</span>
+<span>                              <span class="st">'K'</span><span class="op">=</span><span class="va">tmp_1</span><span class="op">$</span><span class="va">value</span>,</span>
+<span>                              <span class="st">'Unit'</span><span class="op">=</span><span class="va">tmp_1</span><span class="op">$</span><span class="va">name</span>,</span>
+<span>                              <span class="st">'Outcome'</span><span class="op">=</span><span class="st">"0"</span><span class="op">)</span>,</span>
+<span>                   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'r'</span><span class="op">=</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">r</span>,</span>
+<span>                              <span class="st">'K'</span><span class="op">=</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">value</span>,</span>
+<span>                              <span class="st">'Unit'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">name</span>,<span class="st">'_1'</span><span class="op">)</span>,</span>
+<span>                              <span class="st">'Outcome'</span><span class="op">=</span><span class="st">"1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Creating the following figure.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_K_functions.html">plot_K_functions</a></span><span class="op">(</span><span class="va">data_plot</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/significantTNBCKPlot-1.png" alt="TNBC Phenotype Significant K Functions" width="480"><p class="caption">
+TNBC Phenotype Significant K Functions
+</p>
+</div>
+<p>And for a insignificant interaction.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKFunction.html">getKFunction</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Class</span><span class="op">==</span><span class="fl">0</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'CD4T'</span>,<span class="st">'Endothelial'</span><span class="op">)</span>,unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
+<span>                    rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">tmp1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKFunction.html">getKFunction</a></span><span class="op">(</span><span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Class</span><span class="op">==</span><span class="fl">1</span>,<span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>                    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'CD4T'</span>,<span class="st">'Endothelial'</span><span class="op">)</span>,unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
+<span>                    rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tmp_1</span> <span class="op">&lt;-</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">tmp</span>,cols <span class="op">=</span> <span class="op">-</span><span class="va">r</span><span class="op">)</span></span>
+<span><span class="va">tmp1_1</span> <span class="op">&lt;-</span> <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">tmp1</span>,cols <span class="op">=</span> <span class="op">-</span><span class="va">r</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">data_plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'r'</span><span class="op">=</span><span class="va">tmp_1</span><span class="op">$</span><span class="va">r</span>,</span>
+<span>                              <span class="st">'K'</span><span class="op">=</span><span class="va">tmp_1</span><span class="op">$</span><span class="va">value</span>,</span>
+<span>                              <span class="st">'Unit'</span><span class="op">=</span><span class="va">tmp_1</span><span class="op">$</span><span class="va">name</span>,</span>
+<span>                              <span class="st">'Outcome'</span><span class="op">=</span><span class="st">"0"</span><span class="op">)</span>,</span>
+<span>                   <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'r'</span><span class="op">=</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">r</span>,</span>
+<span>                              <span class="st">'K'</span><span class="op">=</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">value</span>,</span>
+<span>                              <span class="st">'Unit'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">name</span>,<span class="st">'_1'</span><span class="op">)</span>,</span>
+<span>                              <span class="st">'Outcome'</span><span class="op">=</span><span class="st">"1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Creating the following figure.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_K_functions.html">plot_K_functions</a></span><span class="op">(</span><span class="va">data_plot</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<img src="TNBC_files/figure-html/insignificantTNBCKPlot-1.png" alt="TNBC Phenotype Insignficant K Functions" width="480"><p class="caption">
+TNBC Phenotype Insignficant K Functions
+</p>
+</div>
+<!--   -------------------------------------------------------------   -->
+<!-- asda -->
+<!-- ```{r} -->
+<!-- tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1], -->
+<!--                     c('Tumour','Macrophage'),unit = 'Person', -->
+<!--                     rCheckVals = seq(0,50,1)) -->
+<!-- tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class==1,-1], -->
+<!--                     c('Tumour','Macrophage'),unit = 'Person', -->
+<!--                     rCheckVals = seq(0,50,1)) -->
+<!-- tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r) -->
+<!-- tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r) -->
+<!-- data_plot <- rbind(data.frame('r'=tmp_1$r, -->
+<!--                               'K'=tmp_1$value, -->
+<!--                               'Unit'=tmp_1$name, -->
+<!--                               'Outcome'="0"), -->
+<!--                    data.frame('r'=tmp1_1$r, -->
+<!--                               'K'=tmp1_1$value, -->
+<!--                               'Unit'=paste0(tmp1_1$name,'_1'), -->
+<!--                               'Outcome'="1")) -->
+<!-- plot_K_functions(data_plot) -->
+<!-- tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1], -->
+<!--                     c('Tumour','B'),unit = 'Person', -->
+<!--                     rCheckVals = seq(0,50,1)) -->
+<!-- tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class==1,-1], -->
+<!--                     c('Tumour','B'),unit = 'Person', -->
+<!--                     rCheckVals = seq(0,50,1)) -->
+<!-- tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r) -->
+<!-- tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r) -->
+<!-- data_plot <- rbind(data.frame('r'=tmp_1$r, -->
+<!--                               'K'=tmp_1$value, -->
+<!--                               'Unit'=tmp_1$name, -->
+<!--                               'Outcome'="0"), -->
+<!--                    data.frame('r'=tmp1_1$r, -->
+<!--                               'K'=tmp1_1$value, -->
+<!--                               'Unit'=paste0(tmp1_1$name,'_1'), -->
+<!--                               'Outcome'="1")) -->
+<!-- plot_K_functions(data_plot) -->
+<!-- ``` -->
+<!-- Diagram Info -->
+<!-- ```{r diagram} -->
+<!-- ## Data Gen -->
+<!-- set.seed(12345) -->
+<!-- dat0 <- simulatePP(cellVarData= -->
+<!--                        data.frame('stage'=c(0,1), -->
+<!--                                   'A'=c(0,0), -->
+<!--                                   'B'=c(1/50,1/1000)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                                   'cell'=c('A','B'), -->
+<!--                                   'clusterCell'=c(NA,'A'), -->
+<!--                                   'kappa'=c(20,5)), -->
+<!--                    peoplePerStage=50, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F ) -->
+<!-- dat1 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'A'=c(0,0), -->
+<!--                                 'B'=c(1/50,1/50)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                                  'cell'=c('A','B'), -->
+<!--                                  'clusterCell'=c(NA,'A'), -->
+<!--                                  'kappa'=c(20,5)), -->
+<!--                    peoplePerStage=1, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1$Person <- ifelse(dat1$Person=='p1','p101', -->
+<!--                       ifelse(dat1$Person=='p2','p102', NA)) -->
+<!-- dat1$Image <- ifelse(dat1$Image=='1','101', -->
+<!--                      ifelse(dat1$Image=='2','102',NA)) -->
+<!-- dat <- rbind(dat0,dat1) -->
+<!-- set.seed(12345) -->
+<!-- Kvals <- getKFunction(data = dat[,-1], agents = c('A','B'), -->
+<!--              unit = 'Person', repeatedUniqueId = 'Image', -->
+<!--              xRange = c(0,1), yRange = c(0,1), -->
+<!--              rCheckVals = seq(0,0.25,0.01)) -->
+<!-- pcaData <- getPCAData(dat,repeatedUniqueId='Image', -->
+<!--                       xRange = c(0,1),  yRange = c(0,1), -->
+<!--                       silent=F) -->
+<!-- set.seed(12345) -->
+<!-- pcaMeta <- simulateMeta(pcaData, -->
+<!--                         metaInfo = data.frame( -->
+<!--                           'var'=c('randUnif','randBin','corrNorm'), -->
+<!--                           'rdist'=c('runif','rbinom','rnorm'), -->
+<!--                           'Stage_0'=c('0.5','0.5','1'), -->
+<!--                           'Stage_1'=c('0.5','0.5','2'))) -->
+<!-- set.seed(12345) -->
+<!-- rfcv <- funkyModel(data=pcaMeta, -->
+<!--                     metaNames=c('randUnif','randBin','corrNorm')) -->
+<!-- ## K FUNCTIONS -->
+<!-- ggplot() + -->
+<!--   geom_line(aes(x=r,y=K1),data=Kvals, size=2) + -->
+<!--   theme_bw() + -->
+<!--   theme(axis.title = element_blank(), -->
+<!--         axis.text = element_blank()) -->
+<!-- ggplot() + -->
+<!--   geom_line(aes(x=r,y=K52),data=Kvals, size=2) + -->
+<!--   theme_bw() + -->
+<!--   theme(axis.title = element_blank(), -->
+<!--         axis.text = element_blank()) -->
+<!-- ## Point Processes -->
+<!-- plotPP(dat[dat$Image==1,c('x','y','cellType')], -->
+<!--        ptSize = 5, dropAxes = T, colorGuide = 'none') -->
+<!-- plotPP(dat[dat$Image==51,c('x','y','cellType')], -->
+<!--        ptSize = 5, dropAxes = T, colorGuide = 'none') -->
+<!-- plotPP(dat[dat$Image==60,c('x','y','cellType')], -->
+<!--        ptSize = 5, dropAxes = T, colorGuide = 'none') -->
+<!-- ## RF -->
+<!-- giniData=rfcv$Gini -->
+<!-- viData=rfcv$VI -->
+<!-- accData=rfcv$Accuracy -->
+<!-- noiseMap=rfcv$AddDataToCVVarImpPlot$noiseMap -->
+<!-- KFunctions=rfcv$AddDataToCVVarImpPlot$KFunctions -->
+<!-- metaNames=rfcv$AddDataToCVVarImpPlot$metaNames -->
+<!-- alpha=rfcv$AddDataToCVVarImpPlot$alpha -->
+<!-- alignmentMethod = 'Mult' -->
+<!-- curveData=rfcv$AddDataToCVVarImpPlot$curveData -->
+<!-- subsetPlotSize=rfcv$AddDataToCVVarImpPlot$subsetPlotSize -->
+<!-- ## .generateCVVariableImportancePlot -->
+<!-- set.seed(12345) -->
+<!-- cutoffs <- .getIndividualCutoffs(noiseMap,giniData,viData,alignmentMethod, -->
+<!--                                  alpha) -->
+<!-- standardizedData <- .standardizeVarImpData(giniData, viData, -->
+<!--                                            KFunctions, metaNames, -->
+<!--                                            cutoffs$giniCutoff_df, -->
+<!--                                            cutoffs$viCutoff_df, -->
+<!--                                            alignmentMethod) -->
+<!-- ## Full -->
+<!-- underlyingData = standardizedData$stdVI -->
+<!-- ylabel = 'Variable Importance' -->
+<!-- cutoff = max(cutoffs$viCutoff_df$cutoff) -->
+<!-- curveDat = curveData[,2] -->
+<!-- ## .plotCVVariableImportance -->
+<!-- maxVal <- max(underlyingData$avgVal,curveDat) -->
+<!-- ggplot2::ggplot(data=underlyingData, -->
+<!--                 mapping=ggplot2::aes(x=factor(reorder(var,avgVal)), -->
+<!--                                      y=ifelse(avgVal/maxVal>1,1, -->
+<!--                                               ifelse(avgVal/maxVal<0,0, -->
+<!--                                                      avgVal/maxVal)), -->
+<!--                                      group=1)) + -->
+<!--   ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal), -->
+<!--                                       ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)), -->
+<!--                          color='darkgray', width=0.2,size=1.5) + -->
+<!--   ggplot2::geom_point(color='black',size=3) + -->
+<!--   ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))), -->
+<!--                       color='red', linetype='dotted',linewidth=2) + -->
+<!--   ggplot2::coord_flip(ylim = c(0,1)) + -->
+<!--   ggplot2::xlab(NULL) + #'Variables') + -->
+<!--   ggplot2::ylim(c(0,1)) + -->
+<!--   ggplot2::ylab(NULL) + -->
+<!--   ggplot2::theme_bw() + -->
+<!--   ggplot2::theme(axis.text=ggplot2::element_text(size=18), -->
+<!--                  axis.ticks.y=ggplot2::element_blank(), -->
+<!--                  panel.grid.major.y = ggplot2::element_blank(), -->
+<!--                  axis.title = ggplot2::element_text(size=22)) + -->
+<!--   ggplot2::geom_line(ggplot2::aes( -->
+<!--     x=ordered(underlyingData[order(-avgVal),'var']), -->
+<!--     y=curveDat/maxVal),color='orange', linetype='dashed',size=2) + -->
+<!--   ggplot2::ylab(paste0('OOB (', -->
+<!--                        .specify_decimal(accData$OOB,2), -->
+<!--                        '), Guess (', -->
+<!--                        .specify_decimal(accData$guess,2), -->
+<!--                        '), Bias (', -->
+<!--                        .specify_decimal(accData$bias,2),')')) -->
+<!-- ######## Fake Synthetic -->
+<!-- data=pcaMeta -->
+<!-- outcome='Stage' -->
+<!-- unit='Person' -->
+<!-- repeatedId='Image' -->
+<!-- metaNames=c('randUnif','randBin','corrNorm') -->
+<!-- cellData=dat -->
+<!-- syntheticKs = 100 -->
+<!-- set.seed(12345) -->
+<!-- NamesPCs <- .getUnderlyingNamesAndPCsCount( -->
+<!--   colnames(data)[!(colnames(data)%in% -->
+<!--                      c(outcome, unit, repeatedId, metaNames))]) -->
+<!-- noiseMap <- NULL -->
+<!-- if(!is.null(cellData[['cellType']])){ -->
+<!--   kappa <- round(mean(table(cellData[,'cellType'])) / -->
+<!--                    nrow(unique(cellData[,c(outcome, unit, repeatedId)]))) -->
+<!-- } else{ -->
+<!--   kappa <- (sum(cellData[ -->
+<!--     unique(stringr::str_remove_all(NamesPCs$Vars,'_.*$'))]) / -->
+<!--       length(NamesPCs$Vars) ) / -->
+<!--     nrow(unique(cellData[,c(outcome, unit, repeatedId)])) -->
+<!-- } -->
+<!-- noiseData <- .generateKNoiseGroup( -->
+<!--   syntheticKs = syntheticKs, cellData = cellData, -->
+<!--   agentName='syntheticCell', -->
+<!--   kappaL = kappa, kappaR=kappa, -->
+<!--   outcome = outcome, unit = unit, -->
+<!--   repeatedId = repeatedId) -->
+<!-- Kvals_n <- getKFunction(data = noiseData[,-4], agents = c('syntheticCell1L','syntheticCell1R'), -->
+<!--                         unit = 'Person', repeatedUniqueId = 'Image', -->
+<!--                         xRange = c(0,1), yRange = c(0,1), -->
+<!--                         rCheckVals = seq(0,0.25,0.01)) -->
+<!-- ## K FUNCTIONS -->
+<!-- ggplot() + -->
+<!--   geom_line(aes(x=r,y=K1),data=Kvals_n, size=2) + -->
+<!--   theme_bw() + -->
+<!--   theme(axis.title = element_blank(), -->
+<!--         axis.text = element_blank()) -->
+<!-- ggplot() + -->
+<!--   geom_line(aes(x=r,y=K52),data=Kvals_n, size=2) + -->
+<!--   theme_bw() + -->
+<!--   theme(axis.title = element_blank(), -->
+<!--         axis.text = element_blank()) -->
+<!-- ## Point Processes -->
+<!-- plotPP(noiseData[noiseData$Image==1 & -->
+<!--                    noiseData$cellType %in% c('syntheticCell1L','syntheticCell1R'), -->
+<!--                  c('x','y','cellType')], -->
+<!--        ptSize = 5, dropAxes = T, colorGuide = 'none') -->
+<!-- plotPP(noiseData[noiseData$Image==52 & -->
+<!--                    noiseData$cellType %in% c('syntheticCell1L','syntheticCell1R'), -->
+<!--                  c('x','y','cellType')], -->
+<!--        ptSize = 5, dropAxes = T, colorGuide = 'none') -->
+<!-- ``` -->
+<!-- Exploring the data, we can build simulations with similar behaviors. -->
+<!-- ```{r simNoEffect} -->
+<!-- set.seed(12345) -->
+<!-- dat0 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'c1'=c(0,0), -->
+<!--                                 'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50), -->
+<!--                                 'c4'=c(0,0), -->
+<!--                                 'c5'=c(0,0),'c6'=c(0,0), -->
+<!--                                 'c7'=c(0,0),'c8'=c(1/100,1/100), -->
+<!--                                 'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250), -->
+<!--                                 'c11'=c(1/100,1/100),'c12'=c(1/80,1/80), -->
+<!--                                 'c13'=c(0,0),'c14'=c(0,0), -->
+<!--                                 'c15'=c(0,0),'c16'=c(0,0), -->
+<!--                                 'c17'=c(0,0),'c18'=c(0,0)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                      'cell'=paste0('c',1:18), -->
+<!--                      'clusterCell'=c(NA,'c1','c1', rep(NA,15)), -->
+<!--                      'kappa'=c(rbinom(1,100,0.5), -->
+<!--                                rbinom(2,70,0.5), -->
+<!--                                rbinom(1,60,0.5), -->
+<!--                                rbinom(2,300,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(4,600,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(2,50,0.5), -->
+<!--                                rbinom(2,20,0.5))), -->
+<!--                    peoplePerStage=17, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'c1'=c(0,0), -->
+<!--                                 'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50), -->
+<!--                                 'c4'=c(0,0), -->
+<!--                                 'c5'=c(0,0),'c6'=c(0,0), -->
+<!--                                 'c7'=c(0,0),'c8'=c(1/100,1/100), -->
+<!--                                 'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250), -->
+<!--                                 'c11'=c(1/100,1/100),'c12'=c(1/80,1/80), -->
+<!--                                 'c13'=c(0,0),'c14'=c(0,0), -->
+<!--                                 'c15'=c(0,0),'c16'=c(0,0), -->
+<!--                                 'c17'=c(0,0),'c18'=c(0,0)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                      'cell'=paste0('c',1:18), -->
+<!--                      'clusterCell'=c(NA,'c1','c1', rep(NA,15)), -->
+<!--                      'kappa'=c(rbinom(1,100,0.5), -->
+<!--                                rbinom(2,70,0.5), -->
+<!--                                rbinom(1,60,0.5), -->
+<!--                                rbinom(2,300,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(4,600,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(2,50,0.5), -->
+<!--                                rbinom(2,20,0.5))), -->
+<!--                    peoplePerStage=1, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1$Person <- ifelse(dat1$Person=='p1','p35', -->
+<!--                       ifelse(dat1$Person=='p2','p36', NA)) -->
+<!-- dat1$Image <- ifelse(dat1$Image=='1','35', -->
+<!--                      ifelse(dat1$Image=='2','36',NA)) -->
+<!-- dat <- rbind(dat0,dat1) -->
+<!-- set.seed(12345) -->
+<!-- pcaData <- getPCAData(data = dat,repeatedUniqueId='Image', -->
+<!--                       xRange = c(0,1),  yRange = c(0,1), -->
+<!--                       silent=F) -->
+<!-- set.seed(12345) -->
+<!-- pcaMeta <- simulateMeta(pcaData, -->
+<!--                         metaInfo = data.frame( -->
+<!--                           'var'=c('gender','age'), -->
+<!--                           'rdist'=c('rbinom','rnorm'), -->
+<!--                           'Stage_0'=c('0.5','25'), -->
+<!--                           'Stage_1'=c('0.5','25'))) -->
+<!-- set.seed(12345) -->
+<!-- rfcv <- funkyModel(data=pcaMeta, -->
+<!--                    outcome = 'Stage', -->
+<!--                    unit = 'Person', -->
+<!--                    metaNames=c('gender','age')) -->
+<!-- rfcv$multIntVI$subset_viPlot -->
+<!-- rfcv$multIntVI$viPlot -->
+<!-- ``` -->
+<!-- ```{r simEffect} -->
+<!-- set.seed(12345) -->
+<!-- dat0 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'c1'=c(0,0), -->
+<!--                                 'c2'=c(1/25,1/60), 'c3'=c(1/50,1/10), -->
+<!--                                 'c4'=c(0,0), -->
+<!--                                 'c5'=c(0,0),'c6'=c(0,0), -->
+<!--                                 'c7'=c(0,0),'c8'=c(1/100,1/100), -->
+<!--                                 'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250), -->
+<!--                                 'c11'=c(1/100,1/100),'c12'=c(1/80,1/80), -->
+<!--                                 'c13'=c(0,0),'c14'=c(0,0), -->
+<!--                                 'c15'=c(0,0),'c16'=c(0,0), -->
+<!--                                 'c17'=c(0,0),'c18'=c(0,0)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                      'cell'=paste0('c',1:18), -->
+<!--                      'clusterCell'=c(NA,'c1','c1', rep(NA,15)), -->
+<!--                      'kappa'=c(rbinom(1,100,0.5), -->
+<!--                                rbinom(2,70,0.5), -->
+<!--                                rbinom(1,60,0.5), -->
+<!--                                rbinom(2,300,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(4,600,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(2,50,0.5), -->
+<!--                                rbinom(2,20,0.5))), -->
+<!--                    peoplePerStage=17, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'c1'=c(0,0), -->
+<!--                                 'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50), -->
+<!--                                 'c4'=c(0,0), -->
+<!--                                 'c5'=c(0,0),'c6'=c(0,0), -->
+<!--                                 'c7'=c(0,0),'c8'=c(1/100,1/100), -->
+<!--                                 'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250), -->
+<!--                                 'c11'=c(1/100,1/100),'c12'=c(1/80,1/80), -->
+<!--                                 'c13'=c(0,0),'c14'=c(0,0), -->
+<!--                                 'c15'=c(0,0),'c16'=c(0,0), -->
+<!--                                 'c17'=c(0,0),'c18'=c(0,0)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                      'cell'=paste0('c',1:18), -->
+<!--                      'clusterCell'=c(NA,'c1','c1', rep(NA,15)), -->
+<!--                      'kappa'=c(rbinom(1,100,0.5), -->
+<!--                                rbinom(2,70,0.5), -->
+<!--                                rbinom(1,60,0.5), -->
+<!--                                rbinom(2,300,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(4,600,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(2,50,0.5), -->
+<!--                                rbinom(2,20,0.5))), -->
+<!--                    peoplePerStage=2, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1$Person <- ifelse(dat1$Person=='p1','p35', -->
+<!--                       ifelse(dat1$Person=='p2','p36', -->
+<!--                              ifelse(dat1$Person=='p3','p37', -->
+<!--                                     ifelse(dat1$Person=='p4','p38',NA)))) -->
+<!-- dat1$Image <- ifelse(dat1$Image=='1','35', -->
+<!--                      ifelse(dat1$Image=='2','36', -->
+<!--                             ifelse(dat1$Image=='3','37', -->
+<!--                                    ifelse(dat1$Image=='4','38',NA)))) -->
+<!-- dat <- rbind(dat0,dat1) -->
+<!-- set.seed(12345) -->
+<!-- pcaData <- getPCAData(data = dat,repeatedUniqueId='Image', -->
+<!--                       xRange = c(0,1),  yRange = c(0,1), -->
+<!--                       silent=F) -->
+<!-- set.seed(12345) -->
+<!-- pcaMeta <- simulateMeta(pcaData, -->
+<!--                         metaInfo = data.frame( -->
+<!--                           'var'=c('gender','age'), -->
+<!--                           'rdist'=c('rbinom','rnorm'), -->
+<!--                           'Stage_0'=c('0.5','25'), -->
+<!--                           'Stage_1'=c('0.5','27.5'))) -->
+<!-- set.seed(12345) -->
+<!-- rfcv <- funkyModel(data=pcaMeta, -->
+<!--                    outcome = 'Stage', -->
+<!--                    unit = 'Person', -->
+<!--                    metaNames=c('gender','age')) -->
+<!-- rfcv$multIntVI$subset_viPlot -->
+<!-- rfcv$multIntVI$viPlot -->
+<!-- ``` -->
+<!-- ```{r plotSimEffect} -->
+<!-- # saveRDS(rfcv,'C:/Users/jerem/Downloads/Paper/SeeMe/rfcv_Effect.rds') -->
+<!-- giniData=rfcv$Gini -->
+<!-- viData=rfcv$VI -->
+<!-- accData=rfcv$Accuracy -->
+<!-- noiseMap=rfcv$AddDataToCVVarImpPlot$noiseMap -->
+<!-- KFunctions=rfcv$AddDataToCVVarImpPlot$KFunctions -->
+<!-- metaNames=rfcv$AddDataToCVVarImpPlot$metaNames -->
+<!-- alpha=rfcv$AddDataToCVVarImpPlot$alpha -->
+<!-- alignmentMethod = 'Mult' -->
+<!-- curveData=rfcv$AddDataToCVVarImpPlot$curveData -->
+<!-- subsetPlotSize=rfcv$AddDataToCVVarImpPlot$subsetPlotSize -->
+<!-- ## .generateCVVariableImportancePlot -->
+<!-- cutoffs <- .getIndividualCutoffs(noiseMap,giniData,viData,alignmentMethod, -->
+<!--                                  alpha) -->
+<!-- standardizedData <- .standardizeVarImpData(giniData, viData, -->
+<!--                                            KFunctions, metaNames, -->
+<!--                                            cutoffs$giniCutoff_df, -->
+<!--                                            cutoffs$viCutoff_df, -->
+<!--                                            alignmentMethod) -->
+<!-- ## Full -->
+<!-- underlyingData = standardizedData$stdVI -->
+<!-- ylabel = 'Variable Importance' -->
+<!-- cutoff = max(cutoffs$viCutoff_df$cutoff) -->
+<!-- curveDat = curveData[,2] -->
+<!-- ## .plotCVVariableImportance -->
+<!-- maxVal <- max(underlyingData$avgVal,curveDat) -->
+<!-- ggplot2::ggplot(data=underlyingData, -->
+<!--                 mapping=ggplot2::aes(x=factor(reorder(var,avgVal)), -->
+<!--                                      y=ifelse(avgVal/maxVal>1,1, -->
+<!--                                               ifelse(avgVal/maxVal<0,0, -->
+<!--                                                      avgVal/maxVal)), -->
+<!--                                      group=1)) + -->
+<!--   ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal), -->
+<!--                                       ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)), -->
+<!--                          color='darkgray', width=0.2) + -->
+<!--   ggplot2::geom_point(color='black') + -->
+<!--   ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))), -->
+<!--                       color='red', linetype='dotted',linewidth=2) + -->
+<!--   ggplot2::coord_flip(ylim = c(0,1)) + -->
+<!--   ggplot2::xlab(NULL) +#'Variables') + -->
+<!--   ggplot2::ylim(c(0,1)) + -->
+<!--   ggplot2::ylab(NULL) + -->
+<!--   ggplot2::theme_bw() + -->
+<!--   ggplot2::theme(axis.text.y=ggplot2::element_blank(), -->
+<!--                  axis.ticks.y=ggplot2::element_blank(), -->
+<!--                  panel.grid.major.y = ggplot2::element_blank(), -->
+<!--                  axis.text.x = ggplot2::element_text(size=18), -->
+<!--                  axis.title = ggplot2::element_text(size=22)) + -->
+<!--   ggplot2::geom_line(ggplot2::aes( -->
+<!--     x=ordered(underlyingData[order(-avgVal),'var']), -->
+<!--     y=curveDat/maxVal),color='orange', linetype='dashed',size=2) -->
+<!-- ## Subset -->
+<!-- tmpStdGini <- standardizedData$stdGini[order(-standardizedData$stdGini$avg),] -->
+<!-- tmpStdVI <- standardizedData$stdVI[order(-standardizedData$stdVI$avg),] -->
+<!-- underlyingData = tmpStdVI[1:subsetPlotSize,] -->
+<!-- ylabel = 'Variable Importance' -->
+<!-- cutoff = max(cutoffs$viCutoff_df$cutoff) -->
+<!-- curveDat =curveData[1:subsetPlotSize,2] -->
+<!-- ## .plotCVVariableImportance -->
+<!-- maxVal <- max(underlyingData$avgVal,curveDat) -->
+<!-- ggplot2::ggplot(data=underlyingData, -->
+<!--                 mapping=ggplot2::aes(x=factor(reorder(var,avgVal)), -->
+<!--                                      y=ifelse(avgVal/maxVal>1,1, -->
+<!--                                               ifelse(avgVal/maxVal<0,0, -->
+<!--                                                      avgVal/maxVal)), -->
+<!--                                      group=1)) + -->
+<!--   ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal), -->
+<!--                                       ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)), -->
+<!--                          color='darkgray', width=0.4, size=1.5) + -->
+<!--   ggplot2::geom_point(color='black', size=3) + -->
+<!--   ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))), -->
+<!--                       color='red', linetype='dotted',linewidth=2) + -->
+<!--   ggplot2::coord_flip(ylim = c(0,1)) + -->
+<!--   ggplot2::xlab(NULL) + -->
+<!--   ggplot2::ylim(c(0,1)) + -->
+<!--   ggplot2::ylab(NULL) + -->
+<!--   ggplot2::theme_bw() + -->
+<!--   ggplot2::theme(axis.text=ggplot2::element_text(size=18), -->
+<!--                  axis.ticks.y=ggplot2::element_blank(), -->
+<!--                  panel.grid.major.y = ggplot2::element_blank(), -->
+<!--                  axis.title = ggplot2::element_text(size=22)) + -->
+<!--   ggplot2::geom_line(ggplot2::aes( -->
+<!--     x=ordered(underlyingData[order(-avgVal),'var']), -->
+<!--     y=curveDat/maxVal),color='orange', linetype='dashed',size=2) + -->
+<!--   ggplot2::ylab(paste0('OOB (', -->
+<!--                        .specify_decimal(accData$OOB,2), -->
+<!--                        '), Guess (', -->
+<!--                        .specify_decimal(accData$guess,2), -->
+<!--                        '), Bias (', -->
+<!--                        .specify_decimal(accData$bias,2),')')) -->
+<!-- ``` -->
+<!-- Also look at similar structure -->
+<!-- ```{r structure} -->
+<!-- set.seed(12345) -->
+<!-- dat0 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'c1'=c(0,0), -->
+<!--                                 'c2'=c(1/25,1/60), 'c3'=c(1/50,1/25), -->
+<!--                                 'c4'=c(0,0), -->
+<!--                                 'c5'=c(0,0),'c6'=c(0,0), -->
+<!--                                 'c7'=c(0,0),'c8'=c(1/100,1/100), -->
+<!--                                 'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250), -->
+<!--                                 'c11'=c(1/100,1/100),'c12'=c(1/80,1/80), -->
+<!--                                 'c13'=c(0,0),'c14'=c(0,0), -->
+<!--                                 'c15'=c(0,0),'c16'=c(0,0), -->
+<!--                                 'c17'=c(0,0),'c18'=c(0,0)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                      'cell'=paste0('c',1:18), -->
+<!--                      'clusterCell'=c(NA,'c1','c1', rep(NA,15)), -->
+<!--                      'kappa'=c(rbinom(1,100,0.5), -->
+<!--                                rbinom(2,70,0.5), -->
+<!--                                rbinom(1,60,0.5), -->
+<!--                                rbinom(2,300,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(4,600,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(2,50,0.5), -->
+<!--                                rbinom(2,20,0.5))), -->
+<!--                    peoplePerStage=17, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1 <- simulatePP(cellVarData= -->
+<!--                      data.frame('stage'=c(0,1), -->
+<!--                                 'c1'=c(0,0), -->
+<!--                                 'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50), -->
+<!--                                 'c4'=c(0,0), -->
+<!--                                 'c5'=c(0,0),'c6'=c(0,0), -->
+<!--                                 'c7'=c(0,0),'c8'=c(1/100,1/100), -->
+<!--                                 'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250), -->
+<!--                                 'c11'=c(1/100,1/100),'c12'=c(1/80,1/80), -->
+<!--                                 'c13'=c(0,0),'c14'=c(0,0), -->
+<!--                                 'c15'=c(0,0),'c16'=c(0,0), -->
+<!--                                 'c17'=c(0,0),'c18'=c(0,0)), -->
+<!--                    cellKappaData=data.frame( -->
+<!--                      'cell'=paste0('c',1:18), -->
+<!--                      'clusterCell'=c(NA,'c1','c1', rep(NA,15)), -->
+<!--                      'kappa'=c(rbinom(1,100,0.5), -->
+<!--                                rbinom(2,70,0.5), -->
+<!--                                rbinom(1,60,0.5), -->
+<!--                                rbinom(2,300,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(4,600,0.5), -->
+<!--                                rbinom(2,120,0.5), -->
+<!--                                rbinom(2,50,0.5), -->
+<!--                                rbinom(2,20,0.5))), -->
+<!--                    peoplePerStage=1, -->
+<!--                    imagesPerPerson=1, -->
+<!--                    silent=F) -->
+<!-- dat1$Person <- ifelse(dat1$Person=='p1','p35', -->
+<!--                       ifelse(dat1$Person=='p2','p36', NA)) -->
+<!-- #                             ifelse(dat1$Person=='p3','p37', -->
+<!-- #                                    ifelse(dat1$Person=='p4','p38',NA)))) -->
+<!-- dat1$Image <- ifelse(dat1$Image=='1','35', -->
+<!--                      ifelse(dat1$Image=='2','36',NA)) -->
+<!-- #                             ifelse(dat1$Image=='3','37', -->
+<!-- #                                    ifelse(dat1$Image=='4','38',NA)))) -->
+<!-- dat <- rbind(dat0,dat1) -->
+<!-- set.seed(12345) -->
+<!-- pcaData <- getPCAData(data = dat,repeatedUniqueId='Image', -->
+<!--                       xRange = c(0,1),  yRange = c(0,1), -->
+<!--                       silent=F) -->
+<!-- set.seed(12345) -->
+<!-- pcaMeta <- simulateMeta(pcaData, -->
+<!--                         metaInfo = data.frame( -->
+<!--                           'var'=c('gender','age'), -->
+<!--                           'rdist'=c('rbinom','rnorm'), -->
+<!--                           'Stage_0'=c('0.5','25'), -->
+<!--                           'Stage_1'=c('0.5','27.5'))) -->
+<!-- set.seed(12345) -->
+<!-- rfcv <- funkyModel(data=pcaMeta, -->
+<!--                    outcome = 'Stage', -->
+<!--                    unit = 'Person', -->
+<!--                    metaNames=c('gender','age')) -->
+<!-- rfcv$multIntVI$subset_viPlot -->
+<!-- rfcv$multIntVI$viPlot -->
+<!-- ``` -->
+<!-- Now returning to the data, the first step is to convert the cell data into K functions. This data is unique since rather than giving a cell type, a T/F column is given for different columns. Therefore, the K functions, discritized using PCA is computed as follows. -->
+<!-- ```{r computePCA} -->
+<!--   proteins <- c("FoxP3","Lag3","CD4","CD16","CD56","PD1","PD.L1", -->
+<!--                              "Ki67","CD138","CD68","CD8","CD3","IDO","CD45RO", -->
+<!--                              "CD20","p53","MPO","tumorYN") -->
+<!--   agents_df <- expand.grid(proteins, proteins) -->
+<!--   dataPCA <- getPCAData(data = TNBC[,-3], unit='Person', agents_df=agents_df, rCheckVals = seq(0,50,1)) -->
+<!--   dataPCA_noInv <- getPCAData(data = TNBC[,-3], unit='Person', -->
+<!--                               agents_df=rbind(data.frame(t(combn(proteins,2))), -->
+<!--                                       data.frame('X1'=proteins,'X2'=proteins)), -->
+<!--                               rCheckVals = seq(0,50,1)) -->
+<!--   phenos <- unique(TNBC_pheno$Phenotype) -->
+<!--   agents_df1 <- expand.grid(phenos, phenos) -->
+<!--   dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person', agents_df=agents_df1, rCheckVals = seq(0,50,1)) -->
+<!--   dataPCA_pheno_noInv <- getPCAData(data = TNBC_pheno, unit='Person', -->
+<!--                               agents_df=rbind(data.frame(t(combn(phenos,2))), -->
+<!--                                       data.frame('X1'=phenos,'X2'=phenos)), -->
+<!--                               rCheckVals = seq(0,50,1)) -->
+<!-- ``` -->
+<!-- The resulting data is merged with the meta data for use in analysis. -->
+<!-- ```{r addMeta} -->
+<!--   dataPCAAge  <- merge(dataPCA,TNBC_Meta) -->
+<!--   dataPCAAge_NoInv  <- merge(dataPCA_noInv,TNBC_Meta) -->
+<!--   dataPCAAge_pheno  <- merge(dataPCA_pheno,TNBC_Meta) -->
+<!--   dataPCAAge_pheno_NoInv  <- merge(dataPCA_pheno_noInv,TNBC_Meta) -->
+<!-- ``` -->
+<!-- We then compute the cross-validated random forest. -->
+<!-- ```{r computeRFCV} -->
+<!--   set.seed(12345) -->
+<!--   rfcv <- funkyModel(data=dataPCAAge, K=10, outcome='Class',unit='Person',metaNames=c('Age'), synthetics=100, alpha=0.05, silent=F,subsetPlotSize = 25, nTrees=500) -->
+<!--   set.seed(12345) -->
+<!--   rfcv_NoInv <- funkyModel(data=dataPCAAge_NoInv, K=10, outcome='Class',unit='Person',metaNames=c('Age'), synthetics=100, alpha=0.05, silent=F,subsetPlotSize = 25, nTrees=500) -->
+<!--   set.seed(12345) -->
+<!--   rfcv_pheno <- funkyModel(data=dataPCAAge_pheno, K=10, outcome='Class',unit='Person',metaNames=c('Age'), synthetics=100, alpha=0.05, silent=F,subsetPlotSize = 25, nTrees=500) -->
+<!--   set.seed(12345) -->
+<!--   rfcv_pheno_NoInv <- funkyModel(data=dataPCAAge_pheno_NoInv, K=10, outcome='Class',unit='Person',metaNames=c('Age'), synthetics=100, alpha=0.05, silent=F,subsetPlotSize = 25, nTrees=500) -->
+<!-- ``` -->
+<!-- And finally the resulting plots-both full and subsetted--can be examined. -->
+<!-- ```{r viewFullPlot, fig.width=10, fig.height=11, fig.cap="All Variables"} -->
+<!--   rfcv$viPlot -->
+<!-- ``` -->
+<!-- ```{r viewSubPlot, fig.width=10, fig.height=11, fig.cap="Top 25 Variables"} -->
+<!--   rfcv$subset_viPlot -->
+<!--   rfcv_pheno$subset_viPlot -->
+<!-- ``` -->
+<!-- I use the following code to improve plots -->
+<!-- ```{r, improvedPlots} -->
+<!-- # saveRDS(rfcv,'C:/Users/jerem/Downloads/Paper/UpdatedCode/rfcv_Effect.rds') -->
+<!-- giniData=rfcv$Gini -->
+<!-- viData=rfcv$VI -->
+<!-- accData=rfcv$Accuracy -->
+<!-- noiseMap=rfcv$AddDataToCVVarImpPlot$noiseMap -->
+<!-- KFunctions=rfcv$AddDataToCVVarImpPlot$KFunctions -->
+<!-- metaNames=rfcv$AddDataToCVVarImpPlot$metaNames -->
+<!-- alpha=rfcv$AddDataToCVVarImpPlot$alpha -->
+<!-- alignmentMethod = 'Mult' -->
+<!-- curveData=rfcv$AddDataToCVVarImpPlot$curveData -->
+<!-- subsetPlotSize=rfcv$AddDataToCVVarImpPlot$subsetPlotSize -->
+<!-- ## .generateCVVariableImportancePlot -->
+<!-- cutoffs <- .getIndividualCutoffs(noiseMap,viData,alignmentMethod, -->
+<!--                                  alpha) -->
+<!-- standardizedData <- .standardizeVarImpData(viData, -->
+<!--                                            KFunctions, metaNames, -->
+<!--                                            cutoffs$viCutoff_df, -->
+<!--                                            alignmentMethod) -->
+<!-- ## Full -->
+<!-- underlyingData = standardizedData$stdVI -->
+<!-- ylabel = 'Variable Importance' -->
+<!-- cutoff = max(cutoffs$viCutoff_df$cutoff) -->
+<!-- curveDat = curveData[,2] -->
+<!-- ## .plotCVVariableImportance -->
+<!-- maxVal <- max(underlyingData$avgVal,curveDat) -->
+<!-- ggplot2::ggplot(data=underlyingData, -->
+<!--                 mapping=ggplot2::aes(x=factor(reorder(var,avgVal)), -->
+<!--                                      y=ifelse(avgVal/maxVal>1,1, -->
+<!--                                               ifelse(avgVal/maxVal<0,0, -->
+<!--                                                      avgVal/maxVal)), -->
+<!--                                      group=1)) + -->
+<!--   ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal), -->
+<!--                                       ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)), -->
+<!--                          color='darkgray', width=0.2) + -->
+<!--   ggplot2::geom_point(color='black') + -->
+<!--   ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))), -->
+<!--                       color='red', linetype='dotted',linewidth=2) + -->
+<!--   ggplot2::coord_flip(ylim = c(0,1)) + -->
+<!--   ggplot2::xlab(NULL) +#'Variables') + -->
+<!--   ggplot2::ylim(c(0,1)) + -->
+<!--   ggplot2::ylab(NULL) + -->
+<!--   ggplot2::theme_bw() + -->
+<!--   ggplot2::theme(axis.text.y=ggplot2::element_blank(), -->
+<!--                  axis.ticks.y=ggplot2::element_blank(), -->
+<!--                  panel.grid.major.y = ggplot2::element_blank(), -->
+<!--                  axis.text.x = ggplot2::element_text(size=18), -->
+<!--                  axis.title = ggplot2::element_text(size=22)) + -->
+<!--   ggplot2::geom_line(ggplot2::aes( -->
+<!--     x=ordered(underlyingData[order(-avgVal),'var']), -->
+<!--     y=curveDat/maxVal),color='orange', linetype='dashed',size=2) -->
+<!-- ## Subset -->
+<!-- tmpStdVI <- standardizedData$stdVI[order(-standardizedData$stdVI$avg),] -->
+<!-- underlyingData = tmpStdVI[1:subsetPlotSize,] -->
+<!-- ylabel = 'Variable Importance' -->
+<!-- cutoff = max(cutoffs$viCutoff_df$cutoff) -->
+<!-- curveDat =curveData[1:subsetPlotSize,2] -->
+<!-- ## .plotCVVariableImportance -->
+<!-- maxVal <- max(underlyingData$avgVal,curveDat) -->
+<!-- ggplot2::ggplot(data=underlyingData, -->
+<!--                 mapping=ggplot2::aes(x=factor(reorder(var,avgVal)), -->
+<!--                                      y=ifelse(avgVal/maxVal>1,1, -->
+<!--                                               ifelse(avgVal/maxVal<0,0, -->
+<!--                                                      avgVal/maxVal)), -->
+<!--                                      group=1)) + -->
+<!--   ggplot2::geom_errorbar(ggplot2::aes(ymin=ifelse((avgVal-sd)/maxVal<0,0,(avgVal-sd)/maxVal), -->
+<!--                                       ymax = ifelse((avgVal+sd)/maxVal>1,1,(avgVal+sd)/maxVal)), -->
+<!--                          color='darkgray', width=0.4, size=1.5) + -->
+<!--   ggplot2::geom_point(color='black', size=3) + -->
+<!--   ggplot2::geom_hline(ggplot2::aes(yintercept=max(0,min(1,cutoff/maxVal))), -->
+<!--                       color='red', linetype='dotted',linewidth=2) + -->
+<!--   ggplot2::coord_flip(ylim = c(0,1)) + -->
+<!--   ggplot2::xlab(NULL) + -->
+<!--   ggplot2::ylim(c(0,1)) + -->
+<!--   ggplot2::ylab(NULL) + -->
+<!--   ggplot2::theme_bw() + -->
+<!--   ggplot2::theme(axis.text=ggplot2::element_text(size=18), -->
+<!--                  axis.ticks.y=ggplot2::element_blank(), -->
+<!--                  panel.grid.major.y = ggplot2::element_blank(), -->
+<!--                  axis.title = ggplot2::element_text(size=22)) + -->
+<!--   ggplot2::geom_line(ggplot2::aes( -->
+<!--     x=ordered(underlyingData[order(-avgVal),'var']), -->
+<!--     y=curveDat/maxVal),color='orange', linetype='dashed',size=2) + -->
+<!--   ggplot2::ylab(paste0('OOB (', -->
+<!--                        .specify_decimal(accData$OOB,2), -->
+<!--                        '), Guess (', -->
+<!--                        .specify_decimal(accData$guess,2), -->
+<!--                        '), Bias (', -->
+<!--                        .specify_decimal(accData$bias,2),')')) -->
+<!-- ``` -->
   </main>
 </div>
 
