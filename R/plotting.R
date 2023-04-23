@@ -113,7 +113,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
 #' plot_K_functions(data_plot)
 plot_K_functions <- function(data, inc.legend=TRUE){
   # Add this to remove notes when building package
-  r <- K <- Unit <- outcome <- Value <- NULL
+  r <- K <- Unit <- Outcome <- Value <- NULL
 
   if(inc.legend) {
     info <- unique(data[,c('Unit','Outcome')])

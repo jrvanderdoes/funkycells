@@ -12,19 +12,14 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-
-# Don't check as running is intensive
-is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
-             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
-knitr::opts_chunk$set(eval = !is_check)
 ```
 
 ```{r setup}
 library(funkycells)
 ```
 
-This vignette documents a sample analysis of Triple Negative Breast Cancer (TNBC) data, retrieved from \url{https://www.angelolab.com/mibi-data}. We consider the classified phenotypes rather than the direct protein data, pre-loaded in this package.
-```{r getData}
+This vignette documents a sample analysis of Triple Negative Breast Cancer (TNBC) data, retrieved from \url{https://www.angelolab.com/mibi-data}. We consider the classified phenotypes rather than the direct protein data, pre-loaded in this package. We specify the data below.
+```{r getData, eval=FALSE}
 TNBC_pheno <- TNBC_pheno
 TNBC_Meta <- TNBC_Meta
 ```
@@ -43,16 +38,17 @@ We begin by defining the phenotypes of interest as well as the related interacti
              "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"))
 ```
 
-We consider here here there are `r length(phenos)` total phenotypes with `r nrow(pheno_interactions)` total interactions. Alternatively, we can also focus 
-on a subset of phenotypes (`r length(phenos_subset)`) and interactions (`r nrow(pheno_interactions_subset)`) of particular interest. For computational 
-time, we only consider the subset of data below.
+Although we could consider here the total possible 2-ways interactions between
+phenotypes, we focus on the subset of phenotypes interactions defined based on 
+domain knowledge. Another another on the entire interaction set has been 
+considered but was suppressed for computational considerations.
 
 In order to build confidence in our approach, we begin by simulating data with a 
 similar structure to the full phenotype data and evaluating the effectiveness of 
 the approach.
 
 To start, let us determine the agent information in a typical image.
-```{r TNBCInfo}
+```{r TNBCInfo, eval=FALSE}
 data_pheno_stat_subset <- data.frame('pheno'=phenos_subset)
 for(person in unique(TNBC_pheno$Person)){
   tmp <- as.data.frame(table(TNBC_pheno[TNBC_pheno$Person==person,"Phenotype"]))
@@ -68,9 +64,9 @@ agent_info_subset <- data.frame(data_pheno_stat_subset[1],
 
 Now let us generate two data sets: (1) where no informative interactions are 
 present and (2) where some informative interactions are present. We generate 
-$34$ patients, comparative to the `r length(unique(TNBC_pheno$Person))` TNBC 
-patients. We generate $15$ for each class with possible interactions, if present, 
-and $2$ for each class that are indistinguishable to add some noise to the data.
+$34$ patients, comparative to the number of patients in the TNBC dataset. We
+generate $15$ for each class with possible interactions, if present, and $2$ for 
+each class that are indistinguishable to add some noise to the data.
 
 The non-interactive data is simulated as follows.
 ```{r buildNUllData}
@@ -369,6 +365,7 @@ Creating the following figure.
 plot_K_functions(data_plot)
 ```
 
+Futher anaylsis of this data can be found in our paper.
 
 <!--   -------------------------------------------------------------   -->
 
