@@ -82,7 +82,7 @@
 <p>This vignette documents a sample analysis of Triple Negative Breast
 Cancer (TNBC) data, retrieved from . We consider the classified
 phenotypes rather than the direct protein data, pre-loaded in this
-package.</p>
+package. We specify the data below.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">TNBC_pheno</span> <span class="op">&lt;-</span> <span class="va">TNBC_pheno</span></span>
 <span><span class="va">TNBC_Meta</span> <span class="op">&lt;-</span> <span class="va">TNBC_Meta</span></span></code></pre></div>
@@ -99,10 +99,11 @@ related interactions.</p>
 <span>    Var1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"Tumour"</span>,<span class="fl">11</span><span class="op">)</span>,</span>
 <span>    Var2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Tumour"</span>, <span class="st">"CD3T"</span>, <span class="st">"CD4T"</span>, <span class="st">"CD8T"</span>, <span class="st">"B"</span>, <span class="st">"DC"</span>,</span>
 <span>             <span class="st">"DCMono"</span>, <span class="st">"Macrophage"</span>, <span class="st">"MonoNeu"</span>, <span class="st">"NK"</span>, <span class="st">"Treg"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>We consider here here there are 16 total phenotypes with 136 total
-interactions. Alternatively, we can also focus on a subset of phenotypes
-(11) and interactions (11) of particular interest. For computational
-time, we only consider the subset of data below.</p>
+<p>Although we could consider here the total possible 2-ways
+interactions between phenotypes, we focus on the subset of phenotypes
+interactions defined based on domain knowledge. Another another on the
+entire interaction set has been considered but was suppressed for
+computational considerations.</p>
 <p>In order to build confidence in our approach, we begin by simulating
 data with a similar structure to the full phenotype data and evaluating
 the effectiveness of the approach.</p>
@@ -123,7 +124,8 @@ image.</p>
 <p>Now let us generate two data sets: (1) where no informative
 interactions are present and (2) where some informative interactions are
 present. We generate <span class="math inline">\(34\)</span> patients,
-comparative to the 33 TNBC patients. We generate <span class="math inline">\(15\)</span> for each class with possible
+comparative to the number of patients in the TNBC dataset. We generate
+<span class="math inline">\(15\)</span> for each class with possible
 interactions, if present, and <span class="math inline">\(2\)</span> for
 each class that are indistinguishable to add some noise to the data.</p>
 <p>The non-interactive data is simulated as follows.</p>
@@ -440,6 +442,7 @@ TNBC Phenotype Significant K Functions
 TNBC Phenotype Insignficant K Functions
 </p>
 </div>
+<p>Futher anaylsis of this data can be found in our paper.</p>
 <!--   -------------------------------------------------------------   -->
 <!-- asda -->
 <!-- ```{r} -->
