@@ -77,9 +77,10 @@
 #'
 #' dataPCA_pheno <- getPCAData(
 #'   data = TNBC_pheno, unit = "Person",
-#'   agents_df = data.frame("B", "FAKE"),
+#'   agents_df = data.frame(rep("B",2), c("Tumour","FAKE")),
 #'   nPCs = 3,
-#'   rCheckVals = seq(0, 50, 1)
+#'   rCheckVals = seq(0, 50, 1),
+#'   displayTVE = TRUE
 #' )
 getPCAData <- function(data, outcome = colnames(data)[1],
                        unit = colnames(data)[5],
@@ -107,14 +108,14 @@ getPCAData <- function(data, outcome = colnames(data)[1],
                    outcome, unit,
                    repeatedUniqueId,
                    xRange, yRange,
-                   edgeCorrection, nbasis) {
-      if (!silent) cat(trimws(agents[1]), ", ", sep = "")
-      agents <- agents[-1]
+                   edgeCorrection, nbasis,
+                   maxIters) {
+      if (!silent) cat(trimws(agents[1]), sep = "")
 
       ## Compute K-Function for each unit
       #     Reminder, repeated measures -> weighted averages
       evaled_fd_K <- getKFunction(
-        agents = agents,
+        agents = agents[-1],
         unit = unit,
         repeatedUniqueId = repeatedUniqueId,
         data = data[, colnames(data) != outcome],
@@ -126,9 +127,12 @@ getPCAData <- function(data, outcome = colnames(data)[1],
       ## Get PCA Scores
       K_pca_scores <- .getPCs(
         rKData = evaled_fd_K,
-        agents = agents, nPCs = nPCs,
+        agents = agents[-1], nPCs = nPCs,
         nbasis = nbasis, silent = !displayTVE
       )
+
+      if (!silent && agents[1]<maxIters) cat(', ', sep = "")
+
 
       # Set up data (add counts as desired)
       retData <- cbind(
@@ -141,7 +145,7 @@ getPCAData <- function(data, outcome = colnames(data)[1],
     repeatedUniqueId = repeatedUniqueId,
     xRange = xRange, yRange = yRange,
     edgeCorrection = edgeCorrection,
-    nbasis = nbasis
+    nbasis = nbasis, maxIters =nrow(agents_df)
   )
   if (!silent) cat("\n")
 
@@ -197,7 +201,7 @@ getPCAData <- function(data, outcome = colnames(data)[1],
       )
   )
   K_pca <- fda::pca.fd(K_func, nharm = nPCs)
-  if (!silent) cat(paste0("(TVE: ",.specify_decimal(K_pca$varprop,3),") "))
+  if (!silent) cat(paste0(" (TVE: ",.specify_decimal(sum(K_pca$varprop),3),")"))
 
   if (length(dropIdx) > 0) {
     K_pca_scores <- .insertMissingRows(K_pca$scores, dropIdx)

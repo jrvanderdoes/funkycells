@@ -3,7 +3,7 @@ Title: Functional K Function Analysis of Multiplexed Images of Cells
 Version: 0.0.0.9004
 Authors@R: 
     person("Jeremy", "VanderDoes", , "jeremy.vanderdoes@gmail.com", role = c("aut", "cre","cph"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "0009-0001-9885-3073"))
 Description: Analyzes many interactions to determine variables of interest in cells, markers, and related information, particularly focused on spatial effects. Implements a random forest model, with required preparation, for functional and spatial data analysis.
 License: GPL (>= 3)
 Encoding: UTF-8

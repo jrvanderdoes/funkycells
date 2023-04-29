@@ -26,7 +26,7 @@
 #'     "clusterCell" = c(NA, "A"),
 #'     "kappa" = c(20, 5)
 #'   ),
-#'   peoplePerStage = 20,
+#'   peoplePerStage = 10,
 #'   imagesPerPerson = 1,
 #'   silent = FALSE
 #' )

@@ -111,8 +111,9 @@ dat_pca <- getPCAData(
 
 dataPCA_pheno <- getPCAData(
   data = TNBC_pheno, unit = "Person",
-  agents_df = data.frame("B", "FAKE"),
+  agents_df = data.frame(rep("B",2), c("Tumour","FAKE")),
   nPCs = 3,
-  rCheckVals = seq(0, 50, 1)
+  rCheckVals = seq(0, 50, 1),
+  displayTVE = TRUE
 )
 }

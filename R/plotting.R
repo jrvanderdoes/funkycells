@@ -12,6 +12,8 @@
 #'     region in the y-direction. Default is c(min(y),max(y)).
 #' @param dropAxes (Optional) Boolean indicating if the x, y axis title and
 #'     labels should be dropped. Default is FALSE.
+#' @param layerBasedOnFrequency (Optional) Boolean indicating if the data should be
+#'     layer based on the number of cells of the type. Default is TRUE.
 #' @param colors (Optional) Vector of colors for the points. Default is NULL, or
 #'     ggplot2 selected colors.
 #'
@@ -24,8 +26,20 @@
 plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    xlim = c(min(data[, 1]), max(data[, 1])),
                    ylim = c(min(data[, 2]), max(data[, 2])),
-                   dropAxes = FALSE,
+                   dropAxes = FALSE, layerBasedOnFrequency=TRUE,
                    colors = NULL) {
+  # Sort so most populous cells are at the bottom
+  if(layerBasedOnFrequency){
+    cells_order <- as.data.frame(table(data[,3])[order(-table(data[,3]))])$Var1
+
+    idxs <- sapply(cells_order, function(x, data1) {
+      which(data1[,3] == x)
+    }, data1=data)
+    data <- data[unlist(idxs),]
+    rownames(data) <- NULL
+  }
+
+  # Plot
   retPlot <- ggplot2::ggplot() +
     ggplot2::geom_point(
       mapping = ggplot2::aes(

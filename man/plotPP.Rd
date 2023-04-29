@@ -11,6 +11,7 @@ plotPP(
   xlim = c(min(data[, 1]), max(data[, 1])),
   ylim = c(min(data[, 2]), max(data[, 2])),
   dropAxes = FALSE,
+  layerBasedOnFrequency = TRUE,
   colors = NULL
 )
 }
@@ -30,6 +31,9 @@ region in the y-direction. Default is c(min(y),max(y)).}
 
 \item{dropAxes}{(Optional) Boolean indicating if the x, y axis title and
 labels should be dropped. Default is FALSE.}
+
+\item{layerBasedOnFrequency}{(Optional) Boolean indicating if the data should be
+layer based on the number of cells of the type. Default is TRUE.}
 
 \item{colors}{(Optional) Vector of colors for the points. Default is NULL, or
 ggplot2 selected colors.}
