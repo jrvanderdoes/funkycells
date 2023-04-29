@@ -22,9 +22,6 @@ knitr::opts_chunk$set(eval = !is_check)
 ```{r setup}
 library(funkycells)
 ```
-```{r paperIndicatior}
-paperRun <- FALSE
-```
 
 This vignette documents a sample analysis of Triple Negative Breast Cancer (TNBC) data, retrieved from \url{https://www.angelolab.com/mibi-data}. We consider the classified phenotypes rather than the direct protein data, pre-loaded in this package.
 ```{r getData}
@@ -46,9 +43,9 @@ pheno_interactions_subset <- data.frame(
            "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"))
 ```
 
-We notice there are `r length(phenos)` total phenotypes with `r nrow(pheno_interactions)` total possible interactions. Alternatively, we can also focus
-on a subset of phenotypes (`r length(phenos_interest)`) and interactions (`r nrow(pheno_interactions_interest)`) of particular interest. Another analysis on the subset interaction set has been 
-considered but was suppressed for brevity.
+We consider here here there are `r length(phenos)` total phenotypes with `r nrow(pheno_interactions)` total interactions. Alternatively, we can also focus
+on a subset of phenotypes (`r length(phenos_interest)`) and interactions (`r nrow(pheno_interactions_interest)`) of particular interest. For computational
+time, we only consider the subset of data below.
 
 In order to build confidence in our approach, we begin by simulating data with a
 similar structure to the full phenotype data and evaluating the effectiveness of
@@ -56,24 +53,23 @@ the approach.
 
 To start, let us determine the agent information in a typical image.
 ```{r TNBCInfo}
-data_pheno_stat <- data.frame('pheno'=phenos)
+data_pheno_stat_subset <- data.frame('pheno'=phenos_subset)
 for(person in unique(TNBC_pheno$Person)){
   tmp <- as.data.frame(table(TNBC_pheno[TNBC_pheno$Person==person,"Phenotype"]))
   colnames(tmp) <- c('pheno',person)
-  data_pheno_stat <- merge(x=data_pheno_stat,y=tmp,all.x=TRUE)
+  data_pheno_stat_subset <-
+    merge(x=data_pheno_stat_subset,y=tmp)
 }
 
-agent_info_subset <- data.frame(data_pheno_stat[1],
-                                'mean'=rowMeans(data_pheno_stat[-1], na.rm = TRUE),
-                                'med'=apply(data_pheno_stat[-1], 1, median, na.rm=TRUE))
+agent_info_subset <- data.frame(data_pheno_stat_subset[1],
+                                'mean'=rowMeans(data_pheno_stat_subset[-1]),
+                                'med'=apply(data_pheno_stat_subset[-1], 1, median, na.rm=TRUE))
 ```
 
 Now let us generate two data sets: (1) where no informative interactions are
 present and (2) where some informative interactions are present. We generate
 $34$ patients, comparative to the `r length(unique(TNBC_pheno$Person))` TNBC
-patients. We generate $15$ for each class with possible interactions, if 
-present, and $2$ for each class that are indistinguishable to add some noise to 
-the data.
+patients. We generate $15$ for each class with possible interactions, if present, and $2$ for each class that are indistinguishable to add some noise to the data.
 
 The non-interactive data is simulated as follows.
 ```{r buildNUllData}
@@ -93,22 +89,18 @@ dat0 <- simulatePP(cellVarData=
                      'cell'=paste0('c',1:16),
                      'clusterCell'=c(NA,'c1','c1', rep(NA,12), 'c1'),
                      'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
+                               rbinom(2,70,0.5),
                                rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
+                               rbinom(1,350,0.5),
+                               rbinom(1,75,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(3,600,0.5),
                                rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
+                               rbinom(2,120,0.5),
+                               rbinom(2,20,0.5))),
                    peoplePerStage=15,
                    imagesPerPerson=1,
-                   silent=FALSE)
+                   silent=F)
 dat1 <- simulatePP(cellVarData=
                      data.frame('stage'=c(0,1),
                                 'c1'=c(0,0),
@@ -124,19 +116,15 @@ dat1 <- simulatePP(cellVarData=
                      'cell'=paste0('c',1:16),
                      'clusterCell'=c(NA,'c1','c1', rep(NA,12),'c1'),
                      'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
+                               rbinom(2,70,0.5),
                                rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
+                               rbinom(1,350,0.5),
+                               rbinom(1,75,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(3,600,0.5),
                                rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
+                               rbinom(2,120,0.5),
+                               rbinom(2,20,0.5))),
                    peoplePerStage=2,
                    imagesPerPerson=1,
                    silent=F)
@@ -152,33 +140,16 @@ dat <- rbind(dat0,dat1)
 ```
 
 Compare images of the data.
-```{r tnbc_image, fig.width=5, fig.height=5, fig.cap="TNBC Patient Image"}
-plotPP(data = TNBC_pheno[TNBC_pheno$Person==2,c('cellx','celly',"Phenotype")],
+```{r compareSimAndTNBC, fig.width=5, fig.height=5, fig.cap="Compare Images"}
+plotPP(TNBC_pheno[TNBC_pheno$Person==2,c('cellx','celly',"Phenotype")],
        ptSize = 1, dropAxes = T, colorGuide = 'none')
-```
-```{r sim_image, fig.width=5, fig.height=5, fig.cap="Simulated Patient Image"}
 plotPP(dat[dat$Image==1,c('x','y','cellType')],
        ptSize = 1, dropAxes = T, colorGuide = 'none')
 ```
 
-```{r paper_noEffect, echo=FALSE, eval=paperRun}
-tnbc_image <- plotPP(
-  data = TNBC_pheno[TNBC_pheno$Person==2,c('cellx','celly',"Phenotype")],
-  ptSize = 3, dropAxes = T, colorGuide = 'none')
-png("./paper/tnbc_image.png", width = 800, height = 800)
-print(tnbc_image)
-dev.off()
-
-sim_image <- plotPP(
-  data = dat[dat$Image==1,c('x','y','cellType')],
-  ptSize = 3, dropAxes = T, colorGuide = 'none')
-png("./paper/sim_image.png", width = 800, height = 800)
-print(sim_image)
-dev.off()
-```
-
 Now we compute PCA and attach an age meta-variable (with no effect).
 ```{r simulateNoInteraction}
+
 cells <- paste0('c',1:16)
 cells_interactions <- rbind(data.frame(t(combn(cells,2))),
                             data.frame('X1'=cells,'X2'=cells))
@@ -206,130 +177,36 @@ rfcv <- funkyModel(data=pcaMeta,
 ```
 
 Resulting in the following figure.
-```{r examineNoEffect, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (All)"}
-rfcv$viPlot
-```
-```{r examineNoEffect, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (Top 25)"}
-rfcv$subset_viplot
+```{r examineNoEffect, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importances"}
+rfcv$subset_viPlot
 ```
 
-```{r paper_noEffect, echo=FALSE, eval=paperRun}
-# Get Vars
-viData = rfcv$VariableImportance
-accData = rfcv$AccuracyEstimate
-NoiseCutoff = rfcv$NoiseCutoff
-InterpolationCutoff = rfcv$InterpolationCutoff
-subsetPlotSize = rfcv$AdditionalParams$subsetPlotSize
+Consider the K functions of the groups (which should be indistinquishable)
+```{r compareKNoEffect}
+tmp <- getKFunction(dat[dat$Stage==0,-1],c('c1','c2'),unit = 'Person',
+                    repeatedUniqueId = 'Image',
+                    xRange = c(0,1),yRange = c(0,1))
+tmp1 <- getKFunction(dat[dat$Stage==1,-1],c('c1','c2'),'Person',
+                     repeatedUniqueId = 'Image',
+                     xRange = c(0,1),yRange = c(0,1))
 
-# Plot Full
-maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
-plot_full <- ggplot2::ggplot(
-  data = viData,
-  mapping = ggplot2::aes(
-    x = factor(stats::reorder(var, est)),
-    y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
-    ),
-    group = 1
-  )
-) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(
-      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
-      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
-    ),
-    color = "black", width = 0.2
-  ) +
-  ggplot2::geom_point(color = "black", size=3) +
-  ggplot2::geom_hline(
-    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
-    color = "red", linetype = "dotted", linewidth = 2
-  ) +
-  ggplot2::coord_flip(ylim = c(0, 1)) +
-  ggplot2::xlab(NULL) +
-  ggplot2::ylim(c(0, 1)) +
-  ggplot2::ylab(NULL) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22)) + 
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "Variable Importance - OOB (",
-    .specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    .specify_decimal(accData$guess, 2),
-    "), Bias (",
-    .specify_decimal(accData$bias, 2), ")"
-  ))
+tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r)
+tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r)
 
-png("./paper/noeffect_variableimportance.png")
-print(plot_full)
-dev.off()
-
-# Plot Subset
-InterpolationCutoff <- InterpolationCutoff[1:subsetPlotSize]
-viData <- viData[1:subsetPlotSize,]
-
-maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
-plot_top25 <- ggplot2::ggplot(
-  data = viData,
-  mapping = ggplot2::aes(
-    x = factor(stats::reorder(var, est)),
-    y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
-    ),
-    group = 1
-  )
-) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(
-      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
-      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
-    ),
-    color = "black", width = 0.2
-  ) +
-  ggplot2::geom_point(color = "black", size=3) +
-  ggplot2::geom_hline(
-    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
-    color = "red", linetype = "dotted", linewidth = 2
-  ) +
-  ggplot2::coord_flip(ylim = c(0, 1)) +
-  ggplot2::xlab(NULL) +
-  ggplot2::ylim(c(0, 1)) +
-  ggplot2::ylab(NULL) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22)) + 
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "Variable Importance - OOB (",
-    .specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    .specify_decimal(accData$guess, 2),
-    "), Bias (",
-    .specify_decimal(accData$bias, 2), ")"
-  ))
-
-
-png("./paper/noeffect_variableimportance_top25.png")
-print(plot_top25)
-dev.off()
+data_plot <- rbind(data.frame('r'=tmp_1$r,
+                              'K'=tmp_1$value,
+                              'Unit'=tmp_1$name,
+                              'Outcome'="0"),
+                   data.frame('r'=tmp1_1$r,
+                              'K'=tmp1_1$value,
+                              'Unit'=paste0(tmp1_1$name,'_1'),
+                              'Outcome'="1"))
 ```
 
+Creating the comparison image,
+```{r noEffectKfunctions, fig.width=5, fig.height=5, fig.cap="No Effect K Functions"}
+plot_K_functions(data_plot)
+```
 
 Now we consider the simulated model with effects.
 ```{r effectSimulationAndModel}
@@ -349,19 +226,15 @@ dat0 <- simulatePP(cellVarData=
                      'cell'=paste0('c',1:16),
                      'clusterCell'=c(NA,'c1','c1', rep(NA,12),'c1'),
                      'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
+                               rbinom(2,70,0.5),
                                rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
+                               rbinom(1,350,0.5),
+                               rbinom(1,75,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(3,600,0.5),
                                rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
+                               rbinom(2,120,0.5),
+                               rbinom(2,20,0.5))),
                    peoplePerStage=15,
                    imagesPerPerson=1,
                    silent=F)
@@ -380,19 +253,15 @@ dat1 <- simulatePP(cellVarData=
                      'cell'=paste0('c',1:16),
                      'clusterCell'=c(NA,'c1','c1', rep(NA,12),'c1'),
                      'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
+                               rbinom(2,70,0.5),
                                rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
+                               rbinom(1,350,0.5),
+                               rbinom(1,75,0.5),
+                               rbinom(2,120,0.5),
+                               rbinom(3,600,0.5),
                                rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
+                               rbinom(2,120,0.5),
+                               rbinom(2,20,0.5))),
                    peoplePerStage=2,
                    imagesPerPerson=1,
                    silent=F)
@@ -420,7 +289,7 @@ pcaMeta <- simulateMeta(pcaData,
                           'var'=c('age'),
                           'rdist'=c('rnorm'),
                           'Stage_0'=c('25'),
-                          'Stage_1'=c('26')))
+                          'Stage_1'=c('27')))
 
 set.seed(12345)
 rfcv <- funkyModel(data=pcaMeta,
@@ -429,134 +298,42 @@ rfcv <- funkyModel(data=pcaMeta,
                    metaNames=c('age'))
 ```
 
-Creating the variable importance plots as follows.
-```{r plotEffectVI, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance (All)"}
-rfcv$viPlot
-```
-```{r plotEffectVI, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance (Top 25)"}
+Creating the variable importance plot as following,
+```{r plotEffectVI, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance"}
 rfcv$subset_viPlot
 ```
 
-```{r paper_effect, echo=FALSE, eval=paperRun}
-# Get Vars
-viData = rfcv$VariableImportance
-accData = rfcv$AccuracyEstimate
-NoiseCutoff = rfcv$NoiseCutoff
-InterpolationCutoff = rfcv$InterpolationCutoff
-subsetPlotSize = rfcv$AdditionalParams$subsetPlotSize
+And we can examine the $K$ functions for an important interaction.
+```{r effectKFunctions}
+tmp <- getKFunction(dat[dat$Stage==0,-1],c('c1','c2'),unit = 'Person',
+                    repeatedUniqueId = 'Image',
+                    xRange = c(0,1),yRange = c(0,1))
+tmp1 <- getKFunction(dat[dat$Stage==1,-1],c('c1','c2'),'Person',
+                     repeatedUniqueId = 'Image',
+                     xRange = c(0,1),yRange = c(0,1))
 
-# Plot Full
-maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
-plot_full <- ggplot2::ggplot(
-  data = viData,
-  mapping = ggplot2::aes(
-    x = factor(stats::reorder(var, est)),
-    y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
-    ),
-    group = 1
-  )
-) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(
-      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
-      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
-    ),
-    color = "black", width = 0.2
-  ) +
-  ggplot2::geom_point(color = "black", size=3) +
-  ggplot2::geom_hline(
-    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
-    color = "red", linetype = "dotted", linewidth = 2
-  ) +
-  ggplot2::coord_flip(ylim = c(0, 1)) +
-  ggplot2::xlab(NULL) +
-  ggplot2::ylim(c(0, 1)) +
-  ggplot2::ylab(NULL) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22)) + 
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "Variable Importance - OOB (",
-    .specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    .specify_decimal(accData$guess, 2),
-    "), Bias (",
-    .specify_decimal(accData$bias, 2), ")"
-  ))
+tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r)
+tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r)
 
-png("./paper/effect_variableimportance.png")
-print(plot_full)
-dev.off()
-
-# Plot Subset
-InterpolationCutoff <- InterpolationCutoff[1:subsetPlotSize]
-viData <- viData[1:subsetPlotSize,]
-
-maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
-plot_top25 <- ggplot2::ggplot(
-  data = viData,
-  mapping = ggplot2::aes(
-    x = factor(stats::reorder(var, est)),
-    y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
-    ),
-    group = 1
-  )
-) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(
-      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
-      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
-    ),
-    color = "black", width = 0.2
-  ) +
-  ggplot2::geom_point(color = "black", size=3) +
-  ggplot2::geom_hline(
-    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
-    color = "red", linetype = "dotted", linewidth = 2
-  ) +
-  ggplot2::coord_flip(ylim = c(0, 1)) +
-  ggplot2::xlab(NULL) +
-  ggplot2::ylim(c(0, 1)) +
-  ggplot2::ylab(NULL) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22)) + 
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "Variable Importance - OOB (",
-    .specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    .specify_decimal(accData$guess, 2),
-    "), Bias (",
-    .specify_decimal(accData$bias, 2), ")"
-  ))
-
-
-png("./paper/effect_variableimportance_top25.png")
-print(plot_top25)
-dev.off()
+data_plot <- rbind(data.frame('r'=tmp_1$r,
+                              'K'=tmp_1$value,
+                              'Unit'=tmp_1$name,
+                              'Outcome'="0"),
+                   data.frame('r'=tmp1_1$r,
+                              'K'=tmp1_1$value,
+                              'Unit'=paste0(tmp1_1$name,'_1'),
+                              'Outcome'="1"))
 ```
 
+With the $K$ function comparison as:
+  ```{r plotEffectKs, fig.width=5, fig.height=5, fig.cap="Effect Simulation K Functions"}
+plot_K_functions(data_plot)
+```
+
+
 With this confidence, we now consider the TNBC phenotype data.
-```{r tnbc_pheno_model}
-dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
+```{r}
+dataPCA_pheno<- getPCAData(data = TNBC_pheno, unit='Person',
                            agents_df=pheno_interactions,
                            rCheckVals = seq(0,50,1))
 
@@ -570,131 +347,16 @@ rfcv <- funkyModel(data=dataPCAAge_pheno, K=10,
                    subsetPlotSize = 25)
 ```
 
-Creating the following variable importance plots.
-```{r viewFullPlot, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance (All)"}
+Creating the variable importance plots-both full and subsetted--as follows.
+```{r viewFullPlot, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance for All Variables"}
 rfcv$viPlot
 ```
-```{r viewSubPlot, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance (Top 25)"}
+
+```{r viewSubPlot, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance for Top 25 Variables"}
 rfcv$subset_viPlot
 ```
 
-```{r paper_tnbc_variable_importance, echo=FALSE, eval=paperRun}
-# Get Vars
-viData = rfcv$VariableImportance
-accData = rfcv$AccuracyEstimate
-NoiseCutoff = rfcv$NoiseCutoff
-InterpolationCutoff = rfcv$InterpolationCutoff
-subsetPlotSize = rfcv$AdditionalParams$subsetPlotSize
-
-# Plot Full
-maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
-plot_full <- ggplot2::ggplot(
-  data = viData,
-  mapping = ggplot2::aes(
-    x = factor(stats::reorder(var, est)),
-    y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
-    ),
-    group = 1
-  )
-) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(
-      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
-      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
-    ),
-    color = "black", width = 0.2
-  ) +
-  ggplot2::geom_point(color = "black", size=3) +
-  ggplot2::geom_hline(
-    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
-    color = "red", linetype = "dotted", linewidth = 2
-  ) +
-  ggplot2::coord_flip(ylim = c(0, 1)) +
-  ggplot2::xlab(NULL) +
-  ggplot2::ylim(c(0, 1)) +
-  ggplot2::ylab(NULL) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22)) + 
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "Variable Importance - OOB (",
-    .specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    .specify_decimal(accData$guess, 2),
-    "), Bias (",
-    .specify_decimal(accData$bias, 2), ")"
-  ))
-
-png("./paper/tnbc_variableimportance.png")
-print(plot_full)
-dev.off()
-
-# Plot Subset
-InterpolationCutoff <- InterpolationCutoff[1:subsetPlotSize]
-viData <- viData[1:subsetPlotSize,]
-
-maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
-plot_top25 <- ggplot2::ggplot(
-  data = viData,
-  mapping = ggplot2::aes(
-    x = factor(stats::reorder(var, est)),
-    y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
-    ),
-    group = 1
-  )
-) +
-  ggplot2::geom_errorbar(
-    ggplot2::aes(
-      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
-      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
-    ),
-    color = "black", width = 0.2
-  ) +
-  ggplot2::geom_point(color = "black", size=3) +
-  ggplot2::geom_hline(
-    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
-    color = "red", linetype = "dotted", linewidth = 2
-  ) +
-  ggplot2::coord_flip(ylim = c(0, 1)) +
-  ggplot2::xlab(NULL) +
-  ggplot2::ylim(c(0, 1)) +
-  ggplot2::ylab(NULL) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22)) + 
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "Variable Importance - OOB (",
-    .specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    .specify_decimal(accData$guess, 2),
-    "), Bias (",
-    .specify_decimal(accData$bias, 2), ")"
-  ))
-
-png("./paper/tnbc_variableimportance_top25.png")
-print(plot_top25)
-dev.off()
-```
-
-Also consider $K$ functions from significant and insignificant interactions.
+Likwise, let us consider $K$ functions from significant and insignificant interactions.
 ```{r significantTNBCK}
 tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1],
                     c('Tumour','Tumour'),unit = 'Person',
@@ -719,76 +381,6 @@ data_plot <- rbind(data.frame('r'=tmp_1$r,
 Creating the following figure.
 ```{r significantTNBCKPlot, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Significant K Function"}
 plot_K_functions(data_plot)
-```
-
-```{r paper_sig_K_functions, echo=FALSE, eval=paperRun}
-data <- data_plot
-
-# Prep Legend
-info <- unique(data[,c('Unit','Outcome')])
-info$Missing <- NA
-for(i in 1:nrow(info)){
-  info[i,3] <- nrow(data[data$Unit==info$Unit[i] &
-                           !stats::complete.cases(data),]) > 0
-}
-
-info_labels <- data.frame('Outcome'=unique(data$Outcome),
-                          'Units'=NA,
-                          'Missing'=NA,
-                          'Label'=NA)
-for(i in 1:nrow(info_labels)){
-  info_labels[i,2] <- nrow(info[info$Outcome==info_labels[i,1],])
-  info_labels[i,3] <- nrow(info[info$Outcome==info_labels[i,1] &
-                                  info$Missing, ])
-  # Only label Outcomes with numbers if at least one is missing in whole set
-  if(sum(info$Missing)!=0){
-    info_labels[i,4] <- paste0(info_labels[i,1],' (',
-                               info_labels[i,2]-info_labels[i,3],'/',
-                               info_labels[i,2],')')
-  } else{
-    info_labels[i,4] <- info_labels[i,1]
-  }
-}
-
-# Build Averages
-data_wide <- tidyr::pivot_wider(data,names_from = 'Unit',
-                                values_from = 'K')
-data_avg <- data.frame('r'=unique(data_wide$r))
-
-for(i in 1:nrow(info_labels)){
-  data_avg[[info_labels[i,'Outcome']]] <-
-    rowMeans(data_wide[data_wide$Outcome==info_labels[i,'Outcome'],-c(1:2)],
-             na.rm = TRUE)
-}
-data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-colnames(data_avg) <- c('r','Outcome','Value')
-
-# Plot
-return_plot <-
-  ggplot2::ggplot(data=stats::na.omit(data),
-                  ggplot2::aes(x=r,y=K,
-                               group=Unit,color=Outcome))+
-  ggplot2::geom_line(alpha=0.5, size=1.25) +
-  ggplot2::geom_line(ggplot2::aes(x=r,y=Value,
-                                  group=Outcome, color=Outcome),
-                     data=data_avg, linewidth=2) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22),
-                 legend.position = "right",
-                 legend.title = ggplot2::element_text(size=22),
-                 legend.text = ggplot2::element_text(size=18)) +
-  ggplot2::scale_colour_discrete(
-    labels=info_labels$Label,
-    name=paste0('Outcome\n( ',
-                sum(info_labels$Units)-sum(sum(info_labels$Missing)),' / ',
-                sum(info_labels$Units),' )'))
-
-png("./paper/TNBC_sig_KFunctions.png")
-print(return_plot)
-dev.off()
 ```
 
 And for a insignificant interaction.
@@ -818,77 +410,7 @@ Creating the following figure.
 plot_K_functions(data_plot)
 ```
 
-```{r paper_sig_K_functions, echo=FALSE, eval=paperRun}
-data <- data_plot
 
-# Prep Legend
-info <- unique(data[,c('Unit','Outcome')])
-info$Missing <- NA
-for(i in 1:nrow(info)){
-  info[i,3] <- nrow(data[data$Unit==info$Unit[i] &
-                           !stats::complete.cases(data),]) > 0
-}
-
-info_labels <- data.frame('Outcome'=unique(data$Outcome),
-                          'Units'=NA,
-                          'Missing'=NA,
-                          'Label'=NA)
-for(i in 1:nrow(info_labels)){
-  info_labels[i,2] <- nrow(info[info$Outcome==info_labels[i,1],])
-  info_labels[i,3] <- nrow(info[info$Outcome==info_labels[i,1] &
-                                  info$Missing, ])
-  # Only label Outcomes with numbers if at least one is missing in whole set
-  if(sum(info$Missing)!=0){
-    info_labels[i,4] <- paste0(info_labels[i,1],' (',
-                               info_labels[i,2]-info_labels[i,3],'/',
-                               info_labels[i,2],')')
-  } else{
-    info_labels[i,4] <- info_labels[i,1]
-  }
-}
-
-# Build Averages
-data_wide <- tidyr::pivot_wider(data,names_from = 'Unit',
-                                values_from = 'K')
-data_avg <- data.frame('r'=unique(data_wide$r))
-
-for(i in 1:nrow(info_labels)){
-  data_avg[[info_labels[i,'Outcome']]] <-
-    rowMeans(data_wide[data_wide$Outcome==info_labels[i,'Outcome'],-c(1:2)],
-             na.rm = TRUE)
-}
-data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-colnames(data_avg) <- c('r','Outcome','Value')
-
-# Plot
-return_plot <-
-  ggplot2::ggplot(data=stats::na.omit(data),
-                  ggplot2::aes(x=r,y=K,
-                               group=Unit,color=Outcome))+
-  ggplot2::geom_line(alpha=0.5, size=1.25) +
-  ggplot2::geom_line(ggplot2::aes(x=r,y=Value,
-                                  group=Outcome, color=Outcome),
-                     data=data_avg, linewidth=2) +
-  ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22),
-                 legend.position = "right",
-                 legend.title = ggplot2::element_text(size=22),
-                 legend.text = ggplot2::element_text(size=18)) +
-  ggplot2::scale_colour_discrete(
-    labels=info_labels$Label,
-    name=paste0('Outcome\n( ',
-                sum(info_labels$Units)-sum(sum(info_labels$Missing)),' / ',
-                sum(info_labels$Units),' )'))
-
-png("./paper/TNBC_insig_KFunctions.png")
-print(return_plot)
-dev.off()
-```
-
-Further analysis of this data can be found in our paper.
 
 <!--   -------------------------------------------------------------   -->
 

@@ -181,4 +181,18 @@ for(i in 1:length(results)){
   #   (ncol(results[[i]]$VarLVI[-1])*nrow(results[[i]]$VarLVI[-1]))
 }
 
-data_summary
+
+data_plot <-
+  tidyr::pivot_longer(data_summary,cols=vert:lmboth)
+
+ggplot2::ggplot(data_plot[data_plot$name %in% c('vert','curve','mcurve','both'),],
+                ggplot2::aes(x=var, y=value, color=name, group=name)) +
+  ggplot2::geom_line() +
+  ggplot2::geom_vline(ggplot2::aes(xintercept=baseline),
+                      color='black', linetype='dashed') +
+  ggplot2::theme_bw() +
+  ggplot2::scale_color_discrete(name='Cutoff',
+                                labels=c('Both','Interp',
+                                         'Max Interp','Noise')) +
+  ggplot2::xlab('Variance') +
+  ggplot2::ylab(NULL)
