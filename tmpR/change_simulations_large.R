@@ -1,6 +1,8 @@
 nSims <- 100
-changes <- c(1/10, 1/15, 1/20, 1/40, 1/80, 1/160)
-baseline <- changes[1]
+changes <- c(1.5/10, 2/10, 4/10, 8/10, 16/10,
+             1/10,
+             1/15, 1/20, 1/40, 1/80, 1/160)
+baseline <- changes[6]
 results <- list()
 
 cells <- paste0('c',1:16)
@@ -28,7 +30,7 @@ for(c in 1:length(changes)){
     dat <- simulatePP(cellVarData=
                         data.frame('stage'=c(0,1),
                                    'c1'=c(0,0),
-                                   'c2'=c(1/25,changes[c]), 'c3'=c(1/50,1/50),
+                                   'c2'=c(baseline,changes[c]), 'c3'=c(1/50,1/50),
                                    'c4'=c(0,0), 'c5'=c(0,0), 'c6'=c(0,0),
                                    'c7'=c(0,0), 'c8'=c(0,0), 'c9'=c(0,0),
                                    'c10'=c(0,0), 'c11'=c(0,0), 'c12'=c(0,0),
@@ -191,4 +193,24 @@ for(i in 1:length(results)){
   #   (ncol(results[[i]]$VarLVI[-1])*nrow(results[[i]]$VarLVI[-1]))
 }
 
-data_summary
+
+data_plot <-
+  tidyr::pivot_longer(data_summary,cols=vert:lmboth)
+
+ggplot2::ggplot(data_plot[data_plot$name %in% c('vert','curve','mcurve','both'),],
+                ggplot2::aes(x=var, y=value, color=name, group=name)) +
+  ggplot2::geom_line(linewidth=1.25) +
+  ggplot2::geom_vline(ggplot2::aes(xintercept=baseline),
+                      color='black', linetype='dashed', linewidth=1.25) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(axis.text=ggplot2::element_text(size=18),
+                 axis.title = ggplot2::element_text(size=22),
+                 legend.position = "none",
+                 legend.title = ggplot2::element_text(size=22),
+                 legend.text = ggplot2::element_text(size=18)) +
+  ggplot2::scale_color_discrete(name='Cutoff',
+                                labels=c('Both','Interp',
+                                         'Max Interp','Noise')) +
+  ggplot2::xlab('Variance') +
+  ggplot2::ylab(NULL)
+
