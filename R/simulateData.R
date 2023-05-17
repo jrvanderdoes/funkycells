@@ -78,7 +78,7 @@ simulatePP <- function(cellVarData =
     stage <- cellVarData$stage[stageIdx] # Current Stage
     imageAdj <- (stageIdx - 1) * (peoplePerStage * imagesPerPerson) # Adjustment for images due to stage
     personAdj <- (stageIdx - 1) * (peoplePerStage) # Adjustment for person due to stage
-
+    data_stages[[stageIdx]] <- data.frame() # Make this so no errors
     if (!silent) {
       cat(paste0("Stage: ", stage, " (", stageIdx, "/", nrow(cellVarData), ")\n"))
     }
