@@ -29,7 +29,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    dropAxes = FALSE, layerBasedOnFrequency=TRUE,
                    colors = NULL) {
   # Sort so most populous cells are at the bottom
-  if(layerBasedOnFrequency){
+  if(layerBasedOnFrequency && unique(data[,3])>1){
     cells_order <- as.data.frame(table(data[,3])[order(-table(data[,3]))])$Var1
 
     idxs <- sapply(cells_order, function(x, data1) {
