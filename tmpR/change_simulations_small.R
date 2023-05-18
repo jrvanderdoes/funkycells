@@ -107,10 +107,12 @@ for(c in 1:length(changes)){
          'VarVI_o'=VarVI_o, 'VarLVI_o'=VarLVI_o,
          'VarVI_max'=VarVI_max, 'VarVI_o_max'=VarVI_o_max,
          'VarLVI_max'=VarLVI_max, 'VarLVI_o_max'=VarLVI_o_max)
+
+
+  ## Save RDS
+  saveRDS(results, paste0('C:/Users/j53vande/Downloads/change_sim_small.rds'))
 }
 
-## Save RDS
-saveRDS(results, paste0('C:/Users/j53vande/Downloads/change_sim_small.rds'))
 
 ####################################
 # Look at c1_c2
@@ -190,8 +192,10 @@ data_plot <-
 ggplot2::ggplot(data_plot[data_plot$name %in% c('vert','curve','mcurve','both'),],
                 ggplot2::aes(x=var, y=value, color=name, group=name)) +
   ggplot2::geom_line(linewidth=1.25) +
+  ggplot2::geom_point(size=3) +
   ggplot2::geom_vline(ggplot2::aes(xintercept=baseline),
                       color='black', linetype='dashed', linewidth=1.25) +
+  ggplot2::geom_hline(ggplot2::aes(yintercept=0.05), linetype='dotted') +
   ggplot2::theme_bw() +
   ggplot2::theme(axis.text=ggplot2::element_text(size=18),
                  axis.title = ggplot2::element_text(size=22),
@@ -202,4 +206,5 @@ ggplot2::ggplot(data_plot[data_plot$name %in% c('vert','curve','mcurve','both'),
                                 labels=c('Both','Interp',
                                          'Max Interp','Noise')) +
   ggplot2::xlab('Variance') +
-  ggplot2::ylab(NULL)
+  ggplot2::ylab(NULL) +
+  ggplot2::scale_x_log10()
