@@ -6,7 +6,7 @@
 #' Warning: If there are no sythentics, this may break (will fix it eventually)
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param K (Optional) Numeric indicating the number of folds to use in K-fold
 #'     CV. The default is 10.
@@ -100,7 +100,7 @@
 #'             peoplePerStage=100,
 #'             imagesPerPerson=1,
 #'             silent=F )
-#' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
+#' pcaData <- getKsPCAData(dat,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
 #' pcaMeta <- simulateMeta(pcaData,
 #'                         metaInfo = data.frame(
@@ -121,7 +121,7 @@
 #'                  peoplePerStage=100,
 #'                  imagesPerPerson=1,
 #'                  silent=F )
-#' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
+#' pcaData <- getKsPCAData(dat,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
 #' pcaMeta <- simulateMeta(pcaData,
 #'                         metaInfo = data.frame(

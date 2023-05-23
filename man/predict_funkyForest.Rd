@@ -46,7 +46,7 @@ data_pp <- simulatePP(
   imagesPerPerson = 1,
   silent = FALSE
 )
-pcaData <- getPCAData(data_pp,
+pcaData <- getKsPCAData(data_pp,
   repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )

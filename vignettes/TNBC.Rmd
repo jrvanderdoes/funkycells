@@ -220,7 +220,7 @@ cells_interactions <- rbind(data.frame(t(combn(cells,2))),
                             data.frame('X1'=cells,'X2'=cells))
 
 set.seed(12345)
-pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
+pcaData <- getKsPCAData(data = dat,repeatedUniqueId='Image',
                       agents_df = cells_interactions,
                       xRange = c(0,1),  yRange = c(0,1),
                       silent=F)
@@ -449,7 +449,7 @@ cells_interactions <- rbind(data.frame(t(combn(cells,2))),
                             data.frame('X1'=cells,'X2'=cells))
 
 set.seed(12345)
-pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
+pcaData <- getKsPCAData(data = dat,repeatedUniqueId='Image',
                       agents_df = cells_interactions,
                       xRange = c(0,1),  yRange = c(0,1),
                       silent=F)
@@ -597,7 +597,7 @@ dev.off()
 
 With this confidence, we now consider the TNBC phenotype data.
 ```{r tnbc_pheno_model}
-dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
+dataPCA_pheno <- getKsPCAData(data = TNBC_pheno, unit='Person',
                            agents_df=pheno_interactions,
                            rCheckVals = seq(0,50,1))
 

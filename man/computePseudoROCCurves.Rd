@@ -40,7 +40,7 @@ data_pp_roc <- simulatePP(
   silent = FALSE
 )
 # Caution, in general use more than 5 nTrees (Default is 500)
-pcaData_roc <- getPCAData(data_pp_roc,
+pcaData_roc <- getKsPCAData(data_pp_roc,
   repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )

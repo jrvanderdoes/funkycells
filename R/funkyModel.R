@@ -5,7 +5,7 @@
 #'     synthetics, this may break (will fix it eventually).
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param K (Optional) Numeric indicating the number of folds to use in K-fold
 #'     CV. The default is 10.
@@ -65,7 +65,7 @@
 #'   imagesPerPerson = 1,
 #'   silent = FALSE
 #' )
-#' pcaData <- getPCAData(dat,
+#' pcaData <- getKsPCAData(dat,
 #'   repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
@@ -94,7 +94,7 @@
 #'   imagesPerPerson = 3,
 #'   silent = FALSE
 #' )
-#' pcaData <- getPCAData(dat,
+#' pcaData <- getKsPCAData(dat,
 #'   repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
@@ -397,6 +397,16 @@ funkyModel <- function(data, K = 10,
   ## Get plots and organize results
   append(
     list(
+      "model"= funkyForest(
+        data = data,
+        outcome = outcome,
+        unit = unit,
+        repeatedId = repeatedId,
+        varImpPlot = FALSE,
+        metaNames = c(metaNames),
+        nTrees = nTrees,
+        method = method
+      )$model,
       "VariableImportance" = data_summ,
       "AccuracyEstimate" = data_modelAcc,
       "NoiseCutoff" = noiseCO,

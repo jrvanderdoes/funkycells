@@ -17,7 +17,7 @@ test_that("PseudoROC - Ensure figure produced", {
     imagesPerPerson = 1,
     silent = TRUE
   )
-  pcaData_roc <- getPCAData(data_pp_roc,
+  pcaData_roc <- getKsPCAData(data_pp_roc,
     repeatedUniqueId = "Image",
     xRange = c(0, 1), yRange = c(0, 1), silent = TRUE
   )

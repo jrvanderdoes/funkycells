@@ -20,7 +20,7 @@ funkyForest(
 \arguments{
 \item{data}{Data.frame of outcome and predictors (PCs and meta-variables).
 Note, currently Unit or repeated measures should not be included.
-Generally use the results from getPCAData, potentially with meta-
+Generally use the results from getKsPCAData, potentially with meta-
 variables attached.}
 
 \item{outcome}{(Optional) String indicating the outcome column name in data.
@@ -81,7 +81,7 @@ data <- simulatePP(
   peoplePerStage = 5,
   imagesPerPerson = 1
 )
-pcaData <- getPCAData(
+pcaData <- getKsPCAData(
   data = data, repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1)
 )
@@ -106,7 +106,7 @@ data <- simulatePP(
   peoplePerStage = 2,
   imagesPerPerson = 1
 )
-pcaData <- getPCAData(
+pcaData <- getKsPCAData(
   data = data, repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1)
 )

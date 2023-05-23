@@ -1,5 +1,5 @@
 test_that("PCA Function - All Classes, people, pca present", {
-  dataPCA_pheno <- getPCAData(
+  dataPCA_pheno <- getKsPCAData(
     data = TNBC_pheno, unit = "Person",
     agents_df = data.frame("B", "Tumour"),
     nPCs = 3,
@@ -16,7 +16,7 @@ test_that("PCA Function - All Classes, people, pca present", {
 
 
 test_that("PCA Function - Give NA when non-existant Interaction", {
-  dataPCA_pheno <- getPCAData(
+  dataPCA_pheno <- getKsPCAData(
     data = TNBC_pheno, unit = "Person",
     agents_df = data.frame("B", "FAKE"),
     nPCs = 3,
@@ -31,13 +31,13 @@ test_that("PCA Function - Give NA when non-existant Interaction", {
 
 
 test_that("PCA Function - Check values", {
-  dataPCA_pheno1 <- getPCAData(
+  dataPCA_pheno1 <- getKsPCAData(
     data = TNBC_pheno, unit = "Person",
     agents_df = data.frame("B", "B"),
     nPCs = 1,
     rCheckVals = seq(0, 50, 1), silent = TRUE
   )
-  dataPCA_pheno3 <- getPCAData(
+  dataPCA_pheno3 <- getKsPCAData(
     data = TNBC_pheno, unit = "Person",
     agents_df = data.frame("B", "B"),
     nPCs = 3,

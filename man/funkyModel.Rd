@@ -21,7 +21,7 @@ funkyModel(
 }
 \arguments{
 \item{data}{Data.frame of outcome and predictors (PCs and meta-variables).
-Generally use the results from getPCAData, potentially with meta-
+Generally use the results from getKsPCAData, potentially with meta-
 variables attached.}
 
 \item{K}{(Optional) Numeric indicating the number of folds to use in K-fold
@@ -104,7 +104,7 @@ dat <- simulatePP(
   imagesPerPerson = 1,
   silent = FALSE
 )
-pcaData <- getPCAData(dat,
+pcaData <- getKsPCAData(dat,
   repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )
@@ -133,7 +133,7 @@ dat <- simulatePP(
   imagesPerPerson = 3,
   silent = FALSE
 )
-pcaData <- getPCAData(dat,
+pcaData <- getKsPCAData(dat,
   repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )

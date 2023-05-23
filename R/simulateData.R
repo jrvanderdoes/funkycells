@@ -223,7 +223,7 @@ simulatePP <- function(cellVarData =
 #'   peoplePerStage = 5,
 #'   imagesPerPerson = 1
 #' )
-#' pcaData <- getPCAData(
+#' pcaData <- getKsPCAData(
 #'   data = data, repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1)
 #' )

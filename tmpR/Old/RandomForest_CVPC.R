@@ -6,7 +6,7 @@
 #' Warning: If there are no sythentics, this may break (will fix it eventually)
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param K (Optional) Numeric indicating the number of folds to use in K-fold
 #'     CV. The default is 10.
@@ -102,7 +102,7 @@
 #'                    peoplePerStage=100,
 #'                    imagesPerPerson=1,
 #'                    silent=F )
-#' pcaData <- getPCAData(dat,repeatedUniqueId='Image',
+#' pcaData <- getKsPCAData(dat,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1),
 #'                       silent=F)
 #' pcaMeta <- simulateMeta(pcaData,
@@ -292,7 +292,7 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     generated.
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Note, currently Unit or repeated measures should not be included.
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param cellData Data.frame indicating the cells used to create data. It
 #'     contains outcome, unit, (possibly) repeatedId, agentType.
@@ -317,7 +317,7 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'                       to 'Meta' from other functions).
 #'       \item pcaData: Data.frame with nPCs equal to that in data. This contains
 #'                      the pcaData for the noise variables. See values
-#'                      returns from getPCAData, but outcome, person,
+#'                      returns from getKsPCAData, but outcome, person,
 #'                      repeatedId, and PCs for synthetic Ks.
 #'     }
 #'
@@ -399,7 +399,7 @@ computeRandomForest_CVPC <- function(data, K=10,
   }
 
   list('noiseMap'=noiseMap,
-       'pcaData'= getPCAData(data = noiseData, nPCs = NamesPCs$PCs,
+       'pcaData'= getKsPCAData(data = noiseData, nPCs = NamesPCs$PCs,
                     outcome = outcome,unit = unit,repeatedUniqueId = repeatedId,
                     xRange = c(0,1),yRange = c(0,1), agents_df = agent_df,
                     silent = silent)
@@ -553,7 +553,7 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'     variables in each noise group.
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Note, currently Unit or repeated measures should not be included.
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param outcome String indicating the column name with the outcome in
 #'     cellData.
@@ -612,7 +612,7 @@ computeRandomForest_CVPC <- function(data, K=10,
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Note, currently Unit or repeated measures should not be included.
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached. Really only column with meta column needed
 #' @param meta String of the column name indicating the meta variable to be
 #'     generated.

@@ -4,7 +4,7 @@
 \alias{plot_K_functions}
 \title{Compare K Functions Between Outcomes}
 \usage{
-plot_K_functions(data, inc.legend = TRUE)
+plot_K_functions(data, inc.legend = TRUE, inc.noise = FALSE)
 }
 \arguments{
 \item{data}{Data.frame with the columns r, K, Unit, and Outcome. r indicates
@@ -14,6 +14,9 @@ specifies the unique K function, and Outcome indicates the unit outcome.}
 \item{inc.legend}{(Optional) Boolean indicating if the legend should be given.
 This will also include numbers to indicate if any K functions are missing.
 The default is TRUE.}
+
+\item{inc.noise}{(Optional) Boolean indicating if a gray, dashed line should
+be included to show what total noise would be like. The default is FALSE.}
 }
 \value{
 ggplot2 object showing the K function with a superimposed average

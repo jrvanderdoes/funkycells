@@ -8,7 +8,7 @@
 #' This function compute the average count of cellType per repeatedUniqueId.
 #'
 #' @param data Data.frame with outcome, unit, and potentially any other
-#'     variables to use in model. Often this would be run after getPCAData.
+#'     variables to use in model. Often this would be run after getKsPCAData.
 #' @param outcome String of the column name in data indicating the outcome or
 #'     response.
 #' @param unit String of the column name in data indicating a unit or base thing.
@@ -32,7 +32,7 @@
 #'                            "CD4","CD16","CD56","PD1","PD.L1","Ki67","CD138",
 #'                            "CD68","CD8","CD3","IDO","CD45RO","CD20","p53",
 #'                            "MPO","tumorYN"))
-#' dataPCA <- getPCAData(data = TNBC[,-3], unit='Person', agents_df=agents_df,
+#' dataPCA <- getKsPCAData(data = TNBC[,-3], unit='Person', agents_df=agents_df,
 #'                       rCheckVals = seq(0,50,1))
 #' dataCt <- computeCountMeta(data = dataPCA, outcome = 'Class', unit = 'Person',
 #'                        agents = c("FoxP3","Lag3","CD4","CD16","CD56","PD1",

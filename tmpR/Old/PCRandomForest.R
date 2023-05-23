@@ -11,7 +11,7 @@
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Note, currently Unit or repeated measures should not be included.
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param outcome (Optional) String indicating the outcome column name in data
 #' @param nTrees (Optional) Numeric indicating the number of trees to use in the
@@ -36,7 +36,7 @@
 #'
 #' @examples
 #' data <- simulatePP()
-#' pcaData <- getPCAData(data=data, repeatedUniqueId='Image',
+#' pcaData <- getKsPCAData(data=data, repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
 #' RF1 <- PCRandomForest(data=pcaData[-2])
 #'
@@ -316,7 +316,7 @@ PCRandomForest  <- function(data, outcome=colnames(data)[1],
 #'                     imagesPerPerson=1,
 #'                     reduceEdge=0.025,
 #'                     silent=F )
-#' pcaData <- getPCAData(data_pp,repeatedUniqueId='Image',
+#' pcaData <- getKsPCAData(data_pp,repeatedUniqueId='Image',
 #'                       xRange = c(0,1),  yRange = c(0,1), silent=F)
 #' RF <- PCRandomForest(data=pcaData[-2], nTrees = 5)
 #' pred <- predict.PCRandomForest(model = RF[[1]], type='all',

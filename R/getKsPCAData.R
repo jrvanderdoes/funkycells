@@ -1,4 +1,4 @@
-#' Get PCA Data
+#' Get K's PCA Data
 #'
 #' This function computes K functions from PP data then converts it into PCs.
 #'     Note, if there are repeated measures, i.e. multiple images per unit,
@@ -66,7 +66,7 @@
 #'   unique(data$cellType),
 #'   stringsAsFactors = FALSE
 #' ))
-#' dat_pca <- getPCAData(
+#' dat_pca <- getKsPCAData(
 #'   data = data, outcome = "Stage", unit = "Person",
 #'   repeatedUniqueId = "Image",
 #'   rCheckVals = seq(0, 0.25, 0.01), nPCs = 3,
@@ -75,14 +75,14 @@
 #' )
 #' }
 #'
-#' dataPCA_pheno <- getPCAData(
+#' dataPCA_pheno <- getKsPCAData(
 #'   data = TNBC_pheno, unit = "Person",
 #'   agents_df = data.frame(rep("B",2), c("Tumour","FAKE")),
 #'   nPCs = 3,
 #'   rCheckVals = seq(0, 50, 1),
 #'   displayTVE = TRUE
 #' )
-getPCAData <- function(data, outcome = colnames(data)[1],
+getKsPCAData <- function(data, outcome = colnames(data)[1],
                        unit = colnames(data)[5],
                        repeatedUniqueId = NULL,
                        rCheckVals = NULL, nPCs = 3,
@@ -159,7 +159,7 @@ getPCAData <- function(data, outcome = colnames(data)[1],
 #' This function coverts the radius and K functions into principal components
 #'     and recturns the scores.
 #'
-#' See getPCAData for use.
+#' See getKsPCAData for use.
 #'
 #' @param rKData data.frame with the first column being the checked radius and the
 #'     rest relating to the K function for each unit at those points. NA columns

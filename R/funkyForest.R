@@ -7,7 +7,7 @@
 #'
 #' @param data Data.frame of outcome and predictors (PCs and meta-variables).
 #'     Note, currently Unit or repeated measures should not be included.
-#'     Generally use the results from getPCAData, potentially with meta-
+#'     Generally use the results from getKsPCAData, potentially with meta-
 #'     variables attached.
 #' @param outcome (Optional) String indicating the outcome column name in data.
 #'   Default is the first column of data.
@@ -53,7 +53,7 @@
 #'   peoplePerStage = 5,
 #'   imagesPerPerson = 1
 #' )
-#' pcaData <- getPCAData(
+#' pcaData <- getKsPCAData(
 #'   data = data, repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1)
 #' )
@@ -78,7 +78,7 @@
 #'   peoplePerStage = 2,
 #'   imagesPerPerson = 1
 #' )
-#' pcaData <- getPCAData(
+#' pcaData <- getKsPCAData(
 #'   data = data, repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1)
 #' )
@@ -333,7 +333,7 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #'   imagesPerPerson = 1,
 #'   silent = FALSE
 #' )
-#' pcaData <- getPCAData(data_pp,
+#' pcaData <- getKsPCAData(data_pp,
 #'   repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )

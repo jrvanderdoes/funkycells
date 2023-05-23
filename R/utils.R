@@ -56,7 +56,7 @@
       data_df <- rbind(data_df, data_list[[i]])
     }
   } else if (typeBind == "col") {
-    # See if first column is DF or not. Can occur based on getPCAData
+    # See if first column is DF or not. Can occur based on getKsPCAData
     if (dim(data_list[[1]])[[1]] > 1) {
       data_df <- data_list[[1]]
     } else {
@@ -86,7 +86,7 @@
 #' This (internal) function appends items in list to a data.frame by the given
 #'     column names.
 #'
-#' See usage in getPCAData.
+#' See usage in getKsPCAData
 #'
 #' TODO:: Verify use in latest refactor
 #'
