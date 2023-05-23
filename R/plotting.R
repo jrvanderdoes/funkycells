@@ -29,7 +29,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    dropAxes = FALSE, layerBasedOnFrequency=TRUE,
                    colors = NULL) {
   # Sort so most populous cells are at the bottom
-  if(layerBasedOnFrequency && unique(data[,3])>1){
+  if(layerBasedOnFrequency && length(unique(data[,3]))>1){
     cells_order <- as.data.frame(table(data[,3])[order(-table(data[,3]))])$Var1
 
     idxs <- sapply(cells_order, function(x, data1) {
@@ -76,6 +76,8 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
 #' @param inc.legend (Optional) Boolean indicating if the legend should be given.
 #'   This will also include numbers to indicate if any K functions are missing.
 #'   The default is TRUE.
+#' @param inc.noise (Optional) Boolean indicating if a gray, dashed line should
+#'   be included to show what total noise would be like. The default is FALSE.
 #'
 #' @return ggplot2 object showing the K function with a superimposed average
 #' @export
@@ -125,7 +127,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
 #'                               'Outcome'="1"))
 #'
 #' plot_K_functions(data_plot)
-plot_K_functions <- function(data, inc.legend=TRUE){
+plot_K_functions <- function(data, inc.legend=TRUE,inc.noise =FALSE){
   # Add this to remove notes when building package
   r <- K <- Unit <- Outcome <- Value <- NULL
 
@@ -191,6 +193,13 @@ plot_K_functions <- function(data, inc.legend=TRUE){
         name=paste0('Outcome\n( ',
                     sum(info_labels$Units)-sum(sum(info_labels$Missing)),' / ',
                     sum(info_labels$Units),' )'))
+  }
+
+  if(inc.noise){
+    return_plot <- return_plot +
+      ggplot2::geom_line(ggplot2::aes(x=r,y=pi*r^2),
+                         data=data_avg, linewidth=1.25,
+                         color='gray', linetype='dashed')
   }
 
   return_plot
