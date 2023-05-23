@@ -204,6 +204,35 @@ cleanTNBC <- function(TNBC) {
   )]
 }
 
+
+#' Get PCA to Save
+#'
+#' Converts TNBC data to PCA data with meta for use in package and minimal size.
+#'
+#' @param data Data.frame of cell data
+#' @param agents Vector of agents to consider for K functions
+#' @param data_meta Data.frame of meta_data to merge
+#' @param nPCs (Optional) Integer for number of PCs. Default is 3.
+#' @param seed (optional) Numeric for seed. Default is NULL.
+#'
+#' @return Data.frame of pca'd data
+getPCA2Save <- function(data, agents, data_meta, nPCs=3, seed=NULL){
+  if(!is.null(seed))
+    set.seed(seed)
+
+  interactions <- rbind(data.frame(t(combn(agents,2))),
+                        data.frame('X1'=agents,'X2'=agents))
+
+  dataPCA <- getKsPCAData(data = data,
+                          outcome = 'Class',
+                          unit = 'Person',
+                          agents_df = interactions,
+                          rCheckVals = seq(0,50,1))
+
+  merge(dataPCA, TNBC_Meta)
+}
+
+
 # Save CSVs
 organizeTNBCs(
   CDir =
@@ -229,8 +258,14 @@ tnbc_clinical01 <- read.csv(
 TNBC_Meta <- tnbc_clinical01[, c("InternalId", "AGE_AT_DX")]
 colnames(TNBC_Meta) <- c("Person", "Age")
 
+TNBC <- TNBC[,!(colnames(TNBC) %in% c("cellLabelInImage"))]
+colnames(TNBC) <- gsub("[[:punct:]]", "", colnames(TNBC))
+cnames <- colnames(TNBC[c(1:4,as.numeric(which(colSums(TNBC[,-c(1:4)])>20000))+4)])
+TNBC <- getPCA2Save(TNBC[cnames], cnames[-c(1:4)], TNBC_meta, nPCs=3, seed=12345)
+
 # Save files
+
 usethis::use_data(TNBC, overwrite = TRUE, compress = "xz")
 # usethis::use_data(TNBC_int, overwrite = TRUE,compress = "xz")
-usethis::use_data(TNBC_pheno, overwrite = TRUE, compress = "xz")
-usethis::use_data(TNBC_Meta, overwrite = TRUE, compress = "xz")
+#usethis::use_data(TNBC_pheno, overwrite = TRUE, compress = "xz")
+#usethis::use_data(TNBC_Meta, overwrite = TRUE, compress = "xz")
