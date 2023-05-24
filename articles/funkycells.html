@@ -149,8 +149,9 @@ but the principle components of functions. Because of the commonness of
 implemented the steps in the same function<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;This may be changed soon&lt;/p&gt;"><sup>1</sup></a>. Although in our data,
 the cellTypes are in a single column, the functions accepts when the
 cell properties are defined in many columns (see documentation on
-<code><a href="../reference/getKsPCAData.html">getKsPCAData()</a></code>). We also note that we only consider one-way
-interactions, simply to improve model power.</p>
+<code><a href="../reference/getKsPCAData.html">getKsPCAData()</a></code>). We also note that we only consider
+one-direction of the interactions to reduce variables and improve model
+power.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cells</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">cell_data</span><span class="op">$</span><span class="va">cellType</span><span class="op">)</span></span>
 <span><span class="va">cells_interactions</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/combn.html" class="external-link">combn</a></span><span class="op">(</span><span class="va">cells</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -191,11 +192,12 @@ employs cross-validation and permutation to create accurate models.</p>
 <span>                       outcome <span class="op">=</span> <span class="st">'Stage'</span>,</span>
 <span>                       unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
 <span>                       metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'gender'</span>,<span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>The variable importance plot is returned.</p>
+<p>The variable importance plot is returned (plot not shown as this was
+not run for computational reasons).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_fc</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
 <p>The results of the model from <code><a href="../reference/funkyModel.html">funkyModel()</a></code> also includes
-the model from <code><a href="../reference/funkyModel.html">funkyModel()</a></code> on the original data, which is
+the model from <code><a href="../reference/funkyForest.html">funkyForest()</a></code> on the original data, which is
 necessary when trying to predict new data. Suppose we create a few new
 people (i.e. get more data) and wish to predict. This would be done as
 follows.</p>
