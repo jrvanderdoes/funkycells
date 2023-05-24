@@ -74,7 +74,7 @@ k_data <- getKFunction(data=cell_data[cell_data$Person=='p1',-1],
              yRange = c(0,1))
 ```
 
-However, `funkyModel()` does not use functions directly, but the principle components of functions. Because of the commonness of $K$ functions, currently we implemented the steps in the same function^[This may be changed soon]. Although in our data, the cellTypes are in a single column, the functions accepts when the cell properties are defined in many columns (see documentation on `getKsPCAData()`). We also note that we only consider one-way interactions, simply to improve model power.
+However, `funkyModel()` does not use functions directly, but the principle components of functions. Because of the commonness of $K$ functions, currently we implemented the steps in the same function^[This may be changed soon]. Although in our data, the cellTypes are in a single column, the functions accepts when the cell properties are defined in many columns (see documentation on `getKsPCAData()`). We also note that we only consider one-direction of the interactions to reduce variables and improve model power.
 ```{r compute_pca}
 cells <- unique(cell_data$cellType)
 cells_interactions <- rbind(data.frame(t(combn(cells,2))),
@@ -115,12 +115,12 @@ model_fc <- funkyModel(data=pcaMeta,
                        metaNames=c('gender','age'))
 ```
 
-The variable importance plot is returned.
+The variable importance plot is returned (plot not shown as this was not run for computational reasons).
 ```{r variableimportance, eval=full_run}
 model_fc$viPlot
 ```
 
-The results of the model from `funkyModel()` also includes the model from `funkyModel()` on the original data, which is necessary when trying to predict new data. Suppose we create a few new people (i.e. get more data) and wish to predict. This would be done as follows.
+The results of the model from `funkyModel()` also includes the model from `funkyForest()` on the original data, which is necessary when trying to predict new data. Suppose we create a few new people (i.e. get more data) and wish to predict. This would be done as follows.
 ```{r predict_data, eval=full_run}
 set.seed(12345)
 cell_data_pred <- simulatePP(
