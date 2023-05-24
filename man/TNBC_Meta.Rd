@@ -3,7 +3,7 @@
 \docType{data}
 \name{TNBC_Meta}
 \alias{TNBC_Meta}
-\title{Triple Negative Breast Cancer Phenotypes}
+\title{Triple Negative Breast Cancer Meta Data}
 \format{
 \subsection{\code{TNBC_Meta}}{
 

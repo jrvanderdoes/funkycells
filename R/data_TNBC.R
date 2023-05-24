@@ -36,7 +36,7 @@
 "TNBC_pheno"
 
 
-#' Triple Negative Breast Cancer Phenotypes
+#' Triple Negative Breast Cancer Meta Data
 #'
 #' Data of triple negative breast cancer biopsies from patients, with. Additionally, the age meta-variable was
 #'   added.
