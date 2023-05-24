@@ -21,8 +21,8 @@ library(funkycells)
 ```
 
 ```{r define_functions, echo=FALSE}
-paperRun <- FALSE # This is on all chucks that run for paper results
-#   For some reason paper results are deleted after vignette builds..
+full_run <- FALSE # This runs only computations that are feasibly quick
+paperRun <- FALSE * full_run # This runs code to generate images in paper
 specify_decimal <- function(x, k) {
   trimws(format(round(x, k), nsmall = k))
 }
@@ -214,13 +214,13 @@ dev.off()
 ```
 
 Now we compute PCA and attach an age meta-variable (with no effect).
-```{r simulateNoInteraction}
+```{r simulateNoInteraction, eval=full_run}
 cells <- paste0('c',1:16)
 cells_interactions <- rbind(data.frame(t(combn(cells,2))),
                             data.frame('X1'=cells,'X2'=cells))
 
 set.seed(12345)
-pcaData <- getKsPCAData(data = dat,repeatedUniqueId='Image',
+pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
                       agents_df = cells_interactions,
                       xRange = c(0,1),  yRange = c(0,1),
                       silent=F)
@@ -233,7 +233,7 @@ pcaMeta <- simulateMeta(pcaData,
 ```
 
 We analyze the data.
-```{r analyzeNoEffect}
+```{r analyzeNoEffect, eval=full_run}
 set.seed(12345)
 rfcv <- funkyModel(data=pcaMeta,
                    outcome = 'Stage',
@@ -241,11 +241,11 @@ rfcv <- funkyModel(data=pcaMeta,
                    metaNames=c('age'))
 ```
 
-Resulting in the following figure.
-```{r plot_noeffect_full, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (All)"}
+Resulting in the variable importance figures. The code for these is given below, but may not be shown due to computational time in creating this vignette.
+```{r plot_noeffect_full, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (All)", eval=full_run}
 rfcv$viPlot
 ```
-```{r plot_noeffect_top25, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (Top 25)"}
+```{r plot_noeffect_top25, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (Top 25)", eval=full_run}
 rfcv$subset_viplot
 ```
 
@@ -370,7 +370,7 @@ dev.off()
 ```
 
 Now we consider the simulated model with effects.
-```{r effectSimulationAndModel}
+```{r effectSimulationAndModel, eval=full_run}
 set.seed(12345)
 dat0 <- simulatePP(cellVarData=
                      data.frame('stage'=c(0,1),
@@ -449,7 +449,7 @@ cells_interactions <- rbind(data.frame(t(combn(cells,2))),
                             data.frame('X1'=cells,'X2'=cells))
 
 set.seed(12345)
-pcaData <- getKsPCAData(data = dat,repeatedUniqueId='Image',
+pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
                       agents_df = cells_interactions,
                       xRange = c(0,1),  yRange = c(0,1),
                       silent=F)
@@ -467,11 +467,11 @@ rfcv <- funkyModel(data=pcaMeta,
                    metaNames=c('age'))
 ```
 
-Creating the variable importance plots as follows.
-```{r plot_effect_full, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance (All)"}
+Creating the variable importance plots as before (code below, perhaps figure not given for computational reasons)
+```{r plot_effect_full, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance (All)", eval=full_run}
 rfcv$viPlot
 ```
-```{r plot_effect_top25, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance (Top 25)"}
+```{r plot_effect_top25, fig.width=5, fig.height=5, fig.cap="Effect Simulation Variable Importance (Top 25)", eval=full_run}
 rfcv$subset_viPlot
 ```
 
@@ -596,8 +596,8 @@ dev.off()
 ```
 
 With this confidence, we now consider the TNBC phenotype data.
-```{r tnbc_pheno_model}
-dataPCA_pheno <- getKsPCAData(data = TNBC_pheno, unit='Person',
+```{r tnbc_pheno_model, eval=full_run}
+dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
                            agents_df=pheno_interactions,
                            rCheckVals = seq(0,50,1))
 
@@ -611,11 +611,11 @@ rfcv <- funkyModel(data=dataPCAAge_pheno, K=10,
                    subsetPlotSize = 25)
 ```
 
-Creating the following variable importance plots.
-```{r tnbc_full, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance (All)"}
+And the related variable importance plots (may not be shown for computational reasons).
+```{r tnbc_full, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance (All)", eval=full_run}
 rfcv$viPlot
 ```
-```{r tnbc_top25, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance (Top 25)"}
+```{r tnbc_top25, fig.width=5, fig.height=5, fig.cap="TNBC Phenotype Variable Importance (Top 25)", eval=full_run}
 rfcv$subset_viPlot
 ```
 
