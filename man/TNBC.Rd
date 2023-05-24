@@ -9,8 +9,8 @@
 
 A data frame with 33 rows and 1398 columns:
 \describe{
-\item{Person}{Person for each image}
 \item{Class}{Outcome of each patient}
+\item{Person}{Person for each image}
 \item{NA_Si_PC1 through tumerYN_tumerYN_PC3}{Principle components of the K
 functions for the named interactions}
 \item{age}{Meta-variable for patient age}

@@ -262,10 +262,10 @@ TNBC <- TNBC[,!(colnames(TNBC) %in% c("cellLabelInImage"))]
 colnames(TNBC) <- gsub("[[:punct:]]", "", colnames(TNBC))
 cnames <- colnames(TNBC[c(1:4,as.numeric(which(colSums(TNBC[,-c(1:4)])>20000))+4)])
 TNBC <- getPCA2Save(TNBC[cnames], cnames[-c(1:4)], TNBC_meta, nPCs=3, seed=12345)
-
+TNBC <- cbind(TNBC[2],TNBC[-2])
 # Save files
 
 usethis::use_data(TNBC, overwrite = TRUE, compress = "xz")
 # usethis::use_data(TNBC_int, overwrite = TRUE,compress = "xz")
-#usethis::use_data(TNBC_pheno, overwrite = TRUE, compress = "xz")
-#usethis::use_data(TNBC_Meta, overwrite = TRUE, compress = "xz")
+usethis::use_data(TNBC_pheno, overwrite = TRUE, compress = "xz")
+usethis::use_data(TNBC_Meta, overwrite = TRUE, compress = "xz")
