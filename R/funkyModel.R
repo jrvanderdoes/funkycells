@@ -306,13 +306,13 @@ funkyModel <- function(data, K = 10,
         tmp  <- data.frame(
           var1,
           t(as.numeric(apply(X = data_vi[data_vi$var %in% paste0('permuteInternal',1:100,'K_K'), -1],
-                             MARGIN = 2,FUN = quantile, probs=1-alpha)))
+                             MARGIN = 2,FUN = stats::quantile, probs=1-alpha)))
         )
       }else{
         tmp  <- data.frame(
           var1,
           t(as.numeric(apply(X = data_vi[data_vi$var %in% paste0('permuteInternal',1:100,var1), -1],
-                             MARGIN = 2,FUN = quantile, probs=1-alpha)))
+                             MARGIN = 2,FUN = stats::quantile, probs=1-alpha)))
         )
       }
       tmp
@@ -353,13 +353,13 @@ funkyModel <- function(data, K = 10,
         tmp  <- data.frame(
           var,
           t(as.numeric(apply(X = data_vi[data_vi$var %in% paste0('permuteInternal',1:100,'K_K'), -1],
-                             MARGIN = 2,FUN = quantile, probs=1-alpha)))
+                             MARGIN = 2,FUN = stats::quantile, probs=1-alpha)))
         )
       }else{
         tmp  <- data.frame(
           var,
           t(as.numeric(apply(X = data_vi[data_vi$var %in% paste0('permuteInternal',1:100,var), -1],
-                             MARGIN = 2,FUN = quantile, probs=1-alpha)))
+                             MARGIN = 2,FUN = stats::quantile, probs=1-alpha)))
         )
       }
       tmp
