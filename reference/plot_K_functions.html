@@ -18,7 +18,10 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/funkycells.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
@@ -54,7 +57,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_K_functions</span><span class="op">(</span><span class="va">data</span>, inc.legend <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_K_functions</span><span class="op">(</span><span class="va">data</span>, inc.legend <span class="op">=</span> <span class="cn">TRUE</span>, inc.noise <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -69,6 +72,11 @@ specifies the unique K function, and Outcome indicates the unit outcome.</p></dd
 <dd><p>(Optional) Boolean indicating if the legend should be given.
 This will also include numbers to indicate if any K functions are missing.
 The default is TRUE.</p></dd>
+
+
+<dt>inc.noise</dt>
+<dd><p>(Optional) Boolean indicating if a gray, dashed line should
+be included to show what total noise would be like. The default is FALSE.</p></dd>
 
 </dl></div>
     <div class="section level2">

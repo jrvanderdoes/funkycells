@@ -36,6 +36,9 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
+  <a class="nav-link" href="../articles/funkycells.html">Get started</a>
+</li>
+<li class="nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="active nav-item dropdown">
@@ -229,11 +232,10 @@ effect).</p>
 <span>                            <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'X1'</span><span class="op">=</span><span class="va">cells</span>,<span class="st">'X2'</span><span class="op">=</span><span class="va">cells</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
-<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPCAData.html">getPCAData</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>,repeatedUniqueId<span class="op">=</span><span class="st">'Image'</span>,</span>
+<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu">getPCAData</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>,repeatedUniqueId<span class="op">=</span><span class="st">'Image'</span>,</span>
 <span>                      agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
 <span>                      xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,  yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
 <span>                      silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
-<span><span class="co">#&gt; PCA Pairs (136): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136</span></span>
 <span><span class="va">pcaMeta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulateMeta.html">simulateMeta</a></span><span class="op">(</span><span class="va">pcaData</span>,</span>
 <span>                        metaInfo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>                          <span class="st">'var'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span>,</span>
@@ -246,20 +248,14 @@ effect).</p>
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pcaMeta</span>,</span>
 <span>                   outcome <span class="op">=</span> <span class="st">'Stage'</span>,</span>
 <span>                   unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
-<span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; CV Trials (10): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, </span></span>
-<span><span class="co">#&gt; Permutation Trials (100): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,</span></span></code></pre></div>
-<p>Resulting in the following figure.</p>
+<span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Resulting in the variable importance figures. The code for these is
+given below, but may not be shown due to computational time in creating
+this vignette.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
-<div class="figure">
-<img src="TNBC_files/figure-html/plot_noeffect_full-1.png" alt="No Effect Variable Importance (All)" width="480"><p class="caption">
-No Effect Variable Importance (All)
-</p>
-</div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viplot</span></span>
-<span><span class="co">#&gt; NULL</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viplot</span></span></code></pre></div>
 <p>Now we consider the simulated model with effects.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
@@ -294,8 +290,6 @@ No Effect Variable Importance (All)
 <span>                   peoplePerStage<span class="op">=</span><span class="fl">15</span>,</span>
 <span>                   imagesPerPerson<span class="op">=</span><span class="fl">1</span>,</span>
 <span>                   silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
-<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
 <span><span class="va">dat1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span>cellVarData<span class="op">=</span></span>
 <span>                     <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'stage'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
 <span>                                <span class="st">'c1'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span>,</span>
@@ -327,8 +321,6 @@ No Effect Variable Importance (All)
 <span>                   peoplePerStage<span class="op">=</span><span class="fl">2</span>,</span>
 <span>                   imagesPerPerson<span class="op">=</span><span class="fl">1</span>,</span>
 <span>                   silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
-<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
 <span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p1'</span>,<span class="st">'p31'</span>,</span>
 <span>                      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p2'</span>,<span class="st">'p32'</span>,</span>
 <span>                             <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span><span class="op">==</span><span class="st">'p3'</span>,<span class="st">'p33'</span>,</span>
@@ -344,11 +336,10 @@ No Effect Variable Importance (All)
 <span>                            <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">'X1'</span><span class="op">=</span><span class="va">cells</span>,<span class="st">'X2'</span><span class="op">=</span><span class="va">cells</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
-<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPCAData.html">getPCAData</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>,repeatedUniqueId<span class="op">=</span><span class="st">'Image'</span>,</span>
+<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu">getPCAData</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>,repeatedUniqueId<span class="op">=</span><span class="st">'Image'</span>,</span>
 <span>                      agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
 <span>                      xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,  yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span><span class="op">)</span>,</span>
 <span>                      silent<span class="op">=</span><span class="cn">F</span><span class="op">)</span></span>
-<span><span class="co">#&gt; PCA Pairs (136): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136</span></span>
 <span><span class="va">pcaMeta</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulateMeta.html">simulateMeta</a></span><span class="op">(</span><span class="va">pcaData</span>,</span>
 <span>                        metaInfo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>                          <span class="st">'var'</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span>,</span>
@@ -360,30 +351,18 @@ No Effect Variable Importance (All)
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">pcaMeta</span>,</span>
 <span>                   outcome <span class="op">=</span> <span class="st">'Stage'</span>,</span>
 <span>                   unit <span class="op">=</span> <span class="st">'Person'</span>,</span>
-<span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; CV Trials (10): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, </span></span>
-<span><span class="co">#&gt; Permutation Trials (100): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,</span></span></code></pre></div>
-<p>Creating the variable importance plots as follows.</p>
+<span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'age'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Creating the variable importance plots as before (code below, perhaps
+figure not given for computational reasons)</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
-<div class="figure">
-<img src="TNBC_files/figure-html/plot_effect_full-1.png" alt="Effect Simulation Variable Importance (All)" width="480"><p class="caption">
-Effect Simulation Variable Importance (All)
-</p>
-</div>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viPlot</span></span></code></pre></div>
-<div class="figure">
-<img src="TNBC_files/figure-html/plot_effect_top25-1.png" alt="Effect Simulation Variable Importance (Top 25)" width="480"><p class="caption">
-Effect Simulation Variable Importance (Top 25)
-</p>
-</div>
 <p>With this confidence, we now consider the TNBC phenotype data.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dataPCA_pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getPCAData.html">getPCAData</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">TNBC_pheno</span>, unit<span class="op">=</span><span class="st">'Person'</span>,</span>
+<code class="sourceCode R"><span><span class="va">dataPCA_pheno</span> <span class="op">&lt;-</span> <span class="fu">getPCAData</span><span class="op">(</span>data <span class="op">=</span> <span class="va">TNBC_pheno</span>, unit<span class="op">=</span><span class="st">'Person'</span>,</span>
 <span>                           agents_df<span class="op">=</span><span class="va">pheno_interactions</span>,</span>
 <span>                           rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">50</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; PCA Pairs (136): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136</span></span>
 <span></span>
 <span><span class="va">dataPCAAge_pheno</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">dataPCA_pheno</span>,<span class="va">TNBC_Meta</span><span class="op">)</span></span>
 <span></span>
@@ -392,24 +371,13 @@ Effect Simulation Variable Importance (Top 25)
 <span>                   outcome<span class="op">=</span><span class="st">'Class'</span>,unit<span class="op">=</span><span class="st">'Person'</span>,</span>
 <span>                   metaNames<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Age'</span><span class="op">)</span>, synthetics<span class="op">=</span><span class="fl">100</span>,</span>
 <span>                   alpha<span class="op">=</span><span class="fl">0.05</span>, silent<span class="op">=</span><span class="cn">FALSE</span>,</span>
-<span>                   subsetPlotSize <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span>
-<span><span class="co">#&gt; CV Trials (10): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, </span></span>
-<span><span class="co">#&gt; Permutation Trials (100): 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100,</span></span></code></pre></div>
-<p>Creating the following variable importance plots.</p>
+<span>                   subsetPlotSize <span class="op">=</span> <span class="fl">25</span><span class="op">)</span></span></code></pre></div>
+<p>And the related variable importance plots (may not be shown for
+computational reasons).</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
-<div class="figure">
-<img src="TNBC_files/figure-html/tnbc_full-1.png" alt="TNBC Phenotype Variable Importance (All)" width="480"><p class="caption">
-TNBC Phenotype Variable Importance (All)
-</p>
-</div>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viPlot</span></span></code></pre></div>
-<div class="figure">
-<img src="TNBC_files/figure-html/tnbc_top25-1.png" alt="TNBC Phenotype Variable Importance (Top 25)" width="480"><p class="caption">
-TNBC Phenotype Variable Importance (Top 25)
-</p>
-</div>
 <p>Also consider <span class="math inline">\(K\)</span> functions from
 significant and insignificant interactions.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">

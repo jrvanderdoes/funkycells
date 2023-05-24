@@ -10,6 +10,9 @@
     <loc>https://jrvanderdoes.github.io/funkycells/articles/TNBC.html</loc>
   </url>
   <url>
+    <loc>https://jrvanderdoes.github.io/funkycells/articles/funkycells.html</loc>
+  </url>
+  <url>
     <loc>https://jrvanderdoes.github.io/funkycells/articles/index.html</loc>
   </url>
   <url>
@@ -43,7 +46,7 @@
     <loc>https://jrvanderdoes.github.io/funkycells/reference/getKFunction.html</loc>
   </url>
   <url>
-    <loc>https://jrvanderdoes.github.io/funkycells/reference/getPCAData.html</loc>
+    <loc>https://jrvanderdoes.github.io/funkycells/reference/getKsPCAData.html</loc>
   </url>
   <url>
     <loc>https://jrvanderdoes.github.io/funkycells/reference/index.html</loc>
