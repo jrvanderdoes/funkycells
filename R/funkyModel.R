@@ -788,6 +788,7 @@ funkyModel <- function(data, K = 10,
     ggplot2::ylim(c(0, 1)) +
     ggplot2::ylab(NULL) +
     ggplot2::theme_bw() +
+    ggplot2::theme(axis.text.x = ggplot2::element_blank()) +
     ggplot2::geom_line(ggplot2::aes(
       x = ordered(viData[order(-est), "var"]),
       y = InterpolationCutoff / maxVal
