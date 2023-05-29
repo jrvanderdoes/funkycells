@@ -151,4 +151,15 @@ rfcv <- funkyModel(
   subsetPlotSize = 2
 )
 }
+
+# Short Example
+#   Parameters are reduced beyond recommended levels for speed
+set.seed(1234)
+rfcv <- funkyModel(
+  data = TNBC[, c(1:8, ncol(TNBC))],
+  outcome = "Class", unit = "Person",
+  metaNames = c("Age"),
+  nTrees = 50, synthetics = 10,
+  silent = TRUE
+)
 }
