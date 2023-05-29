@@ -216,20 +216,25 @@ cleanTNBC <- function(TNBC) {
 #' @param seed (optional) Numeric for seed. Default is NULL.
 #'
 #' @return Data.frame of pca'd data
-getPCA2Save <- function(data, agents, data_meta, nPCs=3, seed=NULL){
-  if(!is.null(seed))
+getPCA2Save <- function(data, agents, data_meta, nPCs = 3, seed = NULL) {
+  if (!is.null(seed)) {
     set.seed(seed)
+  }
 
-  interactions <- rbind(data.frame(t(combn(agents,2))),
-                        data.frame('X1'=agents,'X2'=agents))
+  interactions <- rbind(
+    data.frame(t(combn(agents, 2))),
+    data.frame("X1" = agents, "X2" = agents)
+  )
 
-  dataPCA <- getKsPCAData(data = data,
-                          outcome = 'Class',
-                          unit = 'Person',
-                          agents_df = interactions,
-                          rCheckVals = seq(0,50,1))
+  dataPCA <- getKsPCAData(
+    data = data,
+    outcome = "Class",
+    unit = "Person",
+    agents_df = interactions,
+    rCheckVals = seq(0, 50, 1)
+  )
 
-  merge(dataPCA, TNBC_Meta)
+  merge(dataPCA, data_meta)
 }
 
 
@@ -255,17 +260,17 @@ tnbc_clinical01 <- read.csv(
     "generated/", "tnbc_clinical01.csv"
   )
 )[-1]
-TNBC_Meta <- tnbc_clinical01[, c("InternalId", "AGE_AT_DX")]
-colnames(TNBC_Meta) <- c("Person", "Age")
+TNBC_meta <- tnbc_clinical01[, c("InternalId", "AGE_AT_DX")]
+colnames(TNBC_meta) <- c("Person", "Age")
 
-TNBC <- TNBC[,!(colnames(TNBC) %in% c("cellLabelInImage"))]
+TNBC <- TNBC[, !(colnames(TNBC) %in% c("cellLabelInImage"))]
 colnames(TNBC) <- gsub("[[:punct:]]", "", colnames(TNBC))
-cnames <- colnames(TNBC[c(1:4,as.numeric(which(colSums(TNBC[,-c(1:4)])>20000))+4)])
-TNBC <- getPCA2Save(TNBC[cnames], cnames[-c(1:4)], TNBC_meta, nPCs=3, seed=12345)
-TNBC <- cbind(TNBC[2],TNBC[-2])
+cnames <- colnames(TNBC[c(1:4, as.numeric(which(colSums(TNBC[, -c(1:4)]) > 20000)) + 4)])
+TNBC <- getPCA2Save(TNBC[cnames], cnames[-c(1:4)], TNBC_meta, nPCs = 3, seed = 12345)
+TNBC <- cbind(TNBC[2], TNBC[-2])
 # Save files
 
 usethis::use_data(TNBC, overwrite = TRUE, compress = "xz")
 # usethis::use_data(TNBC_int, overwrite = TRUE,compress = "xz")
 usethis::use_data(TNBC_pheno, overwrite = TRUE, compress = "xz")
-usethis::use_data(TNBC_Meta, overwrite = TRUE, compress = "xz")
+usethis::use_data(TNBC_meta, overwrite = TRUE, compress = "xz")

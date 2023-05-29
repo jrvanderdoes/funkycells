@@ -36,12 +36,12 @@
 "TNBC_pheno"
 
 
-#' Triple Negative Breast Cancer Meta Data
+#' Triple Negative Breast Cancer Phenotypes
 #'
 #' Data of triple negative breast cancer biopsies from patients, with. Additionally, the age meta-variable was
 #'   added.
 #'
-#' @format ## `TNBC_Meta`
+#' @format ## `TNBC_meta`
 #' A data frame with 33 rows and 2 columns:
 #' \describe{
 #'   \item{Person}{Person for each image}
@@ -49,4 +49,4 @@
 #'   ...
 #' }
 #' @source <https://www.angelolab.com/mibi-data>
-"TNBC_Meta"
+"TNBC_meta"
