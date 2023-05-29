@@ -109,7 +109,8 @@ funkyForest <- function(data, outcome = colnames(data)[1],
       substr(
         underlyingDataAlignedFunctions[i], 1,
         utils::tail(unlist(gregexpr("_", underlyingDataAlignedFunctions[i])),
-                    n = 1) - 1
+          n = 1
+        ) - 1
       )
   }
   underlyingDataAlignedFunctions <-
@@ -176,8 +177,10 @@ funkyForest <- function(data, outcome = colnames(data)[1],
   if (varImpPlot) {
     returnResults <- append(
       returnResults,
-      list("varImportancePlot" =
-             .plotVariableImportance(varImportanceData = data_result))
+      list(
+        "varImportancePlot" =
+          .plotVariableImportance(varImportanceData = data_result)
+      )
     )
   }
 

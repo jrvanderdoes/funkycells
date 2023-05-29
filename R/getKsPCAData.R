@@ -77,22 +77,22 @@
 #'
 #' dataPCA_pheno <- getKsPCAData(
 #'   data = TNBC_pheno, unit = "Person",
-#'   agents_df = data.frame(rep("B",2), c("Tumour","FAKE")),
+#'   agents_df = data.frame(rep("B", 2), c("Tumour", "FAKE")),
 #'   nPCs = 3,
 #'   rCheckVals = seq(0, 50, 1),
 #'   displayTVE = TRUE
 #' )
 getKsPCAData <- function(data, outcome = colnames(data)[1],
-                       unit = colnames(data)[5],
-                       repeatedUniqueId = NULL,
-                       rCheckVals = NULL, nPCs = 3,
-                       agents_df = as.data.frame(expand.grid(
-                         unique(data[, 4]),
-                         unique(data[, 4])
-                       )),
-                       xRange = NULL, yRange = NULL,
-                       edgeCorrection = "isotropic", nbasis = 21,
-                       silent = FALSE, displayTVE = FALSE) {
+                         unit = colnames(data)[5],
+                         repeatedUniqueId = NULL,
+                         rCheckVals = NULL, nPCs = 3,
+                         agents_df = as.data.frame(expand.grid(
+                           unique(data[, 4]),
+                           unique(data[, 4])
+                         )),
+                         xRange = NULL, yRange = NULL,
+                         edgeCorrection = "isotropic", nbasis = 21,
+                         silent = FALSE, displayTVE = FALSE) {
   # Define pcaData
   pcaData <- unique(data[, c(outcome, unit)])
 
@@ -131,7 +131,7 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
         nbasis = nbasis, silent = !displayTVE
       )
 
-      if (!silent && agents[1]<maxIters) cat(', ', sep = "")
+      if (!silent && agents[1] < maxIters) cat(", ", sep = "")
 
 
       # Set up data (add counts as desired)
@@ -145,12 +145,14 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
     repeatedUniqueId = repeatedUniqueId,
     xRange = xRange, yRange = yRange,
     edgeCorrection = edgeCorrection,
-    nbasis = nbasis, maxIters =nrow(agents_df)
+    nbasis = nbasis, maxIters = nrow(agents_df)
   )
   if (!silent) cat("\n")
 
-  .mergeListsToDF(df = pcaData, lists = pcaData_list,
-                  dfCol = unit, listsDFCol = "Unit")
+  .mergeListsToDF(
+    df = pcaData, lists = pcaData_list,
+    dfCol = unit, listsDFCol = "Unit"
+  )
 }
 
 
@@ -201,7 +203,7 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
       )
   )
   K_pca <- fda::pca.fd(K_func, nharm = nPCs)
-  if (!silent) cat(paste0(" (TVE: ",.specify_decimal(sum(K_pca$varprop),3),")"))
+  if (!silent) cat(paste0(" (TVE: ", .specify_decimal(sum(K_pca$varprop), 3), ")"))
 
   if (length(dropIdx) > 0) {
     K_pca_scores <- .insertMissingRows(K_pca$scores, dropIdx)

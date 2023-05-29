@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 
-#knitr::opts_chunk$set(eval = !is_check)
+# knitr::opts_chunk$set(eval = !is_check)
 ```
 
 ```{r setup}
@@ -26,27 +26,33 @@ paperRun <- FALSE * full_run # This runs code to generate images in paper
 specify_decimal <- function(x, k) {
   trimws(format(round(x, k), nsmall = k))
 }
-
 ```
 
 This vignette documents a sample analysis of Triple Negative Breast Cancer (TNBC) data, retrieved from \url{https://www.angelolab.com/mibi-data}. We consider the classified phenotypes rather than the direct protein data, pre-loaded in this package.
 ```{r getData}
 TNBC_pheno <- TNBC_pheno
-TNBC_Meta <- TNBC_Meta
+TNBC_meta <- TNBC_meta
 ```
 
 We begin by defining the phenotypes of interest as well as the related interactions.
 ```{r specifyPheno}
 phenos <- unique(TNBC_pheno$Phenotype)
-pheno_interactions <- rbind(data.frame(t(combn(phenos,2))),
-                            data.frame('X1'=phenos,'X2'=phenos))
+pheno_interactions <- rbind(
+  data.frame(t(combn(phenos, 2))),
+  data.frame("X1" = phenos, "X2" = phenos)
+)
 
-phenos_subset <- c("Tumour","CD3T", "CD4T", "CD8T", "B", "DC",
-                   "DCMono", "Macrophage", "MonoNeu", "NK", "Treg")
+phenos_subset <- c(
+  "Tumour", "CD3T", "CD4T", "CD8T", "B", "DC",
+  "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"
+)
 pheno_interactions_subset <- data.frame(
-  Var1 = rep("Tumour",11),
-  Var2 = c("Tumour", "CD3T", "CD4T", "CD8T", "B", "DC",
-           "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"))
+  Var1 = rep("Tumour", 11),
+  Var2 = c(
+    "Tumour", "CD3T", "CD4T", "CD8T", "B", "DC",
+    "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"
+  )
+)
 ```
 
 We notice there are `r length(phenos)` total phenotypes with 
@@ -62,42 +68,49 @@ the approach.
 
 To start, let us determine the agent information in a typical image.
 ```{r TNBCInfo}
-data_pheno_stat <- data.frame('pheno'=phenos)
-for(person in unique(TNBC_pheno$Person)){
-  tmp <- as.data.frame(table(TNBC_pheno[TNBC_pheno$Person==person,"Phenotype"]))
-  colnames(tmp) <- c('pheno',person)
-  data_pheno_stat <- merge(x=data_pheno_stat,y=tmp,all.x=TRUE)
+data_pheno_stat <- data.frame("pheno" = phenos)
+for (person in unique(TNBC_pheno$Person)) {
+  tmp <- as.data.frame(table(TNBC_pheno[TNBC_pheno$Person == person, "Phenotype"]))
+  colnames(tmp) <- c("pheno", person)
+  data_pheno_stat <- merge(x = data_pheno_stat, y = tmp, all.x = TRUE)
 }
 
 agent_info_subset <- data.frame(data_pheno_stat[1],
-                                'mean'=rowMeans(data_pheno_stat[-1], na.rm = TRUE),
-                                'med'=apply(data_pheno_stat[-1], 1, median, na.rm=TRUE))
+  "mean" = rowMeans(data_pheno_stat[-1], na.rm = TRUE),
+  "med" = apply(data_pheno_stat[-1], 1, median, na.rm = TRUE)
+)
 ```
 
 ```{r paper_K_example, echo=FALSE, eval=paperRun}
-tnbc_fig <- plotPP(TNBC_pheno[TNBC_pheno$Person==2,c("cellx","celly","Phenotype")],
-       ptSize = 3, colorGuide = 'none', dropAxes = T)
+tnbc_fig <- plotPP(TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
+  ptSize = 3, colorGuide = "none", dropAxes = T
+)
 
 png("./paper/tnbc_person2_phenotypes.png", width = 800, height = 800)
-#png("./vignettes/paper/tnbc_person2_phenotypes.png", width = 800, height = 800)
+# png("./vignettes/paper/tnbc_person2_phenotypes.png", width = 800, height = 800)
 print(tnbc_fig)
 dev.off()
 
-kf <- getKFunction(data=TNBC_pheno[TNBC_pheno$Person==2,-1],
-             agents = c('Tumour','MonoNeu'),
-             unit='Person',
-             rCheckVals = seq(0,50,1))
+kf <- getKFunction(
+  data = TNBC_pheno[TNBC_pheno$Person == 2, -1],
+  agents = c("Tumour", "MonoNeu"),
+  unit = "Person",
+  rCheckVals = seq(0, 50, 1)
+)
 
 k_fig <- ggplot2::ggplot() +
-  ggplot2::geom_line(ggplot2::aes(x=r,y=K1),data=kf, size=2) +
-  ggplot2::geom_line(ggplot2::aes(x=seq(0,50,1),y=pi*seq(0,50,1)^2), 
-                     size=2, col='red', linetype='dashed') +
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = kf, size = 2) +
+  ggplot2::geom_line(ggplot2::aes(x = seq(0, 50, 1), y = pi * seq(0, 50, 1)^2),
+    size = 2, col = "red", linetype = "dashed"
+  ) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.title = ggplot2::element_blank(),
-        axis.text = ggplot2::element_blank())
+  ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank()
+  )
 
 png("./paper/tnbc_person1_tumour_mononeu_k.png", width = 800, height = 800)
-#png("./vignettes/paper/tnbc_person1_tumour_mononeu_k.png", width = 800, height = 800)
+# png("./vignettes/paper/tnbc_person1_tumour_mononeu_k.png", width = 800, height = 800)
 print(k_fig)
 dev.off()
 ```
@@ -112,133 +125,166 @@ the data.
 The non-interactive data is simulated as follows.
 ```{r buildNUllData}
 set.seed(12345)
-dat0 <- simulatePP(cellVarData=
-                     data.frame('stage'=c(0,1),
-                                'c1'=c(0,0),
-                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
-                                'c4'=c(0,0),
-                                'c5'=c(0,0),'c6'=c(0,0),
-                                'c7'=c(0,0),'c8'=c(1/100,1/100),
-                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
-                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
-                                'c13'=c(0,0),'c14'=c(0,0),
-                                'c15'=c(0,0),'c16'=c(1/10,1/10)),
-                   cellKappaData=data.frame(
-                     'cell'=paste0('c',1:16),
-                     'clusterCell'=c(NA,'c1','c1', rep(NA,12), 'c1'),
-                     'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
-                               rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
-                               rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
-                   peoplePerStage=15,
-                   imagesPerPerson=1,
-                   silent=FALSE)
-dat1 <- simulatePP(cellVarData=
-                     data.frame('stage'=c(0,1),
-                                'c1'=c(0,0),
-                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
-                                'c4'=c(0,0),
-                                'c5'=c(0,0),'c6'=c(0,0),
-                                'c7'=c(0,0),'c8'=c(1/100,1/100),
-                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
-                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
-                                'c13'=c(0,0),'c14'=c(0,0),
-                                'c15'=c(0,0),'c16'=c(1/10,1/10)),
-                   cellKappaData=data.frame(
-                     'cell'=paste0('c',1:16),
-                     'clusterCell'=c(NA,'c1','c1', rep(NA,12),'c1'),
-                     'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
-                               rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
-                               rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
-                   peoplePerStage=2,
-                   imagesPerPerson=1,
-                   silent=F)
-dat1$Person <- ifelse(dat1$Person=='p1','p31',
-                      ifelse(dat1$Person=='p2','p32',
-                             ifelse(dat1$Person=='p3','p33',
-                                    ifelse(dat1$Person=='p4','p34', NA))))
-dat1$Image <- ifelse(dat1$Image=='1','31',
-                     ifelse(dat1$Image=='2','32',
-                            ifelse(dat1$Image=='3','33',
-                                   ifelse(dat1$Image=='4','34',NA))))
-dat <- rbind(dat0,dat1)
+dat0 <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "c1" = c(0, 0),
+      "c2" = c(1 / 25, 1 / 25), "c3" = c(1 / 50, 1 / 50),
+      "c4" = c(0, 0),
+      "c5" = c(0, 0), "c6" = c(0, 0),
+      "c7" = c(0, 0), "c8" = c(1 / 100, 1 / 100),
+      "c9" = c(1 / 20, 1 / 20), "c10" = c(1 / 250, 1 / 250),
+      "c11" = c(1 / 100, 1 / 100), "c12" = c(1 / 80, 1 / 80),
+      "c13" = c(0, 0), "c14" = c(0, 0),
+      "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
+    ),
+  cellKappaData = data.frame(
+    "cell" = paste0("c", 1:16),
+    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+    "kappa" = c(
+      rbinom(1, 100, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 30, 0.5),
+      rbinom(1, 80, 0.5),
+      rbinom(1, 350, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 120, 0.5),
+      rbinom(1, 150, 0.5),
+      rbinom(2, 250, 0.5),
+      rbinom(1, 600, 0.5),
+      rbinom(1, 60, 0.5),
+      rbinom(2, 140, 0.5),
+      rbinom(1, 20, 0.5),
+      rbinom(1, 5, 0.5)
+    )
+  ),
+  peoplePerStage = 15,
+  imagesPerPerson = 1,
+  silent = FALSE
+)
+dat1 <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "c1" = c(0, 0),
+      "c2" = c(1 / 25, 1 / 25), "c3" = c(1 / 50, 1 / 50),
+      "c4" = c(0, 0),
+      "c5" = c(0, 0), "c6" = c(0, 0),
+      "c7" = c(0, 0), "c8" = c(1 / 100, 1 / 100),
+      "c9" = c(1 / 20, 1 / 20), "c10" = c(1 / 250, 1 / 250),
+      "c11" = c(1 / 100, 1 / 100), "c12" = c(1 / 80, 1 / 80),
+      "c13" = c(0, 0), "c14" = c(0, 0),
+      "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
+    ),
+  cellKappaData = data.frame(
+    "cell" = paste0("c", 1:16),
+    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+    "kappa" = c(
+      rbinom(1, 100, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 30, 0.5),
+      rbinom(1, 80, 0.5),
+      rbinom(1, 350, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 120, 0.5),
+      rbinom(1, 150, 0.5),
+      rbinom(2, 250, 0.5),
+      rbinom(1, 600, 0.5),
+      rbinom(1, 60, 0.5),
+      rbinom(2, 140, 0.5),
+      rbinom(1, 20, 0.5),
+      rbinom(1, 5, 0.5)
+    )
+  ),
+  peoplePerStage = 2,
+  imagesPerPerson = 1,
+  silent = F
+)
+dat1$Person <- ifelse(dat1$Person == "p1", "p31",
+  ifelse(dat1$Person == "p2", "p32",
+    ifelse(dat1$Person == "p3", "p33",
+      ifelse(dat1$Person == "p4", "p34", NA)
+    )
+  )
+)
+dat1$Image <- ifelse(dat1$Image == "1", "31",
+  ifelse(dat1$Image == "2", "32",
+    ifelse(dat1$Image == "3", "33",
+      ifelse(dat1$Image == "4", "34", NA)
+    )
+  )
+)
+dat <- rbind(dat0, dat1)
 ```
 
 Compare images of the data.
 ```{r tnbc_image, fig.width=5, fig.height=5, fig.cap="TNBC Patient Image"}
-plotPP(data = TNBC_pheno[TNBC_pheno$Person==2,c('cellx','celly',"Phenotype")],
-       ptSize = 1, dropAxes = T, colorGuide = 'none')
+plotPP(
+  data = TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
+  ptSize = 1, dropAxes = T, colorGuide = "none"
+)
 ```
 ```{r sim_image, fig.width=5, fig.height=5, fig.cap="Simulated Patient Image"}
-plotPP(dat[dat$Image==1,c('x','y','cellType')],
-       ptSize = 1, dropAxes = T, colorGuide = 'none')
+plotPP(dat[dat$Image == 1, c("x", "y", "cellType")],
+  ptSize = 1, dropAxes = T, colorGuide = "none"
+)
 ```
 
 ```{r paper_simtnbc_comparision, echo=FALSE, eval=paperRun}
 tnbc_image <- plotPP(
-  data = TNBC_pheno[TNBC_pheno$Person==2,c('cellx','celly',"Phenotype")],
-  ptSize = 3, dropAxes = T, colorGuide = 'none')
+  data = TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
+  ptSize = 3, dropAxes = T, colorGuide = "none"
+)
 png("./paper/tnbc_image.png", width = 800, height = 800)
-#png("./vignettes/paper/tnbc_image.png", width = 800, height = 800)
+# png("./vignettes/paper/tnbc_image.png", width = 800, height = 800)
 print(tnbc_image)
 dev.off()
 
 sim_image <- plotPP(
-  data = dat[dat$Image==1,c('x','y','cellType')],
-  ptSize = 3, dropAxes = T, colorGuide = 'none')
+  data = dat[dat$Image == 1, c("x", "y", "cellType")],
+  ptSize = 3, dropAxes = T, colorGuide = "none"
+)
 png("./paper/sim_image.png", width = 800, height = 800)
-#png("./vignettes/paper/sim_image.png", width = 800, height = 800)
+# png("./vignettes/paper/sim_image.png", width = 800, height = 800)
 print(sim_image)
 dev.off()
 ```
 
 Now we compute PCA and attach an age meta-variable (with no effect).
 ```{r simulateNoInteraction, eval=full_run}
-cells <- paste0('c',1:16)
-cells_interactions <- rbind(data.frame(t(combn(cells,2))),
-                            data.frame('X1'=cells,'X2'=cells))
+cells <- paste0("c", 1:16)
+cells_interactions <- rbind(
+  data.frame(t(combn(cells, 2))),
+  data.frame("X1" = cells, "X2" = cells)
+)
 
 set.seed(12345)
-pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
-                      agents_df = cells_interactions,
-                      xRange = c(0,1),  yRange = c(0,1),
-                      silent=F)
+pcaData <- getPCAData(
+  data = dat, repeatedUniqueId = "Image",
+  agents_df = cells_interactions,
+  xRange = c(0, 1), yRange = c(0, 1),
+  silent = F
+)
 pcaMeta <- simulateMeta(pcaData,
-                        metaInfo = data.frame(
-                          'var'=c('age'),
-                          'rdist'=c('rnorm'),
-                          'Stage_0'=c('25'),
-                          'Stage_1'=c('25')))
+  metaInfo = data.frame(
+    "var" = c("age"),
+    "rdist" = c("rnorm"),
+    "Stage_0" = c("25"),
+    "Stage_1" = c("25")
+  )
+)
 ```
 
 We analyze the data.
 ```{r analyzeNoEffect, eval=full_run}
 set.seed(12345)
-rfcv <- funkyModel(data=pcaMeta,
-                   outcome = 'Stage',
-                   unit = 'Person',
-                   metaNames=c('age'))
+rfcv <- funkyModel(
+  data = pcaMeta,
+  outcome = "Stage",
+  unit = "Person",
+  metaNames = c("age")
+)
 ```
 
 Resulting in the variable importance figures. The code for these is given below, but may not be shown due to computational time in creating this vignette.
@@ -251,11 +297,11 @@ rfcv$subset_viplot
 
 ```{r paper_noEffect, echo=FALSE, eval=paperRun}
 # Get Vars
-viData = rfcv$VariableImportance
-accData = rfcv$AccuracyEstimate
-NoiseCutoff = rfcv$NoiseCutoff
-InterpolationCutoff = rfcv$InterpolationCutoff
-subsetPlotSize = rfcv$AdditionalParams$subsetPlotSize
+viData <- rfcv$VariableImportance
+accData <- rfcv$AccuracyEstimate
+NoiseCutoff <- rfcv$NoiseCutoff
+InterpolationCutoff <- rfcv$InterpolationCutoff
+subsetPlotSize <- rfcv$AdditionalParams$subsetPlotSize
 
 # Plot Full
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
@@ -264,9 +310,9 @@ plot_full <- ggplot2::ggplot(
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
     ),
     group = 1
   )
@@ -278,7 +324,7 @@ plot_full <- ggplot2::ggplot(
     ),
     color = "black", width = 0.2
   ) +
-  ggplot2::geom_point(color = "black", size=3) +
+  ggplot2::geom_point(color = "black", size = 3) +
   ggplot2::geom_hline(
     ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
     color = "red", linetype = "dotted", linewidth = 2
@@ -288,10 +334,12 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylim(c(0, 1)) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=20)) + 
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
   ggplot2::geom_line(ggplot2::aes(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
@@ -306,14 +354,14 @@ plot_full <- ggplot2::ggplot(
   ))
 
 png("./paper/noeffect_variableimportance.png")
-#png("./vignettes/paper/noeffect_variableimportance.png")
+# png("./vignettes/paper/noeffect_variableimportance.png")
 print(plot_full)
 dev.off()
 
 # Plot Subset
 InterpolationCutoff <- InterpolationCutoff[1:subsetPlotSize]
 viData <- viData[order(-viData$est), ]
-viData <- viData[1:subsetPlotSize,]
+viData <- viData[1:subsetPlotSize, ]
 
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
 plot_top25 <- ggplot2::ggplot(
@@ -321,9 +369,9 @@ plot_top25 <- ggplot2::ggplot(
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
     ),
     group = 1
   )
@@ -335,7 +383,7 @@ plot_top25 <- ggplot2::ggplot(
     ),
     color = "black", width = 0.2
   ) +
-  ggplot2::geom_point(color = "black", size=3) +
+  ggplot2::geom_point(color = "black", size = 3) +
   ggplot2::geom_hline(
     ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
     color = "red", linetype = "dotted", linewidth = 2
@@ -345,10 +393,12 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylim(c(0, 1)) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=20)) + 
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
   ggplot2::geom_line(ggplot2::aes(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
@@ -364,7 +414,7 @@ plot_top25 <- ggplot2::ggplot(
 
 
 png("./paper/noeffect_variableimportance_top25.png")
-#png("./vignettes/paper/noeffect_variableimportance_top25.png")
+# png("./vignettes/paper/noeffect_variableimportance_top25.png")
 print(plot_top25)
 dev.off()
 ```
@@ -372,99 +422,127 @@ dev.off()
 Now we consider the simulated model with effects.
 ```{r effectSimulationAndModel, eval=full_run}
 set.seed(12345)
-dat0 <- simulatePP(cellVarData=
-                     data.frame('stage'=c(0,1),
-                                'c1'=c(0,0),
-                                'c2'=c(1/25,1/60), 'c3'=c(1/50,1/10),
-                                'c4'=c(0,0),
-                                'c5'=c(0,0),'c6'=c(0,0),
-                                'c7'=c(0,0),'c8'=c(1/100,1/100),
-                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
-                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
-                                'c13'=c(0,0),'c14'=c(0,0),
-                                'c15'=c(0,0),'c16'=c(1/10,1/10)),
-                   cellKappaData=data.frame(
-                     'cell'=paste0('c',1:16),
-                     'clusterCell'=c(NA,'c1','c1', rep(NA,12),'c1'),
-                     'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
-                               rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
-                               rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
-                   peoplePerStage=15,
-                   imagesPerPerson=1,
-                   silent=F)
-dat1 <- simulatePP(cellVarData=
-                     data.frame('stage'=c(0,1),
-                                'c1'=c(0,0),
-                                'c2'=c(1/25,1/25), 'c3'=c(1/50,1/50),
-                                'c4'=c(0,0),
-                                'c5'=c(0,0),'c6'=c(0,0),
-                                'c7'=c(0,0),'c8'=c(1/100,1/100),
-                                'c9'=c(1/20,1/20), 'c10'=c(1/250,1/250),
-                                'c11'=c(1/100,1/100),'c12'=c(1/80,1/80),
-                                'c13'=c(0,0),'c14'=c(0,0),
-                                'c15'=c(0,0),'c16'=c(1/10,1/10)),
-                   cellKappaData=data.frame(
-                     'cell'=paste0('c',1:16),
-                     'clusterCell'=c(NA,'c1','c1', rep(NA,12),'c1'),
-                     'kappa'=c(rbinom(1,100,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,30,0.5),
-                               rbinom(1,80,0.5),
-                               rbinom(1,350,0.5),
-                               rbinom(1,100,0.5),
-                               rbinom(1,120,0.5),
-                               rbinom(1,150,0.5),
-                               rbinom(2,250,0.5),
-                               rbinom(1,600,0.5),
-                               rbinom(1,60,0.5),
-                               rbinom(2,140,0.5),
-                               rbinom(1,20,0.5),
-                               rbinom(1,5,0.5))),
-                   peoplePerStage=2,
-                   imagesPerPerson=1,
-                   silent=F)
-dat1$Person <- ifelse(dat1$Person=='p1','p31',
-                      ifelse(dat1$Person=='p2','p32',
-                             ifelse(dat1$Person=='p3','p33',
-                                    ifelse(dat1$Person=='p4','p34',NA))))
-dat1$Image <- ifelse(dat1$Image=='1','31',
-                     ifelse(dat1$Image=='2','32',
-                            ifelse(dat1$Image=='3','33',
-                                   ifelse(dat1$Image=='4','34',NA))))
-dat <- rbind(dat0,dat1)
+dat0 <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "c1" = c(0, 0),
+      "c2" = c(1 / 25, 1 / 60), "c3" = c(1 / 50, 1 / 10),
+      "c4" = c(0, 0),
+      "c5" = c(0, 0), "c6" = c(0, 0),
+      "c7" = c(0, 0), "c8" = c(1 / 100, 1 / 100),
+      "c9" = c(1 / 20, 1 / 20), "c10" = c(1 / 250, 1 / 250),
+      "c11" = c(1 / 100, 1 / 100), "c12" = c(1 / 80, 1 / 80),
+      "c13" = c(0, 0), "c14" = c(0, 0),
+      "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
+    ),
+  cellKappaData = data.frame(
+    "cell" = paste0("c", 1:16),
+    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+    "kappa" = c(
+      rbinom(1, 100, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 30, 0.5),
+      rbinom(1, 80, 0.5),
+      rbinom(1, 350, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 120, 0.5),
+      rbinom(1, 150, 0.5),
+      rbinom(2, 250, 0.5),
+      rbinom(1, 600, 0.5),
+      rbinom(1, 60, 0.5),
+      rbinom(2, 140, 0.5),
+      rbinom(1, 20, 0.5),
+      rbinom(1, 5, 0.5)
+    )
+  ),
+  peoplePerStage = 15,
+  imagesPerPerson = 1,
+  silent = F
+)
+dat1 <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "c1" = c(0, 0),
+      "c2" = c(1 / 25, 1 / 25), "c3" = c(1 / 50, 1 / 50),
+      "c4" = c(0, 0),
+      "c5" = c(0, 0), "c6" = c(0, 0),
+      "c7" = c(0, 0), "c8" = c(1 / 100, 1 / 100),
+      "c9" = c(1 / 20, 1 / 20), "c10" = c(1 / 250, 1 / 250),
+      "c11" = c(1 / 100, 1 / 100), "c12" = c(1 / 80, 1 / 80),
+      "c13" = c(0, 0), "c14" = c(0, 0),
+      "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
+    ),
+  cellKappaData = data.frame(
+    "cell" = paste0("c", 1:16),
+    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+    "kappa" = c(
+      rbinom(1, 100, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 30, 0.5),
+      rbinom(1, 80, 0.5),
+      rbinom(1, 350, 0.5),
+      rbinom(1, 100, 0.5),
+      rbinom(1, 120, 0.5),
+      rbinom(1, 150, 0.5),
+      rbinom(2, 250, 0.5),
+      rbinom(1, 600, 0.5),
+      rbinom(1, 60, 0.5),
+      rbinom(2, 140, 0.5),
+      rbinom(1, 20, 0.5),
+      rbinom(1, 5, 0.5)
+    )
+  ),
+  peoplePerStage = 2,
+  imagesPerPerson = 1,
+  silent = F
+)
+dat1$Person <- ifelse(dat1$Person == "p1", "p31",
+  ifelse(dat1$Person == "p2", "p32",
+    ifelse(dat1$Person == "p3", "p33",
+      ifelse(dat1$Person == "p4", "p34", NA)
+    )
+  )
+)
+dat1$Image <- ifelse(dat1$Image == "1", "31",
+  ifelse(dat1$Image == "2", "32",
+    ifelse(dat1$Image == "3", "33",
+      ifelse(dat1$Image == "4", "34", NA)
+    )
+  )
+)
+dat <- rbind(dat0, dat1)
 
-cells <- paste0('c',1:16)
-cells_interactions <- rbind(data.frame(t(combn(cells,2))),
-                            data.frame('X1'=cells,'X2'=cells))
+cells <- paste0("c", 1:16)
+cells_interactions <- rbind(
+  data.frame(t(combn(cells, 2))),
+  data.frame("X1" = cells, "X2" = cells)
+)
 
 set.seed(12345)
-pcaData <- getPCAData(data = dat,repeatedUniqueId='Image',
-                      agents_df = cells_interactions,
-                      xRange = c(0,1),  yRange = c(0,1),
-                      silent=F)
+pcaData <- getPCAData(
+  data = dat, repeatedUniqueId = "Image",
+  agents_df = cells_interactions,
+  xRange = c(0, 1), yRange = c(0, 1),
+  silent = F
+)
 pcaMeta <- simulateMeta(pcaData,
-                        metaInfo = data.frame(
-                          'var'=c('age'),
-                          'rdist'=c('rnorm'),
-                          'Stage_0'=c('25'),
-                          'Stage_1'=c('26')))
+  metaInfo = data.frame(
+    "var" = c("age"),
+    "rdist" = c("rnorm"),
+    "Stage_0" = c("25"),
+    "Stage_1" = c("26")
+  )
+)
 
 set.seed(12345)
-rfcv <- funkyModel(data=pcaMeta,
-                   outcome = 'Stage',
-                   unit = 'Person',
-                   metaNames=c('age'))
+rfcv <- funkyModel(
+  data = pcaMeta,
+  outcome = "Stage",
+  unit = "Person",
+  metaNames = c("age")
+)
 ```
 
 Creating the variable importance plots as before (code below, perhaps figure not given for computational reasons)
@@ -477,11 +555,11 @@ rfcv$subset_viPlot
 
 ```{r paper_effect, echo=FALSE, eval=paperRun}
 # Get Vars
-viData = rfcv$VariableImportance
-accData = rfcv$AccuracyEstimate
-NoiseCutoff = rfcv$NoiseCutoff
-InterpolationCutoff = rfcv$InterpolationCutoff
-subsetPlotSize = rfcv$AdditionalParams$subsetPlotSize
+viData <- rfcv$VariableImportance
+accData <- rfcv$AccuracyEstimate
+NoiseCutoff <- rfcv$NoiseCutoff
+InterpolationCutoff <- rfcv$InterpolationCutoff
+subsetPlotSize <- rfcv$AdditionalParams$subsetPlotSize
 
 # Plot Full
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
@@ -490,9 +568,9 @@ plot_full <- ggplot2::ggplot(
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
     ),
     group = 1
   )
@@ -504,7 +582,7 @@ plot_full <- ggplot2::ggplot(
     ),
     color = "black", width = 0.2
   ) +
-  ggplot2::geom_point(color = "black", size=3) +
+  ggplot2::geom_point(color = "black", size = 3) +
   ggplot2::geom_hline(
     ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
     color = "red", linetype = "dotted", linewidth = 2
@@ -514,11 +592,13 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylim(c(0, 1)) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.text.y=ggplot2::element_blank(), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=20)) + 
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
   ggplot2::geom_line(ggplot2::aes(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
@@ -533,14 +613,14 @@ plot_full <- ggplot2::ggplot(
   ))
 
 png("./paper/effect_variableimportance.png")
-#png("./vignettes/paper/effect_variableimportance.png")
+# png("./vignettes/paper/effect_variableimportance.png")
 print(plot_full)
 dev.off()
 
 # Plot Subset
 InterpolationCutoff <- InterpolationCutoff[1:subsetPlotSize]
 viData <- viData[order(-viData$est), ]
-viData <- viData[1:subsetPlotSize,]
+viData <- viData[1:subsetPlotSize, ]
 
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
 plot_top25 <- ggplot2::ggplot(
@@ -548,9 +628,9 @@ plot_top25 <- ggplot2::ggplot(
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
     ),
     group = 1
   )
@@ -562,7 +642,7 @@ plot_top25 <- ggplot2::ggplot(
     ),
     color = "black", width = 0.2
   ) +
-  ggplot2::geom_point(color = "black", size=3) +
+  ggplot2::geom_point(color = "black", size = 3) +
   ggplot2::geom_hline(
     ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
     color = "red", linetype = "dotted", linewidth = 2
@@ -572,10 +652,12 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylim(c(0, 1)) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=20)) + 
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
   ggplot2::geom_line(ggplot2::aes(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
@@ -590,25 +672,29 @@ plot_top25 <- ggplot2::ggplot(
   ))
 
 png("./paper/effect_variableimportance_top25.png")
-#png("./vignettes/paper/effect_variableimportance_top25.png")
+# png("./vignettes/paper/effect_variableimportance_top25.png")
 print(plot_top25)
 dev.off()
 ```
 
 With this confidence, we now consider the TNBC phenotype data.
 ```{r tnbc_pheno_model, eval=full_run}
-dataPCA_pheno <- getPCAData(data = TNBC_pheno, unit='Person',
-                           agents_df=pheno_interactions,
-                           rCheckVals = seq(0,50,1))
+dataPCA_pheno <- getPCAData(
+  data = TNBC_pheno, unit = "Person",
+  agents_df = pheno_interactions,
+  rCheckVals = seq(0, 50, 1)
+)
 
-dataPCAAge_pheno  <- merge(dataPCA_pheno,TNBC_Meta)
+dataPCAAge_pheno <- merge(dataPCA_pheno, TNBC_meta)
 
 set.seed(12345)
-rfcv <- funkyModel(data=dataPCAAge_pheno, K=10,
-                   outcome='Class',unit='Person',
-                   metaNames=c('Age'), synthetics=100,
-                   alpha=0.05, silent=FALSE,
-                   subsetPlotSize = 25)
+rfcv <- funkyModel(
+  data = dataPCAAge_pheno, K = 10,
+  outcome = "Class", unit = "Person",
+  metaNames = c("Age"), synthetics = 100,
+  alpha = 0.05, silent = FALSE,
+  subsetPlotSize = 25
+)
 ```
 
 And the related variable importance plots (may not be shown for computational reasons).
@@ -621,11 +707,11 @@ rfcv$subset_viPlot
 
 ```{r paper_tnbc_variable_importance, echo=FALSE, eval=paperRun}
 # Get Vars
-viData = rfcv$VariableImportance
-accData = rfcv$AccuracyEstimate
-NoiseCutoff = rfcv$NoiseCutoff
-InterpolationCutoff = rfcv$InterpolationCutoff
-subsetPlotSize = rfcv$AdditionalParams$subsetPlotSize
+viData <- rfcv$VariableImportance
+accData <- rfcv$AccuracyEstimate
+NoiseCutoff <- rfcv$NoiseCutoff
+InterpolationCutoff <- rfcv$InterpolationCutoff
+subsetPlotSize <- rfcv$AdditionalParams$subsetPlotSize
 
 # Plot Full
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
@@ -634,9 +720,9 @@ plot_full <- ggplot2::ggplot(
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
     ),
     group = 1
   )
@@ -648,7 +734,7 @@ plot_full <- ggplot2::ggplot(
     ),
     color = "black", width = 0.2
   ) +
-  ggplot2::geom_point(color = "black", size=3) +
+  ggplot2::geom_point(color = "black", size = 3) +
   ggplot2::geom_hline(
     ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
     color = "red", linetype = "dotted", linewidth = 2
@@ -658,11 +744,13 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylim(c(0, 1)) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.text.y=ggplot2::element_blank(), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=20)) + 
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
   ggplot2::geom_line(ggplot2::aes(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
@@ -677,14 +765,14 @@ plot_full <- ggplot2::ggplot(
   ))
 
 png("./paper/tnbc_variableimportance.png")
-#png("./vignettes/paper/tnbc_variableimportance.png")
+# png("./vignettes/paper/tnbc_variableimportance.png")
 print(plot_full)
 dev.off()
 
 # Plot Subset
 InterpolationCutoff <- InterpolationCutoff[1:subsetPlotSize]
 viData <- viData[order(-viData$est), ]
-viData <- viData[1:subsetPlotSize,]
+viData <- viData[1:subsetPlotSize, ]
 
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
 plot_top25 <- ggplot2::ggplot(
@@ -692,9 +780,9 @@ plot_top25 <- ggplot2::ggplot(
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-               ifelse(est / maxVal < 0, 0,
-                      est / maxVal
-               )
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
     ),
     group = 1
   )
@@ -706,7 +794,7 @@ plot_top25 <- ggplot2::ggplot(
     ),
     color = "black", width = 0.2
   ) +
-  ggplot2::geom_point(color = "black", size=3) +
+  ggplot2::geom_point(color = "black", size = 3) +
   ggplot2::geom_hline(
     ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
     color = "red", linetype = "dotted", linewidth = 2
@@ -716,11 +804,13 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylim(c(0, 1)) +
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text.x=ggplot2::element_text(size=17), 
-                 axis.text.y=ggplot2::element_text(size=14), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=17)) + 
+  ggplot2::theme(
+    axis.text.x = ggplot2::element_text(size = 17),
+    axis.text.y = ggplot2::element_text(size = 14),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 17)
+  ) +
   ggplot2::geom_line(ggplot2::aes(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
@@ -735,31 +825,41 @@ plot_top25 <- ggplot2::ggplot(
   ))
 
 png("./paper/tnbc_variableimportance_top25.png")
-#png("./vignettes/paper/tnbc_variableimportance_top25.png")
+# png("./vignettes/paper/tnbc_variableimportance_top25.png")
 print(plot_top25)
 dev.off()
 ```
 
 Also consider $K$ functions from significant and insignificant interactions.
 ```{r significantTNBCK}
-tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1],
-                    c('Tumour','Tumour'),unit = 'Person',
-                    rCheckVals = seq(0,50,1))
-tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class==1,-1],
-                     c('Tumour','Tumour'),unit = 'Person',
-                     rCheckVals = seq(0,50,1))
+tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
+  c("Tumour", "Tumour"),
+  unit = "Person",
+  rCheckVals = seq(0, 50, 1)
+)
+tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
+  c("Tumour", "Tumour"),
+  unit = "Person",
+  rCheckVals = seq(0, 50, 1)
+)
 
-tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r)
-tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r)
+tmp_1 <- tidyr::pivot_longer(data = tmp, cols = -r)
+tmp1_1 <- tidyr::pivot_longer(data = tmp1, cols = -r)
 
-data_plot <- rbind(data.frame('r'=tmp_1$r,
-                              'K'=tmp_1$value,
-                              'Unit'=tmp_1$name,
-                              'Outcome'="0"),
-                   data.frame('r'=tmp1_1$r,
-                              'K'=tmp1_1$value,
-                              'Unit'=paste0(tmp1_1$name,'_1'),
-                              'Outcome'="1"))
+data_plot <- rbind(
+  data.frame(
+    "r" = tmp_1$r,
+    "K" = tmp_1$value,
+    "Unit" = tmp_1$name,
+    "Outcome" = "0"
+  ),
+  data.frame(
+    "r" = tmp1_1$r,
+    "K" = tmp1_1$value,
+    "Unit" = paste0(tmp1_1$name, "_1"),
+    "Outcome" = "1"
+  )
+)
 ```
 
 Creating the following figure.
@@ -771,86 +871,113 @@ plot_K_functions(data_plot)
 data <- data_plot
 
 # Prep Legend
-info <- unique(data[,c('Unit','Outcome')])
+info <- unique(data[, c("Unit", "Outcome")])
 info$Missing <- NA
-for(i in 1:nrow(info)){
-  info[i,3] <- nrow(data[data$Unit==info$Unit[i] &
-                           !stats::complete.cases(data),]) > 0
+for (i in 1:nrow(info)) {
+  info[i, 3] <- nrow(data[data$Unit == info$Unit[i] &
+    !stats::complete.cases(data), ]) > 0
 }
 
-info_labels <- data.frame('Outcome'=unique(data$Outcome),
-                          'Units'=NA,
-                          'Missing'=NA,
-                          'Label'=NA)
-for(i in 1:nrow(info_labels)){
-  info_labels[i,2] <- nrow(info[info$Outcome==info_labels[i,1],])
-  info_labels[i,3] <- nrow(info[info$Outcome==info_labels[i,1] &
-                                  info$Missing, ])
+info_labels <- data.frame(
+  "Outcome" = unique(data$Outcome),
+  "Units" = NA,
+  "Missing" = NA,
+  "Label" = NA
+)
+for (i in 1:nrow(info_labels)) {
+  info_labels[i, 2] <- nrow(info[info$Outcome == info_labels[i, 1], ])
+  info_labels[i, 3] <- nrow(info[info$Outcome == info_labels[i, 1] &
+    info$Missing, ])
   # Only label Outcomes with numbers if at least one is missing in whole set
-  if(sum(info$Missing)!=0){
-    info_labels[i,4] <- paste0(info_labels[i,1],' (',
-                               info_labels[i,2]-info_labels[i,3],'/',
-                               info_labels[i,2],')')
-  } else{
-    info_labels[i,4] <- info_labels[i,1]
+  if (sum(info$Missing) != 0) {
+    info_labels[i, 4] <- paste0(
+      info_labels[i, 1], " (",
+      info_labels[i, 2] - info_labels[i, 3], "/",
+      info_labels[i, 2], ")"
+    )
+  } else {
+    info_labels[i, 4] <- info_labels[i, 1]
   }
 }
 
 # Build Averages
-data_wide <- tidyr::pivot_wider(data,names_from = 'Unit',
-                                values_from = 'K')
-data_avg <- data.frame('r'=unique(data_wide$r))
+data_wide <- tidyr::pivot_wider(data,
+  names_from = "Unit",
+  values_from = "K"
+)
+data_avg <- data.frame("r" = unique(data_wide$r))
 
-for(i in 1:nrow(info_labels)){
-  data_avg[[info_labels[i,'Outcome']]] <-
-    rowMeans(data_wide[data_wide$Outcome==info_labels[i,'Outcome'],-c(1:2)],
-             na.rm = TRUE)
+for (i in 1:nrow(info_labels)) {
+  data_avg[[info_labels[i, "Outcome"]]] <-
+    rowMeans(data_wide[data_wide$Outcome == info_labels[i, "Outcome"], -c(1:2)],
+      na.rm = TRUE
+    )
 }
 data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-colnames(data_avg) <- c('r','Outcome','Value')
+colnames(data_avg) <- c("r", "Outcome", "Value")
 
 # Plot
 return_plot <-
-  ggplot2::ggplot(data=stats::na.omit(data),
-                  ggplot2::aes(x=r,y=K,
-                               group=Unit,color=Outcome))+
-  ggplot2::geom_line(alpha=0.2, size=1.25) +
-  ggplot2::geom_line(ggplot2::aes(x=r,y=Value,
-                                  group=Outcome, color=Outcome),
-                     data=data_avg, linewidth=2) +
+  ggplot2::ggplot(
+    data = stats::na.omit(data),
+    ggplot2::aes(
+      x = r, y = K,
+      group = Unit, color = Outcome
+    )
+  ) +
+  ggplot2::geom_line(alpha = 0.2, size = 1.25) +
+  ggplot2::geom_line(
+    ggplot2::aes(
+      x = r, y = Value,
+      group = Outcome, color = Outcome
+    ),
+    data = data_avg, linewidth = 2
+  ) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22),
-                 legend.position = "none")
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 22),
+    legend.position = "none"
+  )
 
 png("./paper/TNBC_sig_KFunctions.png")
-#png("./vignettes/paper/TNBC_sig_KFunctions.png")
+# png("./vignettes/paper/TNBC_sig_KFunctions.png")
 print(return_plot)
 dev.off()
 ```
 
 And for a insignificant interaction.
 ```{r insignificantTNBCK}
-tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1],
-                    c('CD4T','Endothelial'),unit = 'Person',
-                    rCheckVals = seq(0,50,1))
-tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class==1,-1],
-                     c('CD4T','Endothelial'),unit = 'Person',
-                     rCheckVals = seq(0,50,1))
+tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
+  c("CD4T", "Endothelial"),
+  unit = "Person",
+  rCheckVals = seq(0, 50, 1)
+)
+tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
+  c("CD4T", "Endothelial"),
+  unit = "Person",
+  rCheckVals = seq(0, 50, 1)
+)
 
-tmp_1 <- tidyr::pivot_longer(data = tmp,cols = -r)
-tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = -r)
+tmp_1 <- tidyr::pivot_longer(data = tmp, cols = -r)
+tmp1_1 <- tidyr::pivot_longer(data = tmp1, cols = -r)
 
-data_plot <- rbind(data.frame('r'=tmp_1$r,
-                              'K'=tmp_1$value,
-                              'Unit'=tmp_1$name,
-                              'Outcome'="0"),
-                   data.frame('r'=tmp1_1$r,
-                              'K'=tmp1_1$value,
-                              'Unit'=paste0(tmp1_1$name,'_1'),
-                              'Outcome'="1"))
+data_plot <- rbind(
+  data.frame(
+    "r" = tmp_1$r,
+    "K" = tmp_1$value,
+    "Unit" = tmp_1$name,
+    "Outcome" = "0"
+  ),
+  data.frame(
+    "r" = tmp1_1$r,
+    "K" = tmp1_1$value,
+    "Unit" = paste0(tmp1_1$name, "_1"),
+    "Outcome" = "1"
+  )
+)
 ```
 
 Creating the following figure.
@@ -862,62 +989,79 @@ plot_K_functions(data_plot)
 data <- data_plot
 
 # Prep Legend
-info <- unique(data[,c('Unit','Outcome')])
+info <- unique(data[, c("Unit", "Outcome")])
 info$Missing <- NA
-for(i in 1:nrow(info)){
-  info[i,3] <- nrow(data[data$Unit==info$Unit[i] &
-                           !stats::complete.cases(data),]) > 0
+for (i in 1:nrow(info)) {
+  info[i, 3] <- nrow(data[data$Unit == info$Unit[i] &
+    !stats::complete.cases(data), ]) > 0
 }
 
-info_labels <- data.frame('Outcome'=unique(data$Outcome),
-                          'Units'=NA,
-                          'Missing'=NA,
-                          'Label'=NA)
-for(i in 1:nrow(info_labels)){
-  info_labels[i,2] <- nrow(info[info$Outcome==info_labels[i,1],])
-  info_labels[i,3] <- nrow(info[info$Outcome==info_labels[i,1] &
-                                  info$Missing, ])
+info_labels <- data.frame(
+  "Outcome" = unique(data$Outcome),
+  "Units" = NA,
+  "Missing" = NA,
+  "Label" = NA
+)
+for (i in 1:nrow(info_labels)) {
+  info_labels[i, 2] <- nrow(info[info$Outcome == info_labels[i, 1], ])
+  info_labels[i, 3] <- nrow(info[info$Outcome == info_labels[i, 1] &
+    info$Missing, ])
   # Only label Outcomes with numbers if at least one is missing in whole set
-  if(sum(info$Missing)!=0){
-    info_labels[i,4] <- paste0(info_labels[i,1],' (',
-                               info_labels[i,2]-info_labels[i,3],'/',
-                               info_labels[i,2],')')
-  } else{
-    info_labels[i,4] <- info_labels[i,1]
+  if (sum(info$Missing) != 0) {
+    info_labels[i, 4] <- paste0(
+      info_labels[i, 1], " (",
+      info_labels[i, 2] - info_labels[i, 3], "/",
+      info_labels[i, 2], ")"
+    )
+  } else {
+    info_labels[i, 4] <- info_labels[i, 1]
   }
 }
 
 # Build Averages
-data_wide <- tidyr::pivot_wider(data,names_from = 'Unit',
-                                values_from = 'K')
-data_avg <- data.frame('r'=unique(data_wide$r))
+data_wide <- tidyr::pivot_wider(data,
+  names_from = "Unit",
+  values_from = "K"
+)
+data_avg <- data.frame("r" = unique(data_wide$r))
 
-for(i in 1:nrow(info_labels)){
-  data_avg[[info_labels[i,'Outcome']]] <-
-    rowMeans(data_wide[data_wide$Outcome==info_labels[i,'Outcome'],-c(1:2)],
-             na.rm = TRUE)
+for (i in 1:nrow(info_labels)) {
+  data_avg[[info_labels[i, "Outcome"]]] <-
+    rowMeans(data_wide[data_wide$Outcome == info_labels[i, "Outcome"], -c(1:2)],
+      na.rm = TRUE
+    )
 }
 data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-colnames(data_avg) <- c('r','Outcome','Value')
+colnames(data_avg) <- c("r", "Outcome", "Value")
 
 # Plot
 return_plot <-
-  ggplot2::ggplot(data=stats::na.omit(data),
-                  ggplot2::aes(x=r,y=K,
-                               group=Unit,color=Outcome))+
-  ggplot2::geom_line(alpha=0.2, size=1.25) +
-  ggplot2::geom_line(ggplot2::aes(x=r,y=Value,
-                                  group=Outcome, color=Outcome),
-                     data=data_avg, linewidth=2) +
+  ggplot2::ggplot(
+    data = stats::na.omit(data),
+    ggplot2::aes(
+      x = r, y = K,
+      group = Unit, color = Outcome
+    )
+  ) +
+  ggplot2::geom_line(alpha = 0.2, size = 1.25) +
+  ggplot2::geom_line(
+    ggplot2::aes(
+      x = r, y = Value,
+      group = Outcome, color = Outcome
+    ),
+    data = data_avg, linewidth = 2
+  ) +
   ggplot2::theme_bw() +
-  ggplot2::theme(axis.text=ggplot2::element_text(size=18), 
-                 axis.ticks.y=ggplot2::element_blank(), 
-                 panel.grid.major.y = ggplot2::element_blank(), 
-                 axis.title = ggplot2::element_text(size=22),
-                 legend.position = "none")
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 22),
+    legend.position = "none"
+  )
 
 png("./paper/TNBC_insig_KFunctions.png")
-#png("./vignettes/paper/TNBC_insig_KFunctions.png")
+# png("./vignettes/paper/TNBC_insig_KFunctions.png")
 print(return_plot)
 dev.off()
 ```

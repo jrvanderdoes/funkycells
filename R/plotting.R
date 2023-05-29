@@ -26,16 +26,16 @@
 plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    xlim = c(min(data[, 1]), max(data[, 1])),
                    ylim = c(min(data[, 2]), max(data[, 2])),
-                   dropAxes = FALSE, layerBasedOnFrequency=TRUE,
+                   dropAxes = FALSE, layerBasedOnFrequency = TRUE,
                    colors = NULL) {
   # Sort so most populous cells are at the bottom
-  if(layerBasedOnFrequency && length(unique(data[,3]))>1){
-    cells_order <- as.data.frame(table(data[,3])[order(-table(data[,3]))])$Var1
+  if (layerBasedOnFrequency && length(unique(data[, 3])) > 1) {
+    cells_order <- as.data.frame(table(data[, 3])[order(-table(data[, 3]))])$Var1
 
     idxs <- sapply(cells_order, function(x, data1) {
-      which(data1[,3] == x)
-    }, data1=data)
-    data <- data[unlist(idxs),]
+      which(data1[, 3] == x)
+    }, data1 = data)
+    data <- data[unlist(idxs), ]
     rownames(data) <- NULL
   }
 
@@ -84,122 +84,159 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
 #'
 #' @examples
 #' # Example 1
-#' tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1],
-#'                     agents = c('Tumour','Tumour'),
-#'                     unit = 'Person',
-#'                     rCheckVals = seq(0,50,1))
-#' tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class==1,-1],
-#'                      agents = c('Tumour','Tumour'),
-#'                      unit = 'Person',
-#'                      rCheckVals = seq(0,50,1))
-#' tmp_1 <- tidyr::pivot_longer(data = tmp,cols = K1:K18)
-#' tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = K1:K15)
+#' tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
+#'   agents = c("Tumour", "Tumour"),
+#'   unit = "Person",
+#'   rCheckVals = seq(0, 50, 1)
+#' )
+#' tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
+#'   agents = c("Tumour", "Tumour"),
+#'   unit = "Person",
+#'   rCheckVals = seq(0, 50, 1)
+#' )
+#' tmp_1 <- tidyr::pivot_longer(data = tmp, cols = K1:K18)
+#' tmp1_1 <- tidyr::pivot_longer(data = tmp1, cols = K1:K15)
 #'
-#' data_plot <- rbind(data.frame('r'=tmp_1$r,
-#'                               'K'=tmp_1$value,
-#'                               'Unit'=tmp_1$name,
-#'                               'Outcome'="0"),
-#'                    data.frame('r'=tmp1_1$r,
-#'                               'K'=tmp1_1$value,
-#'                               'Unit'=paste0(tmp1_1$name,'_1'),
-#'                               'Outcome'="1"))
+#' data_plot <- rbind(
+#'   data.frame(
+#'     "r" = tmp_1$r,
+#'     "K" = tmp_1$value,
+#'     "Unit" = tmp_1$name,
+#'     "Outcome" = "0"
+#'   ),
+#'   data.frame(
+#'     "r" = tmp1_1$r,
+#'     "K" = tmp1_1$value,
+#'     "Unit" = paste0(tmp1_1$name, "_1"),
+#'     "Outcome" = "1"
+#'   )
+#' )
 #'
 #' plot_K_functions(data_plot)
 #'
 #' # Example 2
-#' tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class==0,-1],
-#'                     agents = c('Tumour','B'),unit = 'Person',
-#'                     rCheckVals = seq(0,50,1))
-#' tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class==1,-1],
-#'                      agents = c('Tumour','B'),unit = 'Person',
-#'                      rCheckVals = seq(0,50,1))
+#' tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
+#'   agents = c("Tumour", "B"), unit = "Person",
+#'   rCheckVals = seq(0, 50, 1)
+#' )
+#' tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
+#'   agents = c("Tumour", "B"), unit = "Person",
+#'   rCheckVals = seq(0, 50, 1)
+#' )
 #'
-#' tmp_1 <- tidyr::pivot_longer(data = tmp,cols = K1:K18)
-#' tmp1_1 <- tidyr::pivot_longer(data = tmp1,cols = K1:K15)
+#' tmp_1 <- tidyr::pivot_longer(data = tmp, cols = K1:K18)
+#' tmp1_1 <- tidyr::pivot_longer(data = tmp1, cols = K1:K15)
 #'
-#' data_plot <- rbind(data.frame('r'=tmp_1$r,
-#'                               'K'=tmp_1$value,
-#'                               'Unit'=tmp_1$name,
-#'                               'Outcome'="0"),
-#'                    data.frame('r'=tmp1_1$r,
-#'                               'K'=tmp1_1$value,
-#'                               'Unit'=paste0(tmp1_1$name,'_1'),
-#'                               'Outcome'="1"))
+#' data_plot <- rbind(
+#'   data.frame(
+#'     "r" = tmp_1$r,
+#'     "K" = tmp_1$value,
+#'     "Unit" = tmp_1$name,
+#'     "Outcome" = "0"
+#'   ),
+#'   data.frame(
+#'     "r" = tmp1_1$r,
+#'     "K" = tmp1_1$value,
+#'     "Unit" = paste0(tmp1_1$name, "_1"),
+#'     "Outcome" = "1"
+#'   )
+#' )
 #'
 #' plot_K_functions(data_plot)
-plot_K_functions <- function(data, inc.legend=TRUE,inc.noise =FALSE){
+plot_K_functions <- function(data, inc.legend = TRUE, inc.noise = FALSE) {
   # Add this to remove notes when building package
   r <- K <- Unit <- Outcome <- Value <- NULL
 
-  if(inc.legend) {
-    info <- unique(data[,c('Unit','Outcome')])
+  if (inc.legend) {
+    info <- unique(data[, c("Unit", "Outcome")])
     info$Missing <- NA
-    for(i in 1:nrow(info)){
-      info[i,3] <- nrow(data[data$Unit==info$Unit[i] &
-                               !stats::complete.cases(data),]) > 0
+    for (i in 1:nrow(info)) {
+      info[i, 3] <- nrow(data[data$Unit == info$Unit[i] &
+        !stats::complete.cases(data), ]) > 0
     }
     # info$Complete <- data[!stats::complete.cases(data),]
     # info_missing <- unique(data[!stats::complete.cases(data),c('Unit','Outcome')])
 
-    info_labels <- data.frame('Outcome'=unique(data$Outcome),
-                              'Units'=NA,
-                              'Missing'=NA,
-                              'Label'=NA)
-    for(i in 1:nrow(info_labels)){
-      info_labels[i,2] <- nrow(info[info$Outcome==info_labels[i,1],])
-      info_labels[i,3] <- nrow(info[info$Outcome==info_labels[i,1] &
-                                      info$Missing, ])
+    info_labels <- data.frame(
+      "Outcome" = unique(data$Outcome),
+      "Units" = NA,
+      "Missing" = NA,
+      "Label" = NA
+    )
+    for (i in 1:nrow(info_labels)) {
+      info_labels[i, 2] <- nrow(info[info$Outcome == info_labels[i, 1], ])
+      info_labels[i, 3] <- nrow(info[info$Outcome == info_labels[i, 1] &
+        info$Missing, ])
       # Only label Outcomes with numbers if at least one is missing in whole set
-      if(sum(info$Missing)!=0){
-        info_labels[i,4] <- paste0(info_labels[i,1],' (',
-                                   info_labels[i,2]-info_labels[i,3],'/',
-                                   info_labels[i,2],')')
-      } else{
-        info_labels[i,4] <- info_labels[i,1]
+      if (sum(info$Missing) != 0) {
+        info_labels[i, 4] <- paste0(
+          info_labels[i, 1], " (",
+          info_labels[i, 2] - info_labels[i, 3], "/",
+          info_labels[i, 2], ")"
+        )
+      } else {
+        info_labels[i, 4] <- info_labels[i, 1]
       }
     }
   }
 
   # Build Averages
-  data_wide <- tidyr::pivot_wider(data,names_from = 'Unit',
-                                  values_from = 'K')
-  data_avg <- data.frame('r'=unique(data_wide$r))
+  data_wide <- tidyr::pivot_wider(data,
+    names_from = "Unit",
+    values_from = "K"
+  )
+  data_avg <- data.frame("r" = unique(data_wide$r))
 
-  for(i in 1:nrow(info_labels)){
-    data_avg[[info_labels[i,'Outcome']]] <-
-      rowMeans(data_wide[data_wide$Outcome==info_labels[i,'Outcome'],-c(1:2)],
-               na.rm = TRUE)
+  for (i in 1:nrow(info_labels)) {
+    data_avg[[info_labels[i, "Outcome"]]] <-
+      rowMeans(data_wide[data_wide$Outcome == info_labels[i, "Outcome"], -c(1:2)],
+        na.rm = TRUE
+      )
   }
   data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-  colnames(data_avg) <- c('r','Outcome','Value')
+  colnames(data_avg) <- c("r", "Outcome", "Value")
 
   return_plot <-
-    ggplot2::ggplot(data=stats::na.omit(data),
-                    ggplot2::aes(x=r,y=K,
-                                 group=Unit,color=Outcome))+
-    ggplot2::geom_line(alpha=0.5) +
-    ggplot2::geom_line(ggplot2::aes(x=r,y=Value,
-                                    group=Outcome, color=Outcome),
-                       data=data_avg, linewidth=1.25) +
+    ggplot2::ggplot(
+      data = stats::na.omit(data),
+      ggplot2::aes(
+        x = r, y = K,
+        group = Unit, color = Outcome
+      )
+    ) +
+    ggplot2::geom_line(alpha = 0.5) +
+    ggplot2::geom_line(
+      ggplot2::aes(
+        x = r, y = Value,
+        group = Outcome, color = Outcome
+      ),
+      data = data_avg, linewidth = 1.25
+    ) +
     ggplot2::theme_bw() +
-    ggplot2::theme(axis.text.y = ggplot2::element_blank(),
-                   legend.position = "none")
+    ggplot2::theme(
+      axis.text.y = ggplot2::element_blank(),
+      legend.position = "none"
+    )
 
-  if(inc.legend){
+  if (inc.legend) {
     return_plot <- return_plot +
       ggplot2::theme(legend.position = "right") +
       ggplot2::scale_colour_discrete(
-        labels=info_labels$Label,
-        name=paste0('Outcome\n( ',
-                    sum(info_labels$Units)-sum(sum(info_labels$Missing)),' / ',
-                    sum(info_labels$Units),' )'))
+        labels = info_labels$Label,
+        name = paste0(
+          "Outcome\n( ",
+          sum(info_labels$Units) - sum(sum(info_labels$Missing)), " / ",
+          sum(info_labels$Units), " )"
+        )
+      )
   }
 
-  if(inc.noise){
+  if (inc.noise) {
     return_plot <- return_plot +
-      ggplot2::geom_line(ggplot2::aes(x=r,y=pi*r^2),
-                         data=data_avg, linewidth=1.25,
-                         color='gray', linetype='dashed')
+      ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2),
+        data = data_avg, linewidth = 1.25,
+        color = "gray", linetype = "dashed"
+      )
   }
 
   return_plot
