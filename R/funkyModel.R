@@ -52,6 +52,18 @@
 #' @export
 #'
 #' @examples
+#'
+#' # Short Example
+#' #   Parameters are reduced beyond recommended levels for speed
+#' set.seed(1234)
+#' rfcv <- funkyModel(
+#'   data = TNBC[, c(1:8, ncol(TNBC))],
+#'   outcome = "Class", unit = "Person",
+#'   metaNames = c("Age"),
+#'   nTrees = 50, synthetics = 10,
+#'   silent = TRUE
+#' )
+#'
 #' \dontrun{
 #' dat <- simulatePP(
 #'   cellVarData =
@@ -113,16 +125,52 @@
 #' )
 #' }
 #'
-#' # Short Example
-#' #   Parameters are reduced beyond recommended levels for speed
-#' set.seed(1234)
-#' rfcv <- funkyModel(
-#'   data = TNBC[, c(1:8, ncol(TNBC))],
-#'   outcome = "Class", unit = "Person",
-#'   metaNames = c("Age"),
-#'   nTrees = 50, synthetics = 10,
-#'   silent = TRUE
+#' \dontrun{
+#' set.seed(1234567)
+#' dat <- simulatePP(
+#'           cellVarData =
+#'             data.frame("stage" = c(0, 1),
+#'                        "A" = c(0, 0),
+#'                        "B" = c(1 / 50, 1 / 100)),
+#'           cellKappaData = data.frame(
+#'                        "cell" = c("A", "B"),
+#'                        "clusterCell" = c(NA, "A"),
+#'                        "kappa" = c(20, 5) ),
+#'           peoplePerStage = 20,
+#'           imagesPerPerson = 3,
+#'           silent = FALSE
+#'        )
+#' pcaData <- getKsPCAData(dat,
+#'   repeatedUniqueId = "Image",
+#'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
+#'   )
+#' pcaMeta <- simulateMeta(pcaData,
+#'   metaInfo = data.frame(
+#'     "var" = c("randUnif", "randBin", "corrNorm"),
+#'     "rdist" = c("runif", "rbinom", "rnorm"),
+#'     "Stage_0" = c("0.5", "0.5", "1"),
+#'     "Stage_1" = c("0.5", "0.5", "2")
+#'     )
+#'  )
+#'
+#' rfcv1 <- funkyModel(
+#'   data = pcaMeta, outcome = "Stage", unit = "Person",
+#'   metaNames = c("randUnif", "randBin", "corrNorm"),
+#'   nTrees =10, synthetics = 25
 #' )
+#'
+#' rfcv2 <- funkyModel(
+#'   data = pcaData, outcome = "Stage", unit = "Person",
+#'   nTrees =10, synthetics = 25
+#' )
+#'
+#' onlyMeta <- pcaMeta[,c('Stage','Person','randUnif','randBin','corrNorm')]
+#' rfcv3 <- funkyModel(
+#'   data = onlyMeta, outcome = "Stage", unit = "Person",
+#'   metaNames = c('randUnif','randBin','corrNorm'),
+#'   nTrees =10, synthetics = 25
+#' )
+#' }
 funkyModel <- function(data, K = 10,
                        outcome = colnames(data)[1],
                        unit = colnames(data)[2],
@@ -142,6 +190,10 @@ funkyModel <- function(data, K = 10,
   ## Generate Synthetics And Connect
   components <- colnames(data)[!(colnames(data) %in%
     c(outcome, unit, repeatedId, metaNames))]
+  nPCs <- ifelse(length(components)==0,
+                 0,
+                 as.numeric(max(sub(".*_PC", "", components))))
+
   KFunctions <- .getUnderlyingVariable(components)
   # Get Var and data column alignment
   underlyingDataAlignedFunctions <- .getUnderlyingVariable(colnames(data),
@@ -151,14 +203,19 @@ funkyModel <- function(data, K = 10,
   underlyingVars <- underlyingVars[!(underlyingVars %in%
     c(outcome, unit, repeatedId))]
 
-  avgVI <- avgVI_full <-
-    data.frame("var" = c(
-      underlyingVars,
-      paste0("permuteInternal", 1:synthetics, "K_K"),
-      as.vector(sapply(metaNames, function(m) {
-        paste0(paste0("permuteInternal", 1:synthetics), m)
-      }))
-    ))
+  underlyingNoiseVars <- c(underlyingVars)
+  if(length(KFunctions)>0)
+    underlyingNoiseVars <- c(underlyingNoiseVars,
+                             paste0("permuteInternal", 1:synthetics, "K_K"))
+  if(length(metaNames)>0)
+    underlyingNoiseVars <- c(underlyingNoiseVars,
+                             as.vector(sapply(metaNames, function(m) {
+                               paste0(paste0("permuteInternal", 1:synthetics), m)
+                             })))
+
+  avgVI <- data.frame("var" = c(underlyingVars))
+  avgVI_full <- data.frame("var" = c(underlyingNoiseVars) )
+
   oobAcc <- rep(NA, K)
   groups <- .getFolds(1:nrow(data), K)
 
@@ -192,44 +249,18 @@ funkyModel <- function(data, K = 10,
     ## Run on all for VI estimate
 
     # Permute Noise but do the functional components together
-    data_full <- data
-    synths <- c("K", metaNames)
-    for (j in 1:synthetics) {
-      ## TODO FIX
-      data_permute <-
-        as.data.frame(sapply(1:length(synths),
-          function(idx, DF) {
-            if (idx == 1) {
-              matchedVal <- sample(KFunctions, 1)
-            } else {
-              matchedVal <- synths[idx]
-            }
-            DF[sample.int(nrow(DF)),
-              underlyingDataAlignedFunctions == matchedVal,
-              drop = FALSE
-            ]
-          },
-          simplify = "array",
-          DF = data
-        ))
-      colnames(data_permute)[!(colnames(data_permute) %in% metaNames)] <-
-        paste0("permuteInternal", j, "K_K_PC", 1:3)
-      colnames(data_permute)[colnames(data_permute) %in% metaNames] <-
-        paste0("permuteInternal", j, metaNames)
-      data_full <- cbind(data_full, data_permute)
-    }
+    data_full <- .permuteData(data_base=data, outcome=outcome, unit=unit,
+                              synthetics=synthetics,
+                              KFunctions=KFunctions, metaNames=metaNames,
+                              underlyingDataAlignedFunctions=underlyingDataAlignedFunctions,
+                              nPCs=nPCs, attach.data=TRUE, permute.data=FALSE)
 
     RF_full <- funkyForest(
-      data = data_full,
+      data = data_full$data,
       outcome = outcome,
       unit = unit, repeatedId = repeatedId,
       varImpPlot = FALSE,
-      metaNames = c(
-        metaNames,
-        as.vector(sapply(metaNames, function(m) {
-          paste0(paste0("permuteInternal", 1:synthetics), m)
-        }))
-      ),
+      metaNames = data_full$metaNames,
       nTrees = nTrees, keepModels = FALSE
     )
 
@@ -240,77 +271,25 @@ funkyModel <- function(data, K = 10,
   if (!silent) cat("\n")
 
   ## Permutation
-  avgVI_perm <-
-    data.frame("var" = c(
-      underlyingVars,
-      paste0("permuteInternal", 1:synthetics, "K_K"),
-      as.vector(sapply(metaNames, function(m) {
-        paste0(paste0("permuteInternal", 1:synthetics), m)
-      }))
-    ))
+  avgVI_perm <- data.frame("var" = c(underlyingNoiseVars) )
 
   if (!silent) cat("Permutation Trials (", synthetics, "): ", sep = "")
   for (sim in 1:synthetics) {
     if (!silent) cat(sim, ", ", sep = "")
 
     # Permute but do the functional components together
-    data_permute1 <-
-      as.data.frame(sapply(1:length(underlyingVars),
-        function(idx, DF) {
-          DF[sample.int(nrow(DF)),
-            underlyingDataAlignedFunctions == underlyingVars[idx],
-            drop = FALSE
-          ]
-        },
-        simplify = "array",
-        DF = data
-      ))
-    data_permute2 <- data[!(colnames(data) %in%
-      c(outcome, unit, repeatedId))]
-    synths <- c("K", metaNames)
-    for (j in 1:synthetics) {
-      data_tmp <-
-        as.data.frame(sapply(1:length(synths),
-          function(idx, DF) {
-            if (idx == 1) {
-              matchedVal <- sample(KFunctions, 1)
-            } else {
-              matchedVal <- synths[idx]
-            }
-            DF[sample.int(nrow(DF)),
-              underlyingDataAlignedFunctions == matchedVal,
-              drop = FALSE
-            ]
-          },
-          simplify = "array",
-          DF = data
-        ))
-      colnames(data_tmp)[!(colnames(data_tmp) %in% metaNames)] <-
-        paste0("permuteInternal", j, "K_K_PC", 1:3)
-      colnames(data_tmp)[colnames(data_tmp) %in% metaNames] <-
-        paste0("permuteInternal", j, metaNames)
-      data_permute2 <- cbind(data_permute2, data_tmp)
-    }
-
-    data_permute <- cbind(
-      data[colnames(data) %in%
-        c(outcome, unit, repeatedId)],
-      data_permute1,
-      data_permute2
-    )
+    data_permute <- .permuteData(data, outcome, unit,
+                             synthetics, KFunctions, metaNames,
+                             underlyingDataAlignedFunctions, nPCs,
+                             attach.data=TRUE, permute.data=TRUE)
 
     # Get RF and VI
     RF <- funkyForest(
-      data = data_permute,
+      data = data_permute$data,
       outcome = outcome,
       unit = unit, repeatedId = repeatedId,
       varImpPlot = FALSE,
-      metaNames = c(
-        metaNames,
-        as.vector(sapply(metaNames, function(m) {
-          paste0(paste0("permuteInternal", 1:synthetics), m)
-        }))
-      ),
+      metaNames = data_permute$metaNames,
       nTrees = nTrees, keepModels = FALSE
     )
 
@@ -841,4 +820,94 @@ funkyModel <- function(data, K = 10,
       "), Bias (",
       .specify_decimal(accData$bias, 2), ")"
     ))
+}
+
+#' Generate Permuted Data
+#'
+#' This (internal) function permutes the data for use in model via noise or variable
+#'   permutation
+#'
+#' @param data_base Data.frame with outcome, unit, and some variables
+#' @param KFunctions Vector of the K Function names.
+#' @param underlyingDataAlignedFunctions Vector of the column names aligned to
+#'   underlying function. Generated in funkyModel.
+#' @param nPCs Integer indicating the number of principle components
+#' @param attach.data (Optional) Boolean indicating if true data should be
+#'  attached. Default is FALSE.
+#' @param permute.data (Optional) Boolean indicating if true data should be
+#'  permuted. Note this will only be valuable if attach.data is TRUE. Default is
+#'  FALSE.
+#' @inheritParams funkyModel
+#'
+#' @return List with two entries:
+#'  1. data: Data.frame with outcome, unit, and data (may be only permutate or real
+#'    and permuted based on settings)
+#'  2. metaNames: Vector of the metaNames in the data
+.permuteData <- function(data_base, outcome, unit,
+                         synthetics, KFunctions, metaNames,
+                         underlyingDataAlignedFunctions, nPCs,
+                         attach.data=FALSE, permute.data=FALSE){
+  # Setup Data
+  data_permute <- unique(data_base[,c(outcome, unit)])
+  underlyingVars <- unique(underlyingDataAlignedFunctions)
+  underlyingVars <- underlyingVars[!(underlyingVars %in% c(outcome, unit))]
+
+  # Generate Synthetic Variables
+  if(length(KFunctions)>0) {
+    data_K <- lapply(1:synthetics, # This creates synthetic number of Ks
+                     FUN = function(x,DF,underlyingDataAlignedFunctions,KFunctions){
+                       DF[sample.int(nrow(DF)),
+                          underlyingDataAlignedFunctions == sample(KFunctions, 1),
+                          drop = FALSE
+                       ]
+                     }, DF=data_base,
+                     underlyingDataAlignedFunctions=underlyingDataAlignedFunctions,
+                     KFunctions=KFunctions)
+    data_K <- do.call('cbind', data_K)
+    colnames(data_K) <- as.vector(sapply(1:synthetics, function(idx){
+      paste0("permuteInternal", idx, "K_K_PC", 1:nPCs)}))
+
+    data_permute <- cbind(data_permute, data_K)
+  }
+  if(length(metaNames)>0) {
+
+    data_meta <- lapply(metaNames,
+                        FUN= function(meta, synthetics, DF){
+                          tmp <- lapply(1:synthetics, # This creates synthetic number of each meta
+                                        FUN = function(x,DF,meta){
+                                          DF[sample.int(nrow(DF)), meta,drop=FALSE]
+                                        }, DF=DF,meta=meta)
+                          tmp <- do.call('cbind', tmp)
+                          colnames(tmp) <-  paste0("permuteInternal", 1:synthetics, meta)
+
+                          tmp
+                        }, synthetics=synthetics, DF=data_base)
+    data_meta <- do.call('cbind', data_meta)
+    metaNames <- c(metaNames, colnames(data_meta))
+
+    data_permute <- cbind(data_permute, data_meta)
+  }
+
+  # Permute data
+  if(permute.data){
+    data_base_permute_tmp <-
+      lapply(1:length(underlyingVars),
+             function(idx, DF) {
+               DF[sample.int(nrow(DF)),
+                  underlyingDataAlignedFunctions == underlyingVars[idx],
+                  drop = FALSE
+               ]
+             },
+             DF = data_base)
+    data_base_permute_tmp <- do.call('cbind', data_base_permute_tmp)
+
+    data_base <- cbind(unique(data_base[,c(outcome, unit)]),data_base_permute_tmp)
+  }
+
+  # Return
+  if(attach.data) return(list("data"=merge(data_base,data_permute),
+                              "metaNames"=metaNames))
+
+  list("data"=data_permute,
+       "metaNames"=metaNames)
 }
