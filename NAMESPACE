@@ -3,6 +3,7 @@
 export(computePseudoROCCurves)
 export(funkyForest)
 export(funkyModel)
+export(getCountData)
 export(getKFunction)
 export(getKsPCAData)
 export(plotPP)

@@ -167,47 +167,50 @@ rfcv <- funkyModel(
 \dontrun{
 set.seed(1234567)
 dat <- simulatePP(
-          cellVarData =
-            data.frame("stage" = c(0, 1),
-                       "A" = c(0, 0),
-                       "B" = c(1 / 50, 1 / 100)),
-          cellKappaData = data.frame(
-                       "cell" = c("A", "B"),
-                       "clusterCell" = c(NA, "A"),
-                       "kappa" = c(20, 5) ),
-          peoplePerStage = 20,
-          imagesPerPerson = 3,
-          silent = FALSE
-       )
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "A" = c(0, 0),
+      "B" = c(1 / 50, 1 / 100)
+    ),
+  cellKappaData = data.frame(
+    "cell" = c("A", "B"),
+    "clusterCell" = c(NA, "A"),
+    "kappa" = c(20, 5)
+  ),
+  peoplePerStage = 20,
+  imagesPerPerson = 3,
+  silent = FALSE
+)
 pcaData <- getKsPCAData(dat,
   repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
-  )
+)
 pcaMeta <- simulateMeta(pcaData,
   metaInfo = data.frame(
     "var" = c("randUnif", "randBin", "corrNorm"),
     "rdist" = c("runif", "rbinom", "rnorm"),
     "Stage_0" = c("0.5", "0.5", "1"),
     "Stage_1" = c("0.5", "0.5", "2")
-    )
- )
+  )
+)
 
 rfcv1 <- funkyModel(
   data = pcaMeta, outcome = "Stage", unit = "Person",
   metaNames = c("randUnif", "randBin", "corrNorm"),
-  nTrees =10, synthetics = 25
+  nTrees = 10, synthetics = 25
 )
 
 rfcv2 <- funkyModel(
   data = pcaData, outcome = "Stage", unit = "Person",
-  nTrees =10, synthetics = 25
+  nTrees = 10, synthetics = 25
 )
 
-onlyMeta <- pcaMeta[,c('Stage','Person','randUnif','randBin','corrNorm')]
+onlyMeta <- pcaMeta[, c("Stage", "Person", "randUnif", "randBin", "corrNorm")]
 rfcv3 <- funkyModel(
   data = onlyMeta, outcome = "Stage", unit = "Person",
-  metaNames = c('randUnif','randBin','corrNorm'),
-  nTrees =10, synthetics = 25
+  metaNames = c("randUnif", "randBin", "corrNorm"),
+  nTrees = 10, synthetics = 25
 )
 }
 }
