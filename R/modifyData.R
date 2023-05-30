@@ -27,8 +27,8 @@
 #'       "C" = c(1 / 100, 1 / 100)
 #'     ),
 #'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B","C"),
-#'     "clusterCell" = c(NA, "A",NA),
+#'     "cell" = c("A", "B", "C"),
+#'     "clusterCell" = c(NA, "A", NA),
 #'     "kappa" = c(20, 5, 10)
 #'   ),
 #'   peoplePerStage = 10,
@@ -37,13 +37,15 @@
 #' )
 #'
 #' # Use Case 1
-#' data_ct <- getCountData(dat,'Stage','Person','Image')
+#' data_ct <- getCountData(dat, "Stage", "Person", "Image")
 #'
 #' \dontrun{
-#' dat_mod <- funkyModel(data = data_ct$dat,
-#'              outcome='Stage',unit = 'Person',
-#'              metaNames = data_ct$cells,
-#'              synthetics = 25,nTrees = 50)
+#' dat_mod <- funkyModel(
+#'   data = data_ct$dat,
+#'   outcome = "Stage", unit = "Person",
+#'   metaNames = data_ct$cells,
+#'   synthetics = 25, nTrees = 50
+#' )
 #' }
 #'
 #'
@@ -59,8 +61,8 @@
 #'       "D" = c(1 / 50, 1 / 100)
 #'     ),
 #'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B","C","D"),
-#'     "clusterCell" = c(NA, "A",NA,"B"),
+#'     "cell" = c("A", "B", "C", "D"),
+#'     "clusterCell" = c(NA, "A", NA, "B"),
 #'     "kappa" = c(20, 5, 10, 4)
 #'   ),
 #'   peoplePerStage = 15,
@@ -72,42 +74,50 @@
 #'   repeatedUniqueId = "Image",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
-#' data_ct1 <- getCountData(dat,'Stage','Person','Image',data_append=pcaData)
+#' data_ct1 <- getCountData(dat, "Stage", "Person", "Image", data_append = pcaData)
 #'
-#' dat_mod <- funkyModel(data = data_ct1$dat,
-#'                       outcome='Stage',unit = 'Person',
-#'                       metaNames = data_ct1$cells,
-#'                       synthetics = 25,nTrees = 50)
+#' dat_mod <- funkyModel(
+#'   data = data_ct1$dat,
+#'   outcome = "Stage", unit = "Person",
+#'   metaNames = data_ct1$cells,
+#'   synthetics = 25, nTrees = 50
+#' )
 #' }
-getCountData <- function(cell_data, outcome, unit, repeatedId=NULL,
-                       data_append = NULL){
+getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
+                         data_append = NULL) {
   # Setup Data
-  results <- unique(cell_data[,c(outcome, unit)])
+  results <- unique(cell_data[, c(outcome, unit)])
 
   units <- unique(cell_data[[unit]])
-  cellTypes <- unique(cell_data[['cellType']])
+  cellTypes <- unique(cell_data[["cellType"]])
 
-  results <- cbind(results,
-                   matrix(ncol=length(cellTypes)))
-  colnames(results) <- c(outcome, unit,cellTypes)
+  results <- cbind(
+    results,
+    matrix(ncol = length(cellTypes))
+  )
+  colnames(results) <- c(outcome, unit, cellTypes)
 
   # Get Average Counts
-  for(u in units){
-    for(ct in cellTypes){
-      results[results[[unit]]==u,ct] <-
-        nrow(cell_data[cell_data[[unit]]==u & cell_data[['cellType']]==ct,])
+  for (u in units) {
+    for (ct in cellTypes) {
+      results[results[[unit]] == u, ct] <-
+        nrow(cell_data[cell_data[[unit]] == u & cell_data[["cellType"]] == ct, ])
     }
 
-    if(!is.null(repeatedId)){
-      results[results[[unit]]==u,-c(1:2)] <- results[results[[unit]]==u,-c(1:2)] /
-        length(unique(cell_data[cell_data[[unit]]==u,repeatedId]) )
+    if (!is.null(repeatedId)) {
+      results[results[[unit]] == u, -c(1:2)] <- results[results[[unit]] == u, -c(1:2)] /
+        length(unique(cell_data[cell_data[[unit]] == u, repeatedId]))
     }
   }
   rownames(results) <- NULL
 
   # Return Data
-  if(!is.null(data_append)) return(list("dat"=merge(data_append, results),
-                              'cells'=cellTypes))
+  if (!is.null(data_append)) {
+    return(list(
+      "dat" = merge(data_append, results),
+      "cells" = cellTypes
+    ))
+  }
 
-  list("dat"=results,'cells'=cellTypes)
+  list("dat" = results, "cells" = cellTypes)
 }
