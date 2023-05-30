@@ -23,8 +23,7 @@ Imports:
     spatstat.geom,
     stats,
     stringr,
-    tidyr,
-    utils
+    tidyr
 Suggests: 
     knitr,
     pROC,
