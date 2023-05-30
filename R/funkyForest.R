@@ -103,7 +103,7 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 
   # Setup
   underlyingDataAlignedFunctions <- .getUnderlyingVariable(colnames(data),
-                                                           returnUnique = FALSE
+    returnUnique = FALSE
   )
   # underlyingDataAlignedFunctions <- colnames(data)[!(colnames(data) %in%
   #   c(outcome, unit, repeatedId, metaNames))]
