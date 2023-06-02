@@ -1,7 +1,10 @@
 #' Get Cell Count Data
 #'
-#' This (underwork) function gets the average cell counts per image. It is
-#'   classified as underwork because it requires the 'cellType' column.
+#' This (underwork) function gets the average percent cell counts per image, if
+#'  there are repeated images (i.e. repeatedId is not NULL), then the cell
+#'  percents are calculated for each image and then then these percentages are
+#'  averaged. The method is classified as underwork because it requires the
+#'  'cellType' column rather than having multiple options.
 #'
 #' @param cell_data Data.frame of cell data information. Must have cellType
 #'  column. Future extensions will remove this restriction.
@@ -87,8 +90,8 @@ getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
                          data_append = NULL) {
   # Setup Data
   results <- unique(cell_data[, c(outcome, unit)])
+  results_tmp <- unique(cell_data[, c(outcome, unit, repeatedId)])
 
-  units <- unique(cell_data[[unit]])
   cellTypes <- unique(cell_data[["cellType"]])
 
   results <- cbind(
@@ -98,23 +101,39 @@ getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
   colnames(results) <- c(outcome, unit, cellTypes)
 
   # Get Average Counts
-  for (u in units) {
+  for (i in 1:nrow(results_tmp)) {
     for (ct in cellTypes) {
-      results[results[[unit]] == u, ct] <-
-        nrow(cell_data[cell_data[[unit]] == u & cell_data[["cellType"]] == ct, ])
-    }
+      if(!is.null(repeatedId)){
+        results_tmp[i, ct] <-
+          nrow(cell_data[cell_data[,unit] == results_tmp[i,unit] &
+                           cell_data[,repeatedId] == results_tmp[i,repeatedId] &
+                           cell_data[,"cellType"] == ct, ])
+      }else{
+        results_tmp[i, ct] <-
+          nrow(cell_data[cell_data[,unit] == results_tmp[i,unit] &
+                           cell_data[,"cellType"] == ct, ])
 
-    if (!is.null(repeatedId)) {
-      results[results[[unit]] == u, -c(1:2)] <- results[results[[unit]] == u, -c(1:2)] /
-        length(unique(cell_data[cell_data[[unit]] == u, repeatedId]))
+      }
     }
+  }
+  # Make Percents
+  results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))] <-
+    results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))] /
+    rowSums(results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))])
+
+  for(i in 1:nrow(results)){
+    results[i,-c(1:2)] <- colMeans(
+      results_tmp[results_tmp[[outcome]]==results[i,outcome] &
+                    results_tmp[[unit]]==results[i,unit],
+                  !(colnames(results_tmp) %in%
+                      c(outcome,unit,repeatedId))])
   }
   rownames(results) <- NULL
 
   # Return Data
   if (!is.null(data_append)) {
     return(list(
-      "dat" = merge(data_append, results),
+      "dat" = merge(data_append, results, keep.x=TRUE),
       "cells" = cellTypes
     ))
   }
