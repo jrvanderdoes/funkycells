@@ -105,24 +105,6 @@ funkyForest <- function(data, outcome = colnames(data)[1],
   underlyingDataAlignedFunctions <- .getUnderlyingVariable(colnames(data),
     returnUnique = FALSE
   )
-  # underlyingDataAlignedFunctions <- colnames(data)[!(colnames(data) %in%
-  #   c(outcome, unit, repeatedId, metaNames))]
-  # for (i in 1:length(underlyingDataAlignedFunctions)) {
-  #   underlyingDataAlignedFunctions[i] <-
-  #     substr(
-  #       underlyingDataAlignedFunctions[i], 1,
-  #       utils::tail(unlist(gregexpr("_", underlyingDataAlignedFunctions[i])),
-  #         n = 1
-  #       ) - 1
-  #     )
-  # }
-  # underlyingDataAlignedFunctions <-
-  #   underlyingDataAlignedFunctions[underlyingDataAlignedFunctions != ""]
-  # underlyingDataAlignedFunctions <- c(
-  #   colnames(data)[colnames(data) %in% c(outcome, unit, repeatedId)],
-  #   underlyingDataAlignedFunctions, metaNames
-  # )
-
   underlyingVars <- unique(
     underlyingDataAlignedFunctions[!(underlyingDataAlignedFunctions %in%
       c(outcome, unit, repeatedId))]
@@ -130,8 +112,6 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 
   data_result <- data.frame(
     "var" = underlyingVars,
-    # xx 'splits'=0, 'giniDec'=0,
-    # xx 'varImp'=0, 'varImpCt'=0,
     "VI" = 0
   )
   if (keepModels) RF <- list()
