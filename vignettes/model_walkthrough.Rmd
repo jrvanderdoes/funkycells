@@ -61,7 +61,7 @@ img1 <- plotPP(
   data = cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
-png("./paper/diagram_pp1", width = 800, height = 800)
+png("./paper/diagram_pp1.png", width = 800, height = 800)
 # png("./vignettes/paper/diagram_pp1.png", width = 800, height = 800)
 print(img1)
 dev.off()
@@ -70,7 +70,7 @@ img21 <- plotPP(
   data = cell_data[cell_data$Image == 21, c("x", "y", "cellType")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
-png("./paper/diagram_pp21", width = 800, height = 800)
+png("./paper/diagram_pp21.png", width = 800, height = 800)
 # png("./vignettes/paper/diagram_pp21.png", width = 800, height = 800)
 print(img21)
 dev.off()
@@ -79,7 +79,7 @@ img41 <- plotPP(
   data = cell_data[cell_data$Image == 41, c("x", "y", "cellType")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
-png("./paper/diagram_pp41", width = 800, height = 800)
+png("./paper/diagram_pp41.png", width = 800, height = 800)
 # png("./vignettes/paper/diagram_pp41.png", width = 800, height = 800)
 print(img41)
 dev.off()
@@ -118,7 +118,7 @@ AAfig_im1 <- ggplot2::ggplot() +
     axis.title = ggplot2::element_blank(),
     axis.text = ggplot2::element_blank()
   )
-png("./paper/diagram_K_AA_i1", width = 800, height = 800)
+png("./paper/diagram_K_AA_i1.png", width = 800, height = 800)
 # png("./vignettes/paper/diagram_K_AA_i1.png", width = 800, height = 800)
 print(AAfig_im1)
 dev.off()
@@ -130,7 +130,7 @@ ABfig_im1 <- ggplot2::ggplot() +
     axis.title = ggplot2::element_blank(),
     axis.text = ggplot2::element_blank()
   )
-png("./paper/diagram_K_AB_i1", width = 800, height = 800)
+png("./paper/diagram_K_AB_i1.png", width = 800, height = 800)
 # png("./vignettes/paper/diagram_K_AB_i1.png", width = 800, height = 800)
 print(ABfig_im1)
 dev.off()
@@ -160,7 +160,7 @@ pcaMeta <- simulateMeta(pcaData,
 ```
 
 This data is fed into `funkyModel()` which adds synthetics and examines the variables efficacy in predicting the outcome.
-```{r simulate_meta, eval=full_run | full_run}
+```{r evaluate_model, eval=full_run | full_run}
 set.seed(123)
 model_fm <- funkyModel(
   data = pcaMeta,
@@ -237,5 +237,63 @@ png("./paper/diagram_variableimportance.png")
 # png("./vignettes/paper/diagram_variableimportance.png")
 print(plot_vi_full)
 dev.off()
+
+
+# Plot
+maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+plot_vi_details <- ggplot2::ggplot(
+  data = viData,
+  mapping = ggplot2::aes(
+    x = factor(stats::reorder(var, est)),
+    y = ifelse(est / maxVal > 1, 1,
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
+    ),
+    group = 1
+  )
+) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(
+      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
+      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
+    ),
+    color = "black", width = 0.2
+  ) +
+  ggplot2::geom_point(color = "black", size = 3) +
+  ggplot2::geom_hline(
+    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
+    color = "red", linetype = "dotted", linewidth = 2
+  ) +
+  ggplot2::coord_flip(ylim = c(0, 1)) +
+  ggplot2::xlab(NULL) +
+  ggplot2::ylim(c(0, 1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    #axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
+  ggplot2::geom_line(ggplot2::aes(
+    x = ordered(viData[order(-est), "var"]),
+    y = InterpolationCutoff / maxVal
+  ), color = "orange", linetype = "dashed", linewidth = 2) +
+  ggplot2::ylab(paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+  ))
+
+png("./paper/diagram_variableimportance_names.png")
+# png("./vignettes/paper/diagram_variableimportance.png")
+print(plot_vi_details)
+dev.off()
+
 
 ```
