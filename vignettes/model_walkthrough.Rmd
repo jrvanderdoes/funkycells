@@ -1,0 +1,241 @@
+---
+title: "model_walkthrough"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{model_walkthrough}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(funkycells)
+```
+
+```{r define_functions, echo=FALSE}
+full_run <- FALSE # This runs only computations that are feasibly quick
+paper_run <- FALSE
+```
+
+This vignettes walks through the approach `funkycells` takes to modeling data. The package `funkycells` is best employed when considering spatial data. While this data is typically collected, below such data is created. 
+```{r build_data}
+set.seed(123)
+cell_data <- simulatePP(
+  cellVarData =
+    data.frame(
+      "stage" = c(0, 1),
+      "A" = c(0, 0),
+      "B" = c(1 / 100, 1 / 300)
+    ),
+  cellKappaData =
+    data.frame(
+      "cell" = c("A", "B"),
+      "clusterCell" = c(NA, "A"),
+      "kappa" = c(20, 5)
+    ),
+  peoplePerStage = 15,
+  imagesPerPerson = 2,
+  silent = FALSE
+)
+```
+
+The created data has two outcomes ($0$ and $1$), and two cells ($A$ and $B$). The cells are constructed such that $A$ is completely spatial random and $B$ clusters around $A$. Moreover, $B$ has increased clustering in stage $1$ when compared to stage $0$. The data has $15$ patients in each stage, with $2$ images per patient. An example image for each stage is given below.
+```{r show_spatial_images}
+plotPP(cell_data[cell_data$Image==1,c('x','y','cellType')],
+       ptSize = 2, colorGuide = ggplot2::guide_legend(title="Cells"),
+       xlim = c(0, 1), ylim=c(0,1))
+
+plotPP(cell_data[cell_data$Image==61,c('x','y','cellType')],
+       ptSize = 2, colorGuide = ggplot2::guide_legend(title="Cells"),
+       xlim = c(0, 1), ylim=c(0,1))
+```
+
+```{r paper_spatial_images, echo=FALSE, eval=paper_run}
+img1 <- plotPP(
+  data = cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
+  ptSize = 3, dropAxes = T, colorGuide = "none"
+)
+png("./paper/diagram_pp1", width = 800, height = 800)
+# png("./vignettes/paper/diagram_pp1.png", width = 800, height = 800)
+print(img1)
+dev.off()
+
+img21 <- plotPP(
+  data = cell_data[cell_data$Image == 21, c("x", "y", "cellType")],
+  ptSize = 3, dropAxes = T, colorGuide = "none"
+)
+png("./paper/diagram_pp21", width = 800, height = 800)
+# png("./vignettes/paper/diagram_pp21.png", width = 800, height = 800)
+print(img21)
+dev.off()
+
+img41 <- plotPP(
+  data = cell_data[cell_data$Image == 41, c("x", "y", "cellType")],
+  ptSize = 3, dropAxes = T, colorGuide = "none"
+)
+png("./paper/diagram_pp41", width = 800, height = 800)
+# png("./vignettes/paper/diagram_pp41.png", width = 800, height = 800)
+print(img41)
+dev.off()
+```
+
+The next step is to summarize the functions. This is done through $2$-way interactions using $K$ functions. With only two cells, there are four possible interactions ($A$-$A$,$A$-$B$, $B$-$A$, and $B$-$B$). Often reverse interactions (i.e. $A$-$B$ and $B$-$A$) are highly related and so consideration of only one is encouraged to remove variables in the model and improve power. An example of the $K$ functions is given below.
+```{r show_K_functions}
+AB_ex <- getKFunction(cell_data[cell_data$Image==1,
+                             !(colnames(cell_data)%in%('Stage'))],
+             agents = c("A","B"),unit = "Person",repeatedUniqueId = "Image",
+             rCheckVals = seq(0,0.25,0.01),xRange = c(0,1),yRange = c(0,1))
+
+ggplot2::ggplot() +
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = AB_ex, linewidth = 2) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank()
+  )
+```
+
+```{r paper_K_functions, echo=FALSE, eval=paper_run}
+AA_im1 <- getKFunction(cell_data[cell_data$Image==1,
+                             !(colnames(cell_data)%in%('Stage'))],
+             agents = c("A","A"),unit = "Person",repeatedUniqueId = "Image",
+             rCheckVals = seq(0,0.25,0.01),xRange = c(0,1),yRange = c(0,1))
+AB_im1 <- getKFunction(cell_data[cell_data$Image==1,
+                             !(colnames(cell_data)%in%('Stage'))],
+             agents = c("A","B"),unit = "Person",repeatedUniqueId = "Image",
+             rCheckVals = seq(0,0.25,0.01),xRange = c(0,1),yRange = c(0,1))
+
+AAfig_im1 <- ggplot2::ggplot() +
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = AA_im1, linewidth = 3) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank()
+  )
+png("./paper/diagram_K_AA_i1", width = 800, height = 800)
+# png("./vignettes/paper/diagram_K_AA_i1.png", width = 800, height = 800)
+print(AAfig_im1)
+dev.off()
+
+ABfig_im1 <- ggplot2::ggplot() +
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = AB_im1, linewidth = 3) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank()
+  )
+png("./paper/diagram_K_AB_i1", width = 800, height = 800)
+# png("./vignettes/paper/diagram_K_AB_i1.png", width = 800, height = 800)
+print(ABfig_im1)
+dev.off()
+```
+
+These functions must then be projected into finite dimensions. Since $K$ functions are so commonly used, `funkycells` has a specialized function for computing and projecting the $K$ functions through the popular functional principle components analysis. The following code projects the funtions into $3$ principle components each.
+```{r pca}
+pcaData <- getKsPCAData(
+  data = cell_data, repeatedUniqueId = "Image",
+  agents_df = data.frame(c('A','A','B'),c('A','B','B')),
+  xRange = c(0, 1), yRange = c(0, 1),
+  nPCs = 3, silent = F
+)
+```
+
+Often data is also collected with some meta-variables, such as with patient age or sex Both age and sex are simulated below. In the simulation, higher age is related to stage $1$ while sex has no effect.
+```{r simulate_meta}
+set.seed(123)
+pcaMeta <- simulateMeta(pcaData,
+  metaInfo = data.frame(
+    "var" = c("sex","age"),
+    "rdist" = c("rbinom","rnorm"),
+    "Stage_0" = c("0.5","25"),
+    "Stage_1" = c("0.5","26")
+  )
+)
+```
+
+This data is fed into `funkyModel()` which adds synthetics and examines the variables efficacy in predicting the outcome.
+```{r simulate_meta, eval=full_run | full_run}
+set.seed(123)
+model_fm <- funkyModel(
+  data = pcaMeta,
+  outcome = "Stage",
+  unit = "Person",
+  metaNames = c("sex", "age")
+)
+```
+
+The model returns, in addition to other details, a variable importance plot. This plot can be used to compare efficacy of each variable in comparison to each other and random noise.
+```{r show_variable_importance, eval=full_run}
+model_fm$viPlot
+```
+
+```{r paper_variable_importance, echo=FALSE, eval=paper_run}
+# Get Vars
+viData <- model_fm$VariableImportance
+accData <- model_fm$AccuracyEstimate
+NoiseCutoff <- model_fm$NoiseCutoff
+InterpolationCutoff <- model_fm$InterpolationCutoff
+
+# Plot
+maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+plot_vi_full <- ggplot2::ggplot(
+  data = viData,
+  mapping = ggplot2::aes(
+    x = factor(stats::reorder(var, est)),
+    y = ifelse(est / maxVal > 1, 1,
+      ifelse(est / maxVal < 0, 0,
+        est / maxVal
+      )
+    ),
+    group = 1
+  )
+) +
+  ggplot2::geom_errorbar(
+    ggplot2::aes(
+      ymin = ifelse((est - sd) / maxVal < 0, 0, (est - sd) / maxVal),
+      ymax = ifelse((est + sd) / maxVal > 1, 1, (est + sd) / maxVal)
+    ),
+    color = "black", width = 0.2
+  ) +
+  ggplot2::geom_point(color = "black", size = 3) +
+  ggplot2::geom_hline(
+    ggplot2::aes(yintercept = max(0, min(1, NoiseCutoff / maxVal))),
+    color = "red", linetype = "dotted", linewidth = 2
+  ) +
+  ggplot2::coord_flip(ylim = c(0, 1)) +
+  ggplot2::xlab(NULL) +
+  ggplot2::ylim(c(0, 1)) +
+  ggplot2::ylab(NULL) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.text = ggplot2::element_text(size = 18),
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 20)
+  ) +
+  ggplot2::geom_line(ggplot2::aes(
+    x = ordered(viData[order(-est), "var"]),
+    y = InterpolationCutoff / maxVal
+  ), color = "orange", linetype = "dashed", linewidth = 2) +
+  ggplot2::ylab(paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+  ))
+
+png("./paper/diagram_variableimportance.png")
+# png("./vignettes/paper/diagram_variableimportance.png")
+print(plot_vi_full)
+dev.off()
+
+```
