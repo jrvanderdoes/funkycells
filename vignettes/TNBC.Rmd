@@ -101,7 +101,7 @@ kf <- getKFunction(
 k_fig <- ggplot2::ggplot() +
   ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = kf, size = 2) +
   ggplot2::geom_line(ggplot2::aes(x = seq(0, 50, 1), y = pi * seq(0, 50, 1)^2),
-    size = 2, col = "red", linetype = "dashed"
+    linewidth = 2, col = "red", linetype = "dashed"
   ) +
   ggplot2::theme_bw() +
   ggplot2::theme(
@@ -109,8 +109,8 @@ k_fig <- ggplot2::ggplot() +
     axis.text = ggplot2::element_blank()
   )
 
-png("./paper/tnbc_person1_tumour_mononeu_k.png", width = 800, height = 800)
-# png("./vignettes/paper/tnbc_person1_tumour_mononeu_k.png", width = 800, height = 800)
+png("./paper/tnbc_person2_tumour_mononeu_k.png", width = 800, height = 800)
+# png("./vignettes/paper/tnbc_person2_tumour_mononeu_k.png", width = 800, height = 800)
 print(k_fig)
 dev.off()
 ```
@@ -232,9 +232,13 @@ plotPP(dat[dat$Image == 1, c("x", "y", "cellType")],
 ```
 
 ```{r paper_simtnbc_comparision, echo=FALSE, eval=paperRun}
+tmp <- length(table(dat[dat$Image == 1,c("cellType")]))
+clrs <- scales::hue_pal()(tmp)
+
 tnbc_image <- plotPP(
   data = TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
-  ptSize = 3, dropAxes = T, colorGuide = "none"
+  ptSize = 3, dropAxes = T, colorGuide = "none",
+  colors=clrs[-length(clrs)]
 )
 png("./paper/tnbc_image.png", width = 800, height = 800)
 # png("./vignettes/paper/tnbc_image.png", width = 800, height = 800)
@@ -243,7 +247,8 @@ dev.off()
 
 sim_image <- plotPP(
   data = dat[dat$Image == 1, c("x", "y", "cellType")],
-  ptSize = 3, dropAxes = T, colorGuide = "none"
+  ptSize = 3, dropAxes = T, colorGuide = "none",
+  colors=c(clrs[1:2],clrs[16],clrs[3:7],clrs[15],clrs[8:14])
 )
 png("./paper/sim_image.png", width = 800, height = 800)
 # png("./vignettes/paper/sim_image.png", width = 800, height = 800)
@@ -260,7 +265,7 @@ cells_interactions <- rbind(
 )
 
 set.seed(12345)
-pcaData <- getPCAData(
+pcaData <- getKsPCAData(
   data = dat, repeatedUniqueId = "Image",
   agents_df = cells_interactions,
   xRange = c(0, 1), yRange = c(0, 1),
@@ -521,7 +526,7 @@ cells_interactions <- rbind(
 )
 
 set.seed(12345)
-pcaData <- getPCAData(
+pcaData <- getKsPCAData(
   data = dat, repeatedUniqueId = "Image",
   agents_df = cells_interactions,
   xRange = c(0, 1), yRange = c(0, 1),
@@ -679,7 +684,7 @@ dev.off()
 
 With this confidence, we now consider the TNBC phenotype data.
 ```{r tnbc_pheno_model, eval=full_run}
-dataPCA_pheno <- getPCAData(
+dataPCA_pheno <- getKsPCAData(
   data = TNBC_pheno, unit = "Person",
   agents_df = pheno_interactions,
   rCheckVals = seq(0, 50, 1)
