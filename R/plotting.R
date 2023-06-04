@@ -4,7 +4,8 @@
 #'
 #' @param data Data.frame with x,y, and agent type (in that order)
 #' @param colorGuide (Optional) String for guides(color=) in ggplot2. Usually
-#'     NULL or 'none' is sufficient. Default is NULL.
+#'     NULL or 'none' is sufficient, but ggplot2::guide_legend() can also be
+#'     used for more custom results. Default is NULL.
 #' @param ptSize (Optional) Numeric indicating point size. Default is 1.
 #' @param xlim (Optional) Two value numeric vector indicating the size of the
 #'     region in the x-direction. Default is c(min(x),max(x)).
@@ -50,7 +51,9 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
     ) +
     ggplot2::theme_bw() +
     ggplot2::xlim(xlim) +
+    ggplot2::xlab(NULL) +
     ggplot2::ylim(ylim) +
+    ggplot2::ylab(NULL) +
     ggplot2::guides(color = colorGuide)
   if (dropAxes) {
     retPlot <- retPlot +
