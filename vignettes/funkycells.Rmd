@@ -24,7 +24,7 @@ library(funkycells)
 full_run <- FALSE # This runs only computations that are feasibly quick
 ```
 
-This documents a sample view of funkycells. Every function will be examined throughout this vignette, feel free to see the process from beginning to end or jumping to a given step in the document. Although each step in the funkycells process is addressed, detailed information on each function is left to their respective documentation.
+This documents a sample view of `funkycells`. Every function will be examined throughout this vignette, feel free to see the process from beginning to end or jumping to a given step in the document. Although each step in the `funkycells` process is addressed, detailed information on each function is left to their respective documentation.
 
 # Data
 
