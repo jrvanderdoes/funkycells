@@ -45,6 +45,7 @@
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/TNBC.html">TNBC</a>
+    <a class="dropdown-item" href="../articles/model_walkthrough.html">model_walkthrough</a>
   </div>
 </li>
       </ul>
@@ -265,7 +266,7 @@ effect).</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
-<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu">getPCAData</span><span class="op">(</span></span>
+<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKsPCAData.html">getKsPCAData</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">dat</span>, repeatedUniqueId <span class="op">=</span> <span class="st">"Image"</span>,</span>
 <span>  agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
 <span>  xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
@@ -397,7 +398,7 @@ this vignette.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
-<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu">getPCAData</span><span class="op">(</span></span>
+<span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKsPCAData.html">getKsPCAData</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">dat</span>, repeatedUniqueId <span class="op">=</span> <span class="st">"Image"</span>,</span>
 <span>  agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
 <span>  xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
@@ -427,7 +428,7 @@ figure not given for computational reasons)</p>
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viPlot</span></span></code></pre></div>
 <p>With this confidence, we now consider the TNBC phenotype data.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dataPCA_pheno</span> <span class="op">&lt;-</span> <span class="fu">getPCAData</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">dataPCA_pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKsPCAData.html">getKsPCAData</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">TNBC_pheno</span>, unit <span class="op">=</span> <span class="st">"Person"</span>,</span>
 <span>  agents_df <span class="op">=</span> <span class="va">pheno_interactions</span>,</span>
 <span>  rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">50</span>, <span class="fl">1</span><span class="op">)</span></span>
