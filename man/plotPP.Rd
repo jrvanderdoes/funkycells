@@ -19,7 +19,8 @@ plotPP(
 \item{data}{Data.frame with x,y, and agent type (in that order)}
 
 \item{colorGuide}{(Optional) String for guides(color=) in ggplot2. Usually
-NULL or 'none' is sufficient. Default is NULL.}
+NULL or 'none' is sufficient, but ggplot2::guide_legend() can also be
+used for more custom results. Default is NULL.}
 
 \item{ptSize}{(Optional) Numeric indicating point size. Default is 1.}
 

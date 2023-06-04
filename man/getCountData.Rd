@@ -33,8 +33,11 @@ data. This is treated as meta data for funkyForest.
 }
 }
 \description{
-This (underwork) function gets the average cell counts per image. It is
-classified as underwork because it requires the 'cellType' column.
+This (underwork) function gets the average percent cell counts per image, if
+there are repeated images (i.e. repeatedId is not NULL), then the cell
+percents are calculated for each image and then then these percentages are
+averaged. The method is classified as underwork because it requires the
+'cellType' column rather than having multiple options.
 }
 \examples{
 dat <- simulatePP(
@@ -46,8 +49,8 @@ dat <- simulatePP(
       "C" = c(1 / 100, 1 / 100)
     ),
   cellKappaData = data.frame(
-    "cell" = c("A", "B","C"),
-    "clusterCell" = c(NA, "A",NA),
+    "cell" = c("A", "B", "C"),
+    "clusterCell" = c(NA, "A", NA),
     "kappa" = c(20, 5, 10)
   ),
   peoplePerStage = 10,
@@ -56,13 +59,15 @@ dat <- simulatePP(
 )
 
 # Use Case 1
-data_ct <- getCountData(dat,'Stage','Person','Image')
+data_ct <- getCountData(dat, "Stage", "Person", "Image")
 
 \dontrun{
-dat_mod <- funkyModel(data = data_ct$dat,
-             outcome='Stage',unit = 'Person',
-             metaNames = data_ct$cells,
-             synthetics = 25,nTrees = 50)
+dat_mod <- funkyModel(
+  data = data_ct$dat,
+  outcome = "Stage", unit = "Person",
+  metaNames = data_ct$cells,
+  synthetics = 25, nTrees = 50
+)
 }
 
 
@@ -78,8 +83,8 @@ dat <- simulatePP(
       "D" = c(1 / 50, 1 / 100)
     ),
   cellKappaData = data.frame(
-    "cell" = c("A", "B","C","D"),
-    "clusterCell" = c(NA, "A",NA,"B"),
+    "cell" = c("A", "B", "C", "D"),
+    "clusterCell" = c(NA, "A", NA, "B"),
     "kappa" = c(20, 5, 10, 4)
   ),
   peoplePerStage = 15,
@@ -91,11 +96,13 @@ pcaData <- getKsPCAData(dat,
   repeatedUniqueId = "Image",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )
-data_ct1 <- getCountData(dat,'Stage','Person','Image',data_append=pcaData)
+data_ct1 <- getCountData(dat, "Stage", "Person", "Image", data_append = pcaData)
 
-dat_mod <- funkyModel(data = data_ct1$dat,
-                      outcome='Stage',unit = 'Person',
-                      metaNames = data_ct1$cells,
-                      synthetics = 25,nTrees = 50)
+dat_mod <- funkyModel(
+  data = data_ct1$dat,
+  outcome = "Stage", unit = "Person",
+  metaNames = data_ct1$cells,
+  synthetics = 25, nTrees = 50
+)
 }
 }
