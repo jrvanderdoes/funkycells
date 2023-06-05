@@ -853,9 +853,10 @@ funkyModel <- function(data, K = 10,
 #' @inheritParams funkyModel
 #'
 #' @return List with two entries:
-#'  1. data: Data.frame with outcome, unit, and data (may be only permutate or real
+#'  1. data: Data.frame with outcome, unit, and data (may be only permuted or real
 #'    and permuted based on settings)
 #'  2. metaNames: Vector of the metaNames in the data
+#' @noRd
 .permuteData <- function(data_base, outcome, unit,
                          synthetics, KFunctions, metaNames,
                          underlyingDataAlignedFunctions, nPCs,
