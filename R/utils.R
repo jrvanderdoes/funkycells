@@ -52,9 +52,7 @@
 
   if (typeBind == "row") {
     # No error checking. See simulatePP or .generateCSRPatterns
-    for (i in 1:length(data_list)) {
-      data_df <- rbind(data_df, data_list[[i]])
-    }
+    data_df <- do.call(rbind, data_list)
   } else if (typeBind == "col") {
     # See if first column is DF or not. Can occur based on getKsPCAData
     if (dim(data_list[[1]])[[1]] > 1) {
