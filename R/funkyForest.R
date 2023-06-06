@@ -185,18 +185,17 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #' @return Data.frame which is the updated totVarImportance adding in the new
 #'     tree information.
 #' @noRd
-.computeTotalVarImportance <- function(tree, totVarImportance = NULL) {
+.computeTotalVarImportance <- function(tree, totVarImportance) {
   tmp1 <- as.data.frame(tree$variable.importance)
   tmp2 <- data.frame(
-    "var" = rownames(tmp1),
+    "var" = .getUnderlyingVariable(rownames(tmp1), returnUnique = FALSE),
     "VI" = tmp1[, 1]
   )
-  tmp2$var <- .getUnderlyingVariable(rownames(tmp1), returnUnique = FALSE)
 
   # Combine Data
-  if (is.null(totVarImportance)) {
-    totVarImportance <- data.frame("var" = unique(tmp2$var), "VI" = 0)
-  }
+  # if (is.null(totVarImportance)) {
+  #   totVarImportance <- data.frame("var" = unique(tmp2$var), "VI" = 0)
+  # }
 
   for (v in unique(tmp2$var)) {
     totVarImportance[totVarImportance$var == v, "VI"] <-
