@@ -340,7 +340,7 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
+    axis.text = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -400,6 +400,7 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::theme_bw() +
   ggplot2::theme(
     axis.text = ggplot2::element_text(size = 18),
+    axis.text.x = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -598,8 +599,7 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
-    axis.text.y = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -659,6 +659,7 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::theme_bw() +
   ggplot2::theme(
     axis.text = ggplot2::element_text(size = 18),
+    axis.text.x = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -750,8 +751,8 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
-    axis.text.y = ggplot2::element_blank(),
+    # axis.text = ggplot2::element_text(size = 18),
+    axis.text = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -810,7 +811,7 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text.x = ggplot2::element_text(size = 17),
+    axis.text.x = ggplot2::element_blank(),
     axis.text.y = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
