@@ -124,7 +124,7 @@ the data.
 
 The non-interactive data is simulated as follows.
 ```{r buildNUllData}
-set.seed(12345)
+set.seed(123)
 dat0 <- simulatePP(
   cellVarData =
     data.frame(
@@ -283,7 +283,7 @@ pcaMeta <- simulateMeta(pcaData,
 
 We analyze the data.
 ```{r analyzeNoEffect, eval=full_run}
-set.seed(12345)
+set.seed(123)
 rfcv <- funkyModel(
   data = pcaMeta,
   outcome = "Stage",
@@ -297,7 +297,7 @@ Resulting in the variable importance figures. The code for these is given below,
 rfcv$viPlot
 ```
 ```{r plot_noeffect_top25, fig.width=5, fig.height=5, fig.cap="No Effect Variable Importance (Top 25)", eval=full_run}
-rfcv$subset_viplot
+rfcv$subset_viPlot
 ```
 
 ```{r paper_noEffect, echo=FALSE, eval=paperRun}
@@ -427,7 +427,7 @@ dev.off()
 
 Now we consider the simulated model with effects.
 ```{r effectSimulationAndModel, eval=full_run}
-set.seed(12345)
+set.seed(1234567)
 dat0 <- simulatePP(
   cellVarData =
     data.frame(
@@ -526,7 +526,6 @@ cells_interactions <- rbind(
   data.frame("X1" = cells, "X2" = cells)
 )
 
-set.seed(12345)
 pcaData <- getKsPCAData(
   data = dat, repeatedUniqueId = "Image",
   agents_df = cells_interactions,
@@ -542,7 +541,6 @@ pcaMeta <- simulateMeta(pcaData,
   )
 )
 
-set.seed(12345)
 rfcv <- funkyModel(
   data = pcaMeta,
   outcome = "Stage",
