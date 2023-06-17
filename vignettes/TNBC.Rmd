@@ -226,7 +226,7 @@ plotPP(
 )
 ```
 ```{r sim_image, fig.width=5, fig.height=5, fig.cap="Simulated Patient Image"}
-plotPP(dat[dat$Image == 1, c("x", "y", "cellType")],
+plotPP(dat[dat$Image == 18, c("x", "y", "cellType")],
   ptSize = 1, dropAxes = T, colorGuide = "none"
 )
 ```
@@ -246,7 +246,7 @@ print(tnbc_image)
 dev.off()
 
 sim_image <- plotPP(
-  data = dat[dat$Image == 1, c("x", "y", "cellType")],
+  data = dat[dat$Image == 18, c("x", "y", "cellType")],
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors=c(clrs[1:2],clrs[16],clrs[3:7],clrs[15],clrs[8:14])
 )
@@ -427,7 +427,7 @@ dev.off()
 
 Now we consider the simulated model with effects.
 ```{r effectSimulationAndModel, eval=full_run}
-set.seed(1234567)
+set.seed(123456)
 dat0 <- simulatePP(
   cellVarData =
     data.frame(
@@ -537,7 +537,7 @@ pcaMeta <- simulateMeta(pcaData,
     "var" = c("age"),
     "rdist" = c("rnorm"),
     "Stage_0" = c("25"),
-    "Stage_1" = c("26")
+    "Stage_1" = c("27")
   )
 )
 
@@ -691,7 +691,7 @@ dataPCA_pheno <- getKsPCAData(
 
 dataPCAAge_pheno <- merge(dataPCA_pheno, TNBC_meta)
 
-set.seed(12345)
+set.seed(123456)
 rfcv <- funkyModel(
   data = dataPCAAge_pheno, K = 10,
   outcome = "Class", unit = "Person",
