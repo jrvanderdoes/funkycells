@@ -140,7 +140,7 @@ interactions, if present, and <span class="math inline">\(2\)</span> for
 each class that are indistinguishable to add some noise to the data.</p>
 <p>The non-interactive data is simulated as follows.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
 <span>  cellVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -282,7 +282,7 @@ effect).</p>
 <span><span class="op">)</span></span></code></pre></div>
 <p>We analyze the data.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pcaMeta</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"Stage"</span>,</span>
@@ -295,10 +295,10 @@ this vignette.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">viPlot</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viplot</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viPlot</span></span></code></pre></div>
 <p>Now we consider the simulated model with effects.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234567</span><span class="op">)</span></span>
 <span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
 <span>  cellVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -397,7 +397,6 @@ this vignette.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="st">"X1"</span> <span class="op">=</span> <span class="va">cells</span>, <span class="st">"X2"</span> <span class="op">=</span> <span class="va">cells</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
 <span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKsPCAData.html">getKsPCAData</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">dat</span>, repeatedUniqueId <span class="op">=</span> <span class="st">"Image"</span>,</span>
 <span>  agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
@@ -413,7 +412,6 @@ this vignette.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pcaMeta</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"Stage"</span>,</span>
