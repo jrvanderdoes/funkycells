@@ -398,7 +398,7 @@ funkyModel <- function(data, K = 10,
     tmp[i] <- unlist(tmp[i])
   }
 
-  # If value is 0, will jsut take rather than scale
+  # If value is 0, will just take rather than scale
   tmp1 <- noiseCO / tmp[, -1]
   tmp1[sapply(tmp1, simplify = "matrix", is.infinite)] <- 1
 
