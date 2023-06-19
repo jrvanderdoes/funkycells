@@ -248,7 +248,7 @@ TNBC Patient Image
 </p>
 </div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPP.html">plotPP</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span><span class="va">dat</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"cellType"</span><span class="op">)</span><span class="op">]</span>,</span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPP.html">plotPP</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span><span class="va">dat</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="fl">18</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"cellType"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  ptSize <span class="op">=</span> <span class="fl">1</span>, dropAxes <span class="op">=</span> <span class="cn">T</span>, colorGuide <span class="op">=</span> <span class="st">"none"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -298,7 +298,7 @@ this vignette.</p>
 <code class="sourceCode R"><span><span class="va">rfcv</span><span class="op">$</span><span class="va">subset_viPlot</span></span></code></pre></div>
 <p>Now we consider the simulated model with effects.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234567</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123456</span><span class="op">)</span></span>
 <span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
 <span>  cellVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -408,7 +408,7 @@ this vignette.</p>
 <span>    <span class="st">"var"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"rdist"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rnorm"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"Stage_0"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Stage_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"26"</span><span class="op">)</span></span>
+<span>    <span class="st">"Stage_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"27"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -434,7 +434,7 @@ figure not given for computational reasons)</p>
 <span></span>
 <span><span class="va">dataPCAAge_pheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">dataPCA_pheno</span>, <span class="va">TNBC_meta</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123456</span><span class="op">)</span></span>
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">dataPCAAge_pheno</span>, K <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  outcome <span class="op">=</span> <span class="st">"Class"</span>, unit <span class="op">=</span> <span class="st">"Person"</span>,</span>
