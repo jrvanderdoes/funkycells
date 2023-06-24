@@ -232,13 +232,13 @@ plotPP(dat[dat$Image == 18, c("x", "y", "cellType")],
 ```
 
 ```{r paper_simtnbc_comparision, echo=FALSE, eval=paperRun}
-tmp <- length(table(dat[dat$Image == 1,c("cellType")]))
+tmp <- length(table(dat[dat$Image == 1, c("cellType")]))
 clrs <- scales::hue_pal()(tmp)
 
 tnbc_image <- plotPP(
   data = TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
   ptSize = 3, dropAxes = T, colorGuide = "none",
-  colors=clrs[-length(clrs)]
+  colors = clrs[-length(clrs)]
 )
 png("./paper/tnbc_image.png", width = 800, height = 800)
 # png("./vignettes/paper/tnbc_image.png", width = 800, height = 800)
@@ -248,7 +248,7 @@ dev.off()
 sim_image <- plotPP(
   data = dat[dat$Image == 18, c("x", "y", "cellType")],
   ptSize = 3, dropAxes = T, colorGuide = "none",
-  colors=c(clrs[1:2],clrs[16],clrs[3:7],clrs[15],clrs[8:14])
+  colors = c(clrs[1:2], clrs[16], clrs[3:7], clrs[15], clrs[8:14])
 )
 png("./paper/sim_image.png", width = 800, height = 800)
 # png("./vignettes/paper/sim_image.png", width = 800, height = 800)
@@ -943,15 +943,15 @@ return_plot <-
     axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
-    #axis.title = ggplot2::element_text(size = 22),
+    # axis.title = ggplot2::element_text(size = 22),
     axis.title = ggplot2::element_blank(),
     legend.position = "none"
-  )# +
-  # ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
-  #                                 group = Outcome),
-  #                    data = data_avg, linewidth = 1.25,
-  #                    color = "black", linetype = "dashed"
-  # )
+  ) # +
+# ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
+#                                 group = Outcome),
+#                    data = data_avg, linewidth = 1.25,
+#                    color = "black", linetype = "dashed"
+# )
 
 png("./paper/TNBC_sig_KFunctions.png")
 # png("./vignettes/paper/TNBC_sig_KFunctions.png")
@@ -1068,15 +1068,15 @@ return_plot <-
     axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
-    #axis.title = ggplot2::element_text(size = 22),
+    # axis.title = ggplot2::element_text(size = 22),
     axis.title = ggplot2::element_blank(),
     legend.position = "none"
-  )# +
-  # ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
-  #                                 group = Outcome),
-  #                    data = data_avg, linewidth = 1.25,
-  #                    color = "black", linetype = "dashed"
-  # )
+  ) # +
+# ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
+#                                 group = Outcome),
+#                    data = data_avg, linewidth = 1.25,
+#                    color = "black", linetype = "dashed"
+# )
 
 png("./paper/TNBC_insig_KFunctions.png")
 # png("./vignettes/paper/TNBC_insig_KFunctions.png")

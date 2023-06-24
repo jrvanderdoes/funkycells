@@ -103,37 +103,39 @@ getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
   # Get Average Counts
   for (i in 1:nrow(results_tmp)) {
     for (ct in cellTypes) {
-      if(!is.null(repeatedId)){
+      if (!is.null(repeatedId)) {
         results_tmp[i, ct] <-
-          nrow(cell_data[cell_data[,unit] == results_tmp[i,unit] &
-                           cell_data[,repeatedId] == results_tmp[i,repeatedId] &
-                           cell_data[,"cellType"] == ct, ])
-      }else{
+          nrow(cell_data[cell_data[, unit] == results_tmp[i, unit] &
+            cell_data[, repeatedId] == results_tmp[i, repeatedId] &
+            cell_data[, "cellType"] == ct, ])
+      } else {
         results_tmp[i, ct] <-
-          nrow(cell_data[cell_data[,unit] == results_tmp[i,unit] &
-                           cell_data[,"cellType"] == ct, ])
-
+          nrow(cell_data[cell_data[, unit] == results_tmp[i, unit] &
+            cell_data[, "cellType"] == ct, ])
       }
     }
   }
   # Make Percents
   results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))] <-
     results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))] /
-    rowSums(results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))])
+      rowSums(results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))])
 
-  for(i in 1:nrow(results)){
-    results[i,-c(1:2)] <- colMeans(
-      results_tmp[results_tmp[[outcome]]==results[i,outcome] &
-                    results_tmp[[unit]]==results[i,unit],
-                  !(colnames(results_tmp) %in%
-                      c(outcome,unit,repeatedId))])
+  for (i in 1:nrow(results)) {
+    results[i, -c(1:2)] <- colMeans(
+      results_tmp[
+        results_tmp[[outcome]] == results[i, outcome] &
+          results_tmp[[unit]] == results[i, unit],
+        !(colnames(results_tmp) %in%
+          c(outcome, unit, repeatedId))
+      ]
+    )
   }
   rownames(results) <- NULL
 
   # Return Data
   if (!is.null(data_append)) {
     return(list(
-      "dat" = merge(data_append, results, keep.x=TRUE),
+      "dat" = merge(data_append, results, keep.x = TRUE),
       "cells" = cellTypes
     ))
   }

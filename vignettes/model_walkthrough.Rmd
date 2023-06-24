@@ -47,13 +47,15 @@ cell_data <- simulatePP(
 
 The created data has two outcomes ($0$ and $1$), and two cells ($A$ and $B$). The cells are constructed such that $A$ is completely spatial random and $B$ clusters around $A$. Moreover, $B$ has increased clustering in stage $1$ when compared to stage $0$. The data has $15$ patients in each stage, with $2$ images per patient. An example image for each stage is given below.
 ```{r show_spatial_images}
-plotPP(cell_data[cell_data$Image==1,c('x','y','cellType')],
-       ptSize = 2, colorGuide = ggplot2::guide_legend(title="Cells"),
-       xlim = c(0, 1), ylim=c(0,1))
+plotPP(cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
+  ptSize = 2, colorGuide = ggplot2::guide_legend(title = "Cells"),
+  xlim = c(0, 1), ylim = c(0, 1)
+)
 
-plotPP(cell_data[cell_data$Image==61,c('x','y','cellType')],
-       ptSize = 2, colorGuide = ggplot2::guide_legend(title="Cells"),
-       xlim = c(0, 1), ylim=c(0,1))
+plotPP(cell_data[cell_data$Image == 61, c("x", "y", "cellType")],
+  ptSize = 2, colorGuide = ggplot2::guide_legend(title = "Cells"),
+  xlim = c(0, 1), ylim = c(0, 1)
+)
 ```
 
 ```{r paper_spatial_images, echo=FALSE, eval=paper_run}
@@ -87,10 +89,14 @@ dev.off()
 
 The next step is to summarize the functions. This is done through $2$-way interactions using $K$ functions. With only two cells, there are four possible interactions ($A$-$A$,$A$-$B$, $B$-$A$, and $B$-$B$). Often reverse interactions (i.e. $A$-$B$ and $B$-$A$) are highly related and so consideration of only one is encouraged to remove variables in the model and improve power. An example of the $K$ functions is given below.
 ```{r show_K_functions}
-AB_ex <- getKFunction(cell_data[cell_data$Image==1,
-                             !(colnames(cell_data)%in%('Stage'))],
-             agents = c("A","B"),unit = "Person",repeatedUniqueId = "Image",
-             rCheckVals = seq(0,0.25,0.01),xRange = c(0,1),yRange = c(0,1))
+AB_ex <- getKFunction(
+  cell_data[
+    cell_data$Image == 1,
+    !(colnames(cell_data) %in% ("Stage"))
+  ],
+  agents = c("A", "B"), unit = "Person", repeatedUniqueId = "Image",
+  rCheckVals = seq(0, 0.25, 0.01), xRange = c(0, 1), yRange = c(0, 1)
+)
 
 ggplot2::ggplot() +
   ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = AB_ex, linewidth = 2) +
@@ -102,14 +108,22 @@ ggplot2::ggplot() +
 ```
 
 ```{r paper_K_functions, echo=FALSE, eval=paper_run}
-AA_im1 <- getKFunction(cell_data[cell_data$Image==1,
-                             !(colnames(cell_data)%in%('Stage'))],
-             agents = c("A","A"),unit = "Person",repeatedUniqueId = "Image",
-             rCheckVals = seq(0,0.25,0.01),xRange = c(0,1),yRange = c(0,1))
-AB_im1 <- getKFunction(cell_data[cell_data$Image==1,
-                             !(colnames(cell_data)%in%('Stage'))],
-             agents = c("A","B"),unit = "Person",repeatedUniqueId = "Image",
-             rCheckVals = seq(0,0.25,0.01),xRange = c(0,1),yRange = c(0,1))
+AA_im1 <- getKFunction(
+  cell_data[
+    cell_data$Image == 1,
+    !(colnames(cell_data) %in% ("Stage"))
+  ],
+  agents = c("A", "A"), unit = "Person", repeatedUniqueId = "Image",
+  rCheckVals = seq(0, 0.25, 0.01), xRange = c(0, 1), yRange = c(0, 1)
+)
+AB_im1 <- getKFunction(
+  cell_data[
+    cell_data$Image == 1,
+    !(colnames(cell_data) %in% ("Stage"))
+  ],
+  agents = c("A", "B"), unit = "Person", repeatedUniqueId = "Image",
+  rCheckVals = seq(0, 0.25, 0.01), xRange = c(0, 1), yRange = c(0, 1)
+)
 
 AAfig_im1 <- ggplot2::ggplot() +
   ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = AA_im1, linewidth = 3) +
@@ -140,7 +154,7 @@ These functions must then be projected into finite dimensions. Since $K$ functio
 ```{r pca}
 pcaData <- getKsPCAData(
   data = cell_data, repeatedUniqueId = "Image",
-  agents_df = data.frame(c('A','A','B'),c('A','B','B')),
+  agents_df = data.frame(c("A", "A", "B"), c("A", "B", "B")),
   xRange = c(0, 1), yRange = c(0, 1),
   nPCs = 3, silent = F
 )
@@ -151,10 +165,10 @@ Often data is also collected with some meta-variables, such as with patient age 
 set.seed(123)
 pcaMeta <- simulateMeta(pcaData,
   metaInfo = data.frame(
-    "var" = c("sex","age"),
-    "rdist" = c("rbinom","rnorm"),
-    "Stage_0" = c("0.5","25"),
-    "Stage_1" = c("0.5","26")
+    "var" = c("sex", "age"),
+    "rdist" = c("rbinom", "rnorm"),
+    "Stage_0" = c("0.5", "25"),
+    "Stage_1" = c("0.5", "26")
   )
 )
 ```
@@ -274,7 +288,7 @@ plot_vi_details <- ggplot2::ggplot(
   ggplot2::theme(
     axis.text = ggplot2::element_text(size = 18),
     axis.text.x = ggplot2::element_blank(),
-    #axis.text.y = ggplot2::element_blank(),
+    # axis.text.y = ggplot2::element_blank(),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -296,6 +310,4 @@ png("./paper/diagram_variableimportance_names.png")
 # png("./vignettes/paper/diagram_variableimportance.png")
 print(plot_vi_details)
 dev.off()
-
-
 ```
