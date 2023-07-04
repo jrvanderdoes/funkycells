@@ -60,7 +60,7 @@
 #' }
 #'
 #' KFunction <- getKFunction(
-#'   agents = c("B", "Tumour"), unit = "Person",
+#'   agents = c("B", "Tumor"), unit = "Person",
 #'   data = TNBC_pheno[TNBC_pheno$Person == 1, -1],
 #'   rCheckVals = seq(0, 50, 1),
 #'   edgeCorrection = "isotropic"

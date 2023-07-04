@@ -77,7 +77,7 @@
 #'
 #' dataPCA_pheno <- getKsPCAData(
 #'   data = TNBC_pheno, unit = "Person",
-#'   agents_df = data.frame(rep("B", 2), c("Tumour", "FAKE")),
+#'   agents_df = data.frame(rep("B", 2), c("Tumor", "FAKE")),
 #'   nPCs = 3,
 #'   rCheckVals = seq(0, 50, 1),
 #'   displayTVE = TRUE

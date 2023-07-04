@@ -1,7 +1,7 @@
 test_that("PCA Function - All Classes, people, pca present", {
   dataPCA_pheno <- getKsPCAData(
     data = TNBC_pheno, unit = "Person",
-    agents_df = data.frame("B", "Tumour"),
+    agents_df = data.frame("B", "Tumor"),
     nPCs = 3,
     rCheckVals = seq(0, 50, 1), silent = TRUE
   )

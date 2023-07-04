@@ -7,11 +7,11 @@ test_that("Plotting Function - Test plotPP", {
 
 test_that("Plotting Function - Test plot_K_function", {
   tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
-    agents = c("Tumour", "B"), unit = "Person",
+    agents = c("Tumor", "B"), unit = "Person",
     rCheckVals = seq(0, 50, 1)
   )
   tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
-    agents = c("Tumour", "B"), unit = "Person",
+    agents = c("Tumor", "B"), unit = "Person",
     rCheckVals = seq(0, 50, 1)
   )
 

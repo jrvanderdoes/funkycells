@@ -43,13 +43,13 @@ pheno_interactions <- rbind(
 )
 
 phenos_subset <- c(
-  "Tumour", "CD3T", "CD4T", "CD8T", "B", "DC",
+  "Tumor", "CD3T", "CD4T", "CD8T", "B", "DC",
   "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"
 )
 pheno_interactions_subset <- data.frame(
-  Var1 = rep("Tumour", 11),
+  Var1 = rep("Tumor", 11),
   Var2 = c(
-    "Tumour", "CD3T", "CD4T", "CD8T", "B", "DC",
+    "Tumor", "CD3T", "CD4T", "CD8T", "B", "DC",
     "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"
   )
 )
@@ -93,13 +93,13 @@ dev.off()
 
 kf <- getKFunction(
   data = TNBC_pheno[TNBC_pheno$Person == 2, -1],
-  agents = c("Tumour", "MonoNeu"),
+  agents = c("Tumor", "MonoNeu"),
   unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
 
 k_fig <- ggplot2::ggplot() +
-  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = kf, size = 2) +
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = kf, linewidth = 2) +
   ggplot2::geom_line(ggplot2::aes(x = seq(0, 50, 1), y = pi * seq(0, 50, 1)^2),
     linewidth = 2, col = "red", linetype = "dashed"
   ) +
@@ -109,8 +109,8 @@ k_fig <- ggplot2::ggplot() +
     axis.text = ggplot2::element_blank()
   )
 
-png("./paper/tnbc_person2_tumour_mononeu_k.png", width = 800, height = 800)
-# png("./vignettes/paper/tnbc_person2_tumour_mononeu_k.png", width = 800, height = 800)
+png("./paper/tnbc_person2_tumor_mononeu_k.png", width = 800, height = 800)
+# png("./vignettes/paper/tnbc_person2_tumor_mononeu_k.png", width = 800, height = 800)
 print(k_fig)
 dev.off()
 ```
@@ -837,12 +837,12 @@ dev.off()
 Also consider $K$ functions from significant and insignificant interactions.
 ```{r significantTNBCK}
 tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
-  c("Tumour", "Tumour"),
+  c("Tumor", "Tumor"),
   unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
 tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
-  c("Tumour", "Tumour"),
+  c("Tumor", "Tumor"),
   unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
@@ -929,7 +929,7 @@ return_plot <-
       group = Unit, color = Outcome
     )
   ) +
-  ggplot2::geom_line(alpha = 0.2, size = 1.25) +
+  ggplot2::geom_line(alpha = 0.2, linewidth = 1.25) +
   ggplot2::geom_line(
     ggplot2::aes(
       x = r, y = Value,
@@ -1054,7 +1054,7 @@ return_plot <-
       group = Unit, color = Outcome
     )
   ) +
-  ggplot2::geom_line(alpha = 0.2, size = 1.25) +
+  ggplot2::geom_line(alpha = 0.2, linewidth = 1.25) +
   ggplot2::geom_line(
     ggplot2::aes(
       x = r, y = Value,

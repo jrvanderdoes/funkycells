@@ -27,12 +27,12 @@ Compare K Functions Between Outcomes
 \examples{
 # Example 1
 tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
-  agents = c("Tumour", "Tumour"),
+  agents = c("Tumor", "Tumor"),
   unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
 tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
-  agents = c("Tumour", "Tumour"),
+  agents = c("Tumor", "Tumor"),
   unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
@@ -58,11 +58,11 @@ plot_K_functions(data_plot)
 
 # Example 2
 tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
-  agents = c("Tumour", "B"), unit = "Person",
+  agents = c("Tumor", "B"), unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
 tmp1 <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 1, -1],
-  agents = c("Tumour", "B"), unit = "Person",
+  agents = c("Tumor", "B"), unit = "Person",
   rCheckVals = seq(0, 50, 1)
 )
 

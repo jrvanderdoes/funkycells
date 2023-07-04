@@ -268,8 +268,11 @@ colnames(TNBC) <- gsub("[[:punct:]]", "", colnames(TNBC))
 cnames <- colnames(TNBC[c(1:4, as.numeric(which(colSums(TNBC[, -c(1:4)]) > 20000)) + 4)])
 TNBC <- getPCA2Save(TNBC[cnames], cnames[-c(1:4)], TNBC_meta, nPCs = 3, seed = 12345)
 TNBC <- cbind(TNBC[2], TNBC[-2])
-# Save files
 
+# Rename to Tumor for the paper (TODO:: Change in function)
+TNBC_pheno[TNBC_pheno$Phenotype=='Tumour',"Phenotype"] <- 'Tumor'
+
+# Save files
 usethis::use_data(TNBC, overwrite = TRUE, compress = "xz")
 # usethis::use_data(TNBC_int, overwrite = TRUE,compress = "xz")
 usethis::use_data(TNBC_pheno, overwrite = TRUE, compress = "xz")
