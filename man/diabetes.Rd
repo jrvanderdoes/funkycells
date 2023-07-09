@@ -30,7 +30,4 @@ diabetes
 \description{
 A subset of mass cytometry data from diabetes patients.
 }
-\details{
-Upcoming: Get more complete data set
-}
 \keyword{datasets}

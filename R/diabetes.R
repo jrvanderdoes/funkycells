@@ -2,8 +2,6 @@
 #'
 #' A subset of mass cytometry data from diabetes patients.
 #'
-#' Upcoming: Get more complete data set
-#'
 #' @format ## `diabetes`
 #' A data frame with 253,777 rows and 6 columns:
 #' \describe{
