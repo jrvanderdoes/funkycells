@@ -16,6 +16,12 @@
     <loc>https://jrvanderdoes.github.io/funkycells/articles/index.html</loc>
   </url>
   <url>
+    <loc>https://jrvanderdoes.github.io/funkycells/articles/lungcancer.html</loc>
+  </url>
+  <url>
+    <loc>https://jrvanderdoes.github.io/funkycells/articles/model_power_curves.html</loc>
+  </url>
+  <url>
     <loc>https://jrvanderdoes.github.io/funkycells/articles/model_walkthrough.html</loc>
   </url>
   <url>
@@ -56,6 +62,9 @@
   </url>
   <url>
     <loc>https://jrvanderdoes.github.io/funkycells/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>https://jrvanderdoes.github.io/funkycells/reference/lungcancer.html</loc>
   </url>
   <url>
     <loc>https://jrvanderdoes.github.io/funkycells/reference/plotPP.html</loc>
