@@ -4,11 +4,11 @@ citEntry(
   entry    = "Article",
   title    = "funkycells",
   author   = "J. VanderDoes, J. Hywood, G. Rice",
-  journal  = "<Unpublished>",
-  year     = "2023",
-  volume   = "<Unpublished>",
-  number   = "<Unpublished>",
-  pages    = "<Unpublished>",
+  journal  = "<Upcoming>",
+  year     = 2023,
+  volume   = "<Upcoming>",
+  number   = "<Upcoming>",
+  pages    = "<Upcoming>",
   url      = "https://github.com/jrvanderdoes/funkycells",
   textVersion = paste(
 

@@ -1,9 +1,13 @@
 Package: funkycells
 Title: Functional K Function Analysis of Multiplexed Images of Cells
-Version: 0.0.0.9005
-Authors@R: 
-    person("Jeremy", "VanderDoes", , "jeremy.vanderdoes@gmail.com", role = c("aut", "cre","cph"),
-           comment = c(ORCID = "0009-0001-9885-3073"))
+Version: 0.0.1.0001
+Authors@R: c( 
+    person("Jeremy", "VanderDoes",
+ 	   email = "jeremy.vanderdoes@gmail.com", 
+	   role = c("aut", "cre","cph"),
+           comment = c(ORCID = "0009-0001-9885-3073") ),
+    person("Jack", "Hywood", role = c("aut") ),
+    person("Gregory", "Rice", role = c("aut") )  )
 Description: Determines variables of interest between (potentially large numbers of) spatial interactions and non-spatial meta-variables. Implements a random forest model, with required preparation, for functional and spatial data analysis.
 License: GPL (>= 3)
 Encoding: UTF-8
