@@ -23,7 +23,9 @@
 #'
 #' @examples
 #' plotPP(TNBC_pheno[TNBC_pheno$Person == 1, c("cellx", "celly", "Phenotype")])
-#' plotPP(diabetes[diabetes$Image == "E37", c("x", "y", "cellType")])
+#' plotPP(lungcancer[lungcancer$Patient==3 &
+#'                   lungcancer$Image==1,
+#'                   c("x","y","cellType")])
 plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    xlim = c(min(data[, 1]), max(data[, 1])),
                    ylim = c(min(data[, 2]), max(data[, 2])),

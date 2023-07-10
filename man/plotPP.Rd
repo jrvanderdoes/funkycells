@@ -47,5 +47,7 @@ This function is used to plot a spatial point process.
 }
 \examples{
 plotPP(TNBC_pheno[TNBC_pheno$Person == 1, c("cellx", "celly", "Phenotype")])
-plotPP(diabetes[diabetes$Image == "E37", c("x", "y", "cellType")])
+plotPP(lungcancer[lungcancer$Patient==3 &
+                  lungcancer$Image==1,
+                  c("x","y","cellType")])
 }
