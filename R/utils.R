@@ -24,69 +24,12 @@
 }
 
 
-#' Convert a list to data.frame
-#'
-#' This (internal) function converts a list into a data.frame, either by row or
-#'     column binding. Some error handling exists, but care should be taken.
-#'
-#' See usage in .getPCs or simulatePP.
-#'
-#' TODO:: See if this can be change and removed
-#'
-#' @param data_list List of data.frames to be combined
-#' @param typeBind String of row or col indicating if the lists should be
-#'     combined using the rows or columns.
-#' @param na.omit (Optional) Boolean that drops with any NAs if TRUE. The
-#'     default is FALSE.
-#'
-#' @return Data.frame with the data from the list.
-#' @noRd
-.convertList2Dataframe <- function(data_list,
-                                   typeBind = c("row", "col"),
-                                   na.omit = FALSE) {
-  if (length(typeBind) != 1 || !(typeBind %in% c("row", "col"))) {
-    stop("Error: Select row or col for typeBind")
-  }
-
-  data_df <- data.frame()
-
-  if (typeBind == "row") {
-    # No error checking. See simulatePP or .generateCSRPatterns
-    data_df <- do.call(rbind, data_list)
-  } else if (typeBind == "col") {
-    # See if first column is DF or not. Can occur based on getKsPCAData
-    if (dim(data_list[[1]])[[1]] > 1) {
-      data_df <- data_list[[1]]
-    } else {
-      data_df <- data.frame("V1" = t(data_list[[1]]))
-    }
-
-    if (length(data_list) != 1) {
-      for (ii in 2:length(data_list)) {
-        if (dim(data_list[[ii]])[[1]] > 1) {
-          data_df <- cbind(data_df, data_list[[ii]])
-        } else {
-          data_df <- cbind(data_df, t(data_list[[ii]]))
-        }
-      }
-    }
-  }
-
-  if (na.omit) {
-    data_df <- na.omit(data_df)
-  }
-
-  data_df
-}
-
 #' Merge Lists into Base Data.frame
 #'
 #' This (internal) function appends items in list to a data.frame by the given
 #'     column names.
 #'
 #' See usage in getKsPCAData
-#'
-#' TODO:: Verify use in latest refactor
 #'
 #' @param df Data.frame with a column named by baseCol
 #' @param lists Lists of data.frames with each containing listCol column

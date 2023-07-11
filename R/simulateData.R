@@ -31,9 +31,6 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' data <- simulatePP()
-#' }
 #' data <- simulatePP(
 #'   cellVarData = data.frame(
 #'     "stage" = c(0, 1),
@@ -51,6 +48,10 @@
 #'   peoplePerStage = 4,
 #'   imagesPerPerson = 1
 #' )
+#'
+#' \dontrun{
+#'   data <- simulatePP()
+#' }
 simulatePP <- function(cellVarData =
                          data.frame(
                            "stage" = c(0, 1, 2),
@@ -107,7 +108,8 @@ simulatePP <- function(cellVarData =
           imagesPerPerson = imagesPerPerson,
           kappas = nonClusterCells_data$kappa,
           cellTypes = nonClusterCells_data$cell,
-          kappaSep = TRUE, imageAdj = imageAdj, personAdj = personAdj
+          kappaSep = TRUE, imageAdj = imageAdj,
+          personAdj = personAdj
         )
     }
     ## Inv-clustering
@@ -171,8 +173,9 @@ simulatePP <- function(cellVarData =
   }
 
   ## Organize and return
-  data_ret <- .convertList2Dataframe(data_stages, typeBind = "row")[, c(6, 1:3, 5, 4)]
+  data_ret <- do.call("rbind", data_stages)[, c(6, 1:3, 5, 4)]
   data_ret$Stage <- as.character(data_ret$Stage)
+
   data_ret
 }
 
@@ -356,7 +359,7 @@ simulateMeta <- function(pcaData,
         )
       }
       # Clean data (with correct info)
-      data_tmp_df <- .convertList2Dataframe(data_tmp, typeBind = "row")
+      data_tmp_df <- do.call("rbind", data_tmp)
       data_tmp_df$Image <- imageCt + (personCt - 1) * imagesPerPerson + imageAdj
       data_tmp_df$Person <- paste0("p", personCt + personAdj)
       data_tmp_df$Stage <- stageName

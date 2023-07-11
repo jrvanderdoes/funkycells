@@ -139,6 +139,8 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
         "Unit" = unique(data[, unit]),
         as.data.frame(K_pca_scores)
       )
+      colnames(retData) <- c(unit,colnames(K_pca_scores))
+      retData
     },
     nPCs = nPCs, rCheckVals = rCheckVals,
     data = data, outcome = outcome, unit = unit,
@@ -149,9 +151,10 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
   )
   if (!silent) cat("\n")
 
+  # Potentially convert to do.call("rbind"), but unsure if order always same
   .mergeListsToDF(
     df = pcaData, lists = pcaData_list,
-    dfCol = unit, listsDFCol = "Unit"
+    dfCol = unit, listsDFCol = unit
   )
 }
 
