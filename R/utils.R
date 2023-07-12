@@ -1,6 +1,9 @@
-#' Get Mode of vector
+#' Get Mode of vectonr
 #'
-#' Note: Few lines temporarily saved:
+#' This ignores NA. See below internal for other things which may be
+#'  worth trying later.
+#'
+#' Internal note: Few lines temporarily saved:
 #'           uniqx <- unique(na.omit(x))
 #'           uniqx[which.max(tabulate(match(x, uniqx)))]
 #'
@@ -29,7 +32,7 @@
 #' This (internal) function appends items in list to a data.frame by the given
 #'     column names.
 #'
-#' See usage in getKsPCAData
+#' See usage in getKsPCAData.
 #'
 #' @param df Data.frame with a column named by baseCol
 #' @param lists Lists of data.frames with each containing listCol column
