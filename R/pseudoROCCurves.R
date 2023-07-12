@@ -2,15 +2,16 @@
 #'
 #' True ROC can only be computed for two-options, but we can consider each one
 #'     as right or wrong and overlay the plots. Note this means the lines may
-#'     cover each other
+#'     cover each other and be difficult to see. This function requires the
+#'     package 'pROC' to be installed.
 #'
 #' @param trueOutcomes Vector of the true results
 #' @param modelPercents Data.frame with columns named after the true outcomes,
 #'     giving the percent of selecting that outcome. This is what is returned
-#'     predict.RandomForest_PC when type='all' and look at `PredPerc[-1]` (first
+#'     predict.RandomForest_PC with type='all' in object `PredPerc[-1]` (first
 #'     column is the predictions).
 #'
-#' @return ggplot object for the ROC curves.
+#' @return ggplot object containing the ROC curves.
 #' @export
 #'
 #' @examples
