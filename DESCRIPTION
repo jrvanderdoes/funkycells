@@ -8,7 +8,7 @@ Authors@R: c(
            comment = c(ORCID = "0009-0001-9885-3073") ),
     person("Jack", "Hywood", role = c("aut") ),
     person("Gregory", "Rice", role = c("aut") )  )
-Description: Determines variables of interest between (potentially large numbers of) spatial interactions and non-spatial meta-variables. Implements a random forest model, with required preparation, for functional and spatial data analysis.
+Description: Determines variables of interest between (potentially large numbers of) spatial interactions and non-spatial meta-variables. Approach based on a random forest model, with required preparation, for functional spatial data analysis, such as the included multiplexed ion beam imaging (MIBI) data.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
