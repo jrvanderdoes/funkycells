@@ -58,13 +58,9 @@ pheno_interactions_subset <- data.frame(
 We notice there are `r length(phenos)` total phenotypes with 
 `r nrow(pheno_interactions)` total possible interactions. Alternatively, we can 
 also focus on a subset of phenotypes (`r length(phenos_subset)`) and 
-interactions (`r nrow(pheno_interactions_subset)`) of particular interest. 
-Another analysis on the subset interaction set has been considered but was 
-suppressed for brevity.
+interactions (`r nrow(pheno_interactions_subset)`) of particular interest. Another analysis on the subset interaction set has been considered but was suppressed for brevity.
 
-In order to build confidence in our approach, we begin by simulating data with a
-similar structure to the full phenotype data and evaluating the effectiveness of
-the approach.
+In order to build confidence in our approach, we begin by simulating data with a similar structure to the full phenotype data and evaluating the effectiveness of the approach.
 
 To start, let us determine the agent information in a typical image.
 ```{r TNBCInfo}

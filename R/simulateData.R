@@ -50,7 +50,7 @@
 #' )
 #'
 #' \dontrun{
-#'   data <- simulatePP()
+#' data <- simulatePP()
 #' }
 simulatePP <- function(cellVarData =
                          data.frame(
