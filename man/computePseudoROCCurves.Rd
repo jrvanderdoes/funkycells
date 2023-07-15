@@ -11,18 +11,25 @@ computePseudoROCCurves(trueOutcomes, modelPercents)
 
 \item{modelPercents}{Data.frame with columns named after the true outcomes,
 giving the percent of selecting that outcome. This is what is returned
-predict.RandomForest_PC when type='all' and look at \code{PredPerc[-1]} (first
+predict.RandomForest_PC with type='all' in object \code{PredPerc[-1]} (first
 column is the predictions).}
 }
 \value{
-ggplot object for the ROC curves.
+ggplot object containing the ROC curves.
 }
 \description{
-True ROC can only be computed for two-options, but we can consider each one
-as right or wrong and overlay the plots. Note this means the lines may
-cover each other
+An receiver operating characteristic (ROC) curve is a curve showing the
+performance of a classification model at all classification thresholds.
+True ROC can only be computed for two-options, but we can consider each
+classification, i.e. prediction, correct or incorrect and overlay the
+curves. Note this means the lines may cover each other and be difficult to
+see.
+}
+\details{
+This function requires the package 'pROC' to be installed.
 }
 \examples{
+set.seed(123)
 data_pp_roc <- simulatePP(
   cellVarData =
     data.frame(

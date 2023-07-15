@@ -1,9 +1,13 @@
 #' Compute Pseudo-ROC Curves
 #'
-#' True ROC can only be computed for two-options, but we can consider each one
-#'     as right or wrong and overlay the plots. Note this means the lines may
-#'     cover each other and be difficult to see. This function requires the
-#'     package 'pROC' to be installed.
+#' An receiver operating characteristic (ROC) curve is a curve showing the
+#'  performance of a classification model at all classification thresholds.
+#'  True ROC can only be computed for two-options, but we can consider each
+#'  classification, i.e. prediction, correct or incorrect and overlay the
+#'  curves. Note this means the lines may cover each other and be difficult to
+#'  see.
+#'
+#'  This function requires the package 'pROC' to be installed.
 #'
 #' @param trueOutcomes Vector of the true results
 #' @param modelPercents Data.frame with columns named after the true outcomes,
@@ -15,6 +19,7 @@
 #' @export
 #'
 #' @examples
+#' set.seed(123)
 #' data_pp_roc <- simulatePP(
 #'   cellVarData =
 #'     data.frame(
