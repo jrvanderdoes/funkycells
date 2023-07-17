@@ -22,13 +22,13 @@ library(funkycells)
 full_run <- FALSE # This runs only computations that are feasibly quick
 ```
 
-This vignette examines lung cancer data.
-```{r load_data}
+This vignette gives the code used to analyze the lung cancer data. However, due to data privacy, that data is not yet available in package. This is being investigated and we hope future version of the package include this data.
+```{r load_data, eval=FALSE}
 dat <- lungcancer
 ```
 
 This data is pre-processed and thus we only need to complete a few steps. But to aid in these, we define a few functions.
-```{r define_functions}
+```{r define_functions, eval=FALSE}
 getInteractions <- function(cells,
                             dropCells = c(
                               "Epithelialcells",
@@ -174,7 +174,7 @@ pcaData <- getKsPCAData(
   data = use_data[!(colnames(use_data) %in% c("SmokingStatusLong"))],
   outcome = "Cancer",
   unit = "Patient",
-  repeatedUniqueId = "Image",
+  replicate = "Image",
   rCheckVals = seq(0, 50, 1),
   nPCs = 3,
   agents_df = ints,
