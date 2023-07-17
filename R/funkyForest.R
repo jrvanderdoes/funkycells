@@ -1,20 +1,21 @@
-#' Compute Random Forest for Data with multiple PC (Along With Meta-Variables)
+#' Compute a Modified Random Forest Model
 #'
-#' This function creates a random forest model for data with PCs and
-#'     meta-variables. This includes proper combination for variable importance.
-#'     Recommend to users to use randomForest_CVPC in general and perhaps just
-#'     this for a final model
+#' This function creates a modified random forest model for principal component
+#'  and meta-data. This can be useful to get a final model, but we recommend
+#'  use of randomForest_CVPC in general, which includes the final model.
 #'
-#' @param data Data.frame of outcome and predictors (PCs and meta-variables).
-#'     Note, currently Unit or repeated measures should not be included.
-#'     Generally use the results from getKsPCAData, potentially with meta-
-#'     variables attached.
+#' @param data Data.frame of outcome and predictors. The predictors include
+#'  groups of variables which are finite projections of a higher dimensional
+#'  variables as well as single meta-variables.
+#'
+#'  Any replicate data, i.e. repeated observations, should already be handled.
+#'    The unit column is needed just to drop data (so pre-removing and giving
+#'    NULL works). Typically use the results from getKsPCAData, potentially with
+#'    meta-variables attached.
 #' @param outcome (Optional) String indicating the outcome column name in data.
 #'   Default is the first column of data.
 #' @param unit (Optional) String indicating the unit column name in data.
 #'   Default is the second column of data.
-#' @param repeatedId (Optional) String indicating the repeated measure column
-#'   name in data (if present). Default is NULL indicating no repeated measures.
 #' @param nTrees (Optional) Numeric indicating the number of trees to use in the
 #'     random forest model. Default is 500.
 #' @param varImpPlot (Optional) Boolean indicating if variable importance plots
@@ -22,11 +23,13 @@
 #' @param metaNames (Optional) Vector with the column names of data that
 #'     correspond to metavariables. Default is NULL.
 #' @param keepModels (Optional) Boolean indicating if the individual models
-#'     should be kept. Can get large in size. Default is TRUE.
-#' @param varSelPercent Numeric in (0,1) indicating (approx) percentage of
-#'     features to keep for each tree.
-#' @param method (Optional) Method for rpart tree to build random forest. Default
-#'   is "class".
+#'     should be kept. Can get large in size. Default is TRUE as it is needed
+#'     for predictions.
+#' @param varSelPercent (Optional) Numeric in (0,1) indicating (approx)
+#'  percentage of variables to keep for each tree. Default is 0.8.
+#' @param method (Optional) Method for rpart tree to build random forest.
+#'  Default is "class". Currently this is the only tested method. This will
+#'  be expanded in future releases.
 #'
 #' @return A list with  entries
 #'     \enumerate{
@@ -39,47 +42,47 @@
 #'
 #' @examples
 #' data <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 100, 1 / 500)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(6, 5)
 #'   ),
-#'   peoplePerStage = 5,
-#'   imagesPerPerson = 1
+#'   unitsPerOutcome = 5,
+#'   replicatesPerUnit = 1
 #' )
 #' pcaData <- getKsPCAData(
-#'   data = data, repeatedUniqueId = "Image",
+#'   data = data, replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1)
 #' )
 #' RF <- funkyForest(data = pcaData[-2])
 #'
 #' \dontrun{
 #' data <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 100, 1 / 500),
 #'       "C" = c(1 / 500, 1 / 250),
 #'       "D" = c(1 / 100, 1 / 100),
 #'       "E" = c(1 / 500, 1 / 500)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B", "C", "D", "E"),
-#'     "clusterCell" = c(NA, "A", "B", "C", NA),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B", "C", "D", "E"),
+#'     "clusterAgent" = c(NA, "A", "B", "C", NA),
 #'     "kappa" = c(6, 3, 2, 1, 4)
 #'   ),
-#'   peoplePerStage = 2,
-#'   imagesPerPerson = 1
+#'   unitsPerOutcome = 2,
+#'   replicatesPerUnit = 1
 #' )
 #' pcaData <- getKsPCAData(
-#'   data = data, repeatedUniqueId = "Image",
+#'   data = data, replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1)
 #' )
 #' RF1 <- funkyForest(data = pcaData[-2])
@@ -93,9 +96,10 @@
 #' )
 #' }
 funkyForest <- function(data, outcome = colnames(data)[1],
-                        unit = colnames(data)[2], repeatedId = NULL,
+                        unit = colnames(data)[2],
                         nTrees = 500, varImpPlot = TRUE, metaNames = NULL,
-                        keepModels = TRUE, varSelPercent = 0.8, method = "class") {
+                        keepModels = TRUE, varSelPercent = 0.8,
+                        method = "class") {
   # Ensure this is worthwhile
   if (length(unique(data[, outcome])) == 1) {
     stop("Error: Only 1 outcome in data, cannot do RF")
@@ -107,7 +111,7 @@ funkyForest <- function(data, outcome = colnames(data)[1],
   )
   underlyingVars <- unique(
     underlyingDataAlignedFunctions[!(underlyingDataAlignedFunctions %in%
-      c(outcome, unit, repeatedId))]
+      c(outcome, unit))]
   )
 
   data_result <- data.frame(
@@ -213,7 +217,7 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #'
 #' See use in funkyForest.
 #'
-#' Upcoming: See TEST comment
+#' Upcoming: See handle model without Var importance
 #'
 #' @param varImportanceData (Optional) Data.frame for the variable importance
 #'     information.
@@ -281,18 +285,17 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 }
 
 
-#' Predict Using funkyForest
+#' Predict a funkyForest
 #'
-#' This function gets the predicted value from a funkyForest
-#'     model.
+#' This function gets the predicted value from a funkyForest model.
 #'
 #' @param model funkyForest model. See funkyForest. A list of
-#'     CART models from rpart.
+#'     CART models from rpart. Additionally this is given in funkyModel.
 #' @param data_pred data.frame of the data to be predicted.
 #' @param type (Optional) String indicating type of analysis. Options are pred
 #'     or all. The choice changes the return to best fit intended use.
-#' @param data (Optional) data.frame of full data. The data used to fit the
-#'     model will be extracted (by row name) to determine data the model knows.
+#' @param data (Optional) Data.frame of full data. The data used to fit the
+#'     model will be extracted (by row name).
 #'
 #' @return The returned data depends on type:
 #'     \itemize{
@@ -303,23 +306,23 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #'
 #' @examples
 #' data_pp <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 50, 1 / 50)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(10, 5)
 #'   ),
-#'   peoplePerStage = 5,
-#'   imagesPerPerson = 1,
+#'   unitsPerOutcome = 5,
+#'   replicatesPerUnit = 1,
 #'   silent = FALSE
 #' )
 #' pcaData <- getKsPCAData(data_pp,
-#'   repeatedUniqueId = "Image",
+#'   replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
 #' RF <- funkyForest(data = pcaData[-2], nTrees = 5) #
@@ -407,8 +410,7 @@ predict_funkyForest <- function(model, data_pred, type = "all", data = NULL) {
   # Combine predictions
   if (is.numeric(predictions)) {
     warning(paste(
-      "Sorry: I haven't decided how to deal with modelPercents.",
-      "Only Preds will be returned"
+      "Sorry: modelPercents incomplete. Only Preds will be returned"
     ))
     type <- "pred"
     # Take Mean
@@ -454,7 +456,7 @@ predict_funkyForest <- function(model, data_pred, type = "all", data = NULL) {
 #'
 #' This (internal) function is used to get the underlying function (i.e. no
 #'     _PC\# in it). This is used to centralize called from funkyForest.R and
-#'     RandomForest_CVPC.R. If there is no PC (i.e. in meta-varaiables), the
+#'     RandomForest_CVPC.R. If there is no PC (i.e. in meta-variables), the
 #'     meta-variable is returned. See use in funkyForest.
 #'
 #' @param names Vector of names to get underlying function on each

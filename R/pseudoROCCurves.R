@@ -21,24 +21,24 @@
 #' @examples
 #' set.seed(123)
 #' data_pp_roc <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 50, 1 / 50)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(20, 5)
 #'   ),
-#'   peoplePerStage = 10,
-#'   imagesPerPerson = 1,
+#'   unitsPerOutcome = 10,
+#'   replicatesPerUnit = 1,
 #'   silent = FALSE
 #' )
 #' # Caution, in general use more than 5 nTrees (Default is 500)
 #' pcaData_roc <- getKsPCAData(data_pp_roc,
-#'   repeatedUniqueId = "Image",
+#'   replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
 #' RF_roc <- funkyForest(data = pcaData_roc[-2], nTrees = 5)
@@ -47,7 +47,7 @@
 #'   data_pred = pcaData_roc[-2],
 #'   data = pcaData_roc[-2]
 #' )
-#' computePseudoROCCurves(pcaData_roc$Stage, pred_roc$PredPerc[-1])
+#' computePseudoROCCurves(pcaData_roc$outcome, pred_roc$PredPerc[-1])
 computePseudoROCCurves <- function(trueOutcomes, modelPercents) {
   if (!requireNamespace("pROC", quietly = TRUE)) {
     stop(

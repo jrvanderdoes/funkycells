@@ -27,32 +27,32 @@ This vignettes walks through the approach `funkycells` takes to modeling data. T
 ```{r build_data}
 set.seed(123)
 cell_data <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 100, 1 / 300)
     ),
-  cellKappaData =
+  agentKappaData =
     data.frame(
-      "cell" = c("A", "B"),
-      "clusterCell" = c(NA, "A"),
+      "agent" = c("A", "B"),
+      "clusterAgent" = c(NA, "A"),
       "kappa" = c(20, 5)
     ),
-  peoplePerStage = 15,
-  imagesPerPerson = 2,
+  unitsPerOutcome = 15,
+  replicatesPerUnit = 2,
   silent = FALSE
 )
 ```
 
 The created data has two outcomes ($0$ and $1$), and two cells ($A$ and $B$). The cells are constructed such that $A$ is completely spatial random and $B$ clusters around $A$. Moreover, $B$ has increased clustering in stage $1$ when compared to stage $0$. The data has $15$ patients in each stage, with $2$ images per patient. An example image for each stage is given below.
 ```{r show_spatial_images}
-plotPP(cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
+plotPP(cell_data[cell_data$replicate == 1, c("x", "y", "type")],
   ptSize = 2, colorGuide = ggplot2::guide_legend(title = "Cells"),
   xlim = c(0, 1), ylim = c(0, 1)
 )
 
-plotPP(cell_data[cell_data$Image == 61, c("x", "y", "cellType")],
+plotPP(cell_data[cell_data$replicate == 21, c("x", "y", "type")],
   ptSize = 2, colorGuide = ggplot2::guide_legend(title = "Cells"),
   xlim = c(0, 1), ylim = c(0, 1)
 )
@@ -60,7 +60,7 @@ plotPP(cell_data[cell_data$Image == 61, c("x", "y", "cellType")],
 
 ```{r paper_spatial_images, echo=FALSE, eval=paper_run}
 img1 <- plotPP(
-  data = cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
+  data = cell_data[cell_data$replicate == 1, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
 png("./paper/diagram_pp1.png", width = 800, height = 800)
@@ -69,7 +69,7 @@ print(img1)
 dev.off()
 
 img21 <- plotPP(
-  data = cell_data[cell_data$Image == 21, c("x", "y", "cellType")],
+  data = cell_data[cell_data$replicate == 21, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
 png("./paper/diagram_pp21.png", width = 800, height = 800)
@@ -78,7 +78,7 @@ print(img21)
 dev.off()
 
 img41 <- plotPP(
-  data = cell_data[cell_data$Image == 41, c("x", "y", "cellType")],
+  data = cell_data[cell_data$replicate == 41, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
 png("./paper/diagram_pp41.png", width = 800, height = 800)
@@ -91,10 +91,10 @@ The next step is to summarize the functions. This is done through $2$-way intera
 ```{r show_K_functions}
 AB_ex <- getKFunction(
   cell_data[
-    cell_data$Image == 1,
-    !(colnames(cell_data) %in% ("Stage"))
+    cell_data$replicate == 1,
+    !(colnames(cell_data) %in% ("outcome"))
   ],
-  agents = c("A", "B"), unit = "Person", repeatedUniqueId = "Image",
+  agents = c("A", "B"), unit = "unit", replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01), xRange = c(0, 1), yRange = c(0, 1)
 )
 
@@ -110,18 +110,18 @@ ggplot2::ggplot() +
 ```{r paper_K_functions, echo=FALSE, eval=paper_run}
 AA_im1 <- getKFunction(
   cell_data[
-    cell_data$Image == 1,
-    !(colnames(cell_data) %in% ("Stage"))
+    cell_data$replicate == 1,
+    !(colnames(cell_data) %in% ("outcome"))
   ],
-  agents = c("A", "A"), unit = "Person", repeatedUniqueId = "Image",
+  agents = c("A", "A"), unit = "unit", replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01), xRange = c(0, 1), yRange = c(0, 1)
 )
 AB_im1 <- getKFunction(
   cell_data[
-    cell_data$Image == 1,
-    !(colnames(cell_data) %in% ("Stage"))
+    cell_data$replicate == 1,
+    !(colnames(cell_data) %in% ("outcome"))
   ],
-  agents = c("A", "B"), unit = "Person", repeatedUniqueId = "Image",
+  agents = c("A", "B"), unit = "unit", replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01), xRange = c(0, 1), yRange = c(0, 1)
 )
 
@@ -153,22 +153,22 @@ dev.off()
 These functions must then be projected into finite dimensions. Since $K$ functions are so commonly used, `funkycells` has a specialized function for computing and projecting the $K$ functions through the popular functional principle components analysis. The following code projects the funtions into $3$ principle components each.
 ```{r pca}
 pcaData <- getKsPCAData(
-  data = cell_data, repeatedUniqueId = "Image",
+  data = cell_data, replicate = "replicate",
   agents_df = data.frame(c("A", "A", "B"), c("A", "B", "B")),
   xRange = c(0, 1), yRange = c(0, 1),
   nPCs = 3, silent = F
 )
 ```
 
-Often data is also collected with some meta-variables, such as with patient age or sex Both age and sex are simulated below. In the simulation, higher age is related to stage $1$ while sex has no effect.
+Often data is also collected with some meta-variables, such as with patient age or sex Both age and sex are simulated below. In the simulation, higher age is related to outcome $1$ while sex has no effect.
 ```{r simulate_meta}
 set.seed(123)
 pcaMeta <- simulateMeta(pcaData,
   metaInfo = data.frame(
     "var" = c("sex", "age"),
     "rdist" = c("rbinom", "rnorm"),
-    "Stage_0" = c("0.5", "25"),
-    "Stage_1" = c("0.5", "26")
+    "outcome_0" = c("0.5", "25"),
+    "outcome_1" = c("0.5", "26")
   )
 )
 ```
@@ -178,8 +178,8 @@ This data is fed into `funkyModel()` which adds synthetics and examines the vari
 set.seed(123)
 model_fm <- funkyModel(
   data = pcaMeta,
-  outcome = "Stage",
-  unit = "Person",
+  outcome = "outcome",
+  unit = "unit",
   metaNames = c("sex", "age")
 )
 ```

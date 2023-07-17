@@ -24,7 +24,6 @@ A data frame with 170,171 rows and 5 columns:
 TNBC_pheno
 }
 \description{
-Data of triple negative breast cancer biopsies from patients, with. Additionally, the age meta-variable was
-added.
+Data of triple negative breast cancer biopsies from patients.
 }
 \keyword{datasets}

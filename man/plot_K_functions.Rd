@@ -2,27 +2,31 @@
 % Please edit documentation in R/plotting.R
 \name{plot_K_functions}
 \alias{plot_K_functions}
-\title{Compare K Functions Between Outcomes}
+\title{Compare K Functions Between outcomes}
 \usage{
 plot_K_functions(data, inc.legend = TRUE, inc.noise = FALSE)
 }
 \arguments{
-\item{data}{Data.frame with the columns r, K, Unit, and Outcome. r indicates
-the radius of checked K function, K indicates the K function value, Unit
-specifies the unique K function, and Outcome indicates the unit outcome.}
+\item{data}{Data.frame with named columns r, K, unit, and outcome. The column
+r indicates the radius of checked K function, K indicates the K function
+value, unit specifies the unique K function, and outcome indicates the unit
+outcome.}
 
 \item{inc.legend}{(Optional) Boolean indicating if the legend should be given.
 This will also include numbers to indicate if any K functions are missing.
 The default is TRUE.}
 
 \item{inc.noise}{(Optional) Boolean indicating if a gray, dashed line should
-be included to show what total noise would be like. The default is FALSE.}
+be included to show what spatially random noise would be like. The default
+is FALSE.}
 }
 \value{
-ggplot2 object showing the K function with a superimposed average
+ggplot2 object showing the K function with a superimposed average.
 }
 \description{
-Compare K Functions Between Outcomes
+This function plots K functions from different outcomes for comparison.
+Group means are included as bold lines. Additionally a reference line for
+a spatially random process can be included.
 }
 \examples{
 # Example 1
@@ -43,14 +47,14 @@ data_plot <- rbind(
   data.frame(
     "r" = tmp_1$r,
     "K" = tmp_1$value,
-    "Unit" = tmp_1$name,
-    "Outcome" = "0"
+    "unit" = tmp_1$name,
+    "outcome" = "0"
   ),
   data.frame(
     "r" = tmp1_1$r,
     "K" = tmp1_1$value,
-    "Unit" = paste0(tmp1_1$name, "_1"),
-    "Outcome" = "1"
+    "unit" = paste0(tmp1_1$name, "_1"),
+    "outcome" = "1"
   )
 )
 
@@ -73,14 +77,14 @@ data_plot <- rbind(
   data.frame(
     "r" = tmp_1$r,
     "K" = tmp_1$value,
-    "Unit" = tmp_1$name,
-    "Outcome" = "0"
+    "unit" = tmp_1$name,
+    "outcome" = "0"
   ),
   data.frame(
     "r" = tmp1_1$r,
     "K" = tmp1_1$value,
-    "Unit" = paste0(tmp1_1$name, "_1"),
-    "Outcome" = "1"
+    "unit" = paste0(tmp1_1$name, "_1"),
+    "outcome" = "1"
   )
 )
 

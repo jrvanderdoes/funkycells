@@ -2,38 +2,38 @@
 % Please edit documentation in R/simulateData.R
 \name{simulatePP}
 \alias{simulatePP}
-\title{Simulate a Point Processes}
+\title{Simulate a Point Process}
 \usage{
 simulatePP(
-  cellVarData = data.frame(stage = c(0, 1, 2), A = c(0, 0, 0), B = c(1/100, 1/500,
+  agentVarData = data.frame(outcome = c(0, 1, 2), A = c(0, 0, 0), B = c(1/100, 1/500,
     1/500), C = c(1/500, 1/250, 1/100), D = c(1/100, 1/100, 1/100), E = c(1/500, 1/500,
     1/500), F = c(1/250, 1/250, 1/250)),
-  cellKappaData = data.frame(cell = c("A", "B", "C", "D", "E", "F"), clusterCell = c(NA,
-    "A", "B", "C", NA, "A"), kappa = c(20, 5, 4, 2, 15, 5)),
-  peoplePerStage = 20,
-  imagesPerPerson = 5,
+  agentKappaData = data.frame(agent = c("A", "B", "C", "D", "E", "F"), clusterAgent =
+    c(NA, "A", "B", "C", NA, "A"), kappa = c(20, 5, 4, 2, 15, 5)),
+  unitsPerOutcome = 20,
+  replicatesPerUnit = 5,
   silent = FALSE
 )
 }
 \arguments{
-\item{cellVarData}{(Optional) Data.frame describing variances with each agent
-type.
+\item{agentVarData}{(Optional) Data.frame describing variances with each
+agent type.
 
-The data.frame has a stage column and a named column for each agent type.
+The data.frame has a outcome column and a named column for each agent type.
 Currently, these names are mandatory.}
 
-\item{cellKappaData}{(Optional) Data.frame describing cell interactions.
+\item{agentKappaData}{(Optional) Data.frame describing agent interactions.
 
-The data.frame has a cell column giving agent names (matching cellVarData),
-a clusterCell column indicating which agent the agent clusters (put NA
+The data.frame has a agent column giving agent names (matching agentVarData),
+a clusterAgent column indicating which agent the agent clusters (put NA
 if the agent doesn't cluster or clusters a hidden agent / self-clusters),
-and a kappa column directing the number of agents of per image.}
+and a kappa column directing the number of agents of per replicate.}
 
-\item{peoplePerStage}{(Optional) Numeric indicating the number of units per
+\item{unitsPerOutcome}{(Optional) Numeric indicating the number of units per
 outcome.}
 
-\item{imagesPerPerson}{(Optional) Numeric indicating the number of repeated
-measures.}
+\item{replicatesPerUnit}{(Optional) Numeric indicating the number of
+replicates, or repeated measures, per unit.}
 
 \item{silent}{(Optional) Boolean indicating if progress output should be
 printed.}
@@ -42,35 +42,34 @@ printed.}
 Data.frame containing each point the defined patterns.
 
 The data.frame has columns for outcome, x coordinate, y coordinate, agent
-type, unit, and unique repeated measure id.
+type, unit, and replicate id.
 }
 \description{
-This function simulates a point pattern with optional clustering ( visible
-and invisible). Multiple outcomes, people, and repeated measure are
-possible.
-}
-\details{
-Upcoming: cellVarData unnamed. Rename to general names (agent, unit, etc.)
+This function simulates a point pattern with optional clustering (visible
+and invisible). Multiple outcomes, units, and replicates are
+possible, e.g. a 3 stage disease (outcomes) over 20 people (units) with
+3 images each (replicates).
 }
 \examples{
-\dontrun{
-data <- simulatePP()
-}
 data <- simulatePP(
-  cellVarData = data.frame(
-    "stage" = c(0, 1),
+  agentVarData = data.frame(
+    "outcome" = c(0, 1),
     "A" = c(0, 0),
     "B" = c(1 / 100, 1 / 500),
     "C" = c(1 / 500, 1 / 250),
     "D" = c(1 / 100, 1 / 100),
     "E" = c(1 / 500, 1 / 500)
   ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B", "C", "D", "E"),
-    "clusterCell" = c(NA, "A", "B", "C", NA),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B", "C", "D", "E"),
+    "clusterAgent" = c(NA, "A", "B", "C", NA),
     "kappa" = c(10, 3, 2, 1, 8)
   ),
-  peoplePerStage = 4,
-  imagesPerPerson = 1
+  unitsPerOutcome = 4,
+  replicatesPerUnit = 1
 )
+
+\dontrun{
+data <- simulatePP()
+}
 }

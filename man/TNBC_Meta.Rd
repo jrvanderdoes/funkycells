@@ -22,7 +22,7 @@ A data frame with 33 rows and 2 columns:
 TNBC_meta
 }
 \description{
-Data of triple negative breast cancer biopsies from patients, with. Additionally, the age meta-variable was
-added.
+Data of meta-variable age related to triple negative breast cancer biopsies
+from patients.
 }
 \keyword{datasets}

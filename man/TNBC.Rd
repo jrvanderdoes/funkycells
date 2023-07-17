@@ -27,7 +27,7 @@ TNBC
 \description{
 A funky model ready set of principle components from K functions based on
 triple negative breast cancer data from patients. The original data was
-proteins are coded as T/F values. Additionally, the age meta-variable was
+proteins as coded in T/F values. Additionally, the age meta-variable was
 added.
 }
 \keyword{datasets}

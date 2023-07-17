@@ -2,21 +2,21 @@
 % Please edit documentation in R/funkyForest.R
 \name{predict_funkyForest}
 \alias{predict_funkyForest}
-\title{Predict Using funkyForest}
+\title{Predict a funkyForest}
 \usage{
 predict_funkyForest(model, data_pred, type = "all", data = NULL)
 }
 \arguments{
 \item{model}{funkyForest model. See funkyForest. A list of
-CART models from rpart.}
+CART models from rpart. Additionally this is given in funkyModel.}
 
 \item{data_pred}{data.frame of the data to be predicted.}
 
 \item{type}{(Optional) String indicating type of analysis. Options are pred
 or all. The choice changes the return to best fit intended use.}
 
-\item{data}{(Optional) data.frame of full data. The data used to fit the
-model will be extracted (by row name) to determine data the model knows.}
+\item{data}{(Optional) Data.frame of full data. The data used to fit the
+model will be extracted (by row name).}
 }
 \value{
 The returned data depends on type:
@@ -26,28 +26,27 @@ The returned data depends on type:
 }
 }
 \description{
-This function gets the predicted value from a funkyForest
-model.
+This function gets the predicted value from a funkyForest model.
 }
 \examples{
 data_pp <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 50, 1 / 50)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B"),
-    "clusterCell" = c(NA, "A"),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B"),
+    "clusterAgent" = c(NA, "A"),
     "kappa" = c(10, 5)
   ),
-  peoplePerStage = 5,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 5,
+  replicatesPerUnit = 1,
   silent = FALSE
 )
 pcaData <- getKsPCAData(data_pp,
-  repeatedUniqueId = "Image",
+  replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )
 RF <- funkyForest(data = pcaData[-2], nTrees = 5) #

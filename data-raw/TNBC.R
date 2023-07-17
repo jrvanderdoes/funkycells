@@ -213,7 +213,7 @@ cleanTNBC <- function(TNBC) {
 #' @param agents Vector of agents to consider for K functions
 #' @param data_meta Data.frame of meta_data to merge
 #' @param nPCs (Optional) Integer for number of PCs. Default is 3.
-#' @param seed (optional) Numeric for seed. Default is NULL.
+#' @param seed (Optional) Numeric for seed. Default is NULL.
 #'
 #' @return Data.frame of pca'd data
 getPCA2Save <- function(data, agents, data_meta, nPCs = 3, seed = NULL) {

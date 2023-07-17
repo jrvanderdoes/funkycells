@@ -16,25 +16,25 @@ plotPP(
 )
 }
 \arguments{
-\item{data}{Data.frame with x,y, and agent type (in that order)}
+\item{data}{Data.frame with x, y, and agent type (in that order)}
 
-\item{colorGuide}{(Optional) String for guides(color=) in ggplot2. Usually
+\item{colorGuide}{(Optional) String for 'guides(color=)' in ggplot2. Usually
 NULL or 'none' is sufficient, but ggplot2::guide_legend() can also be
 used for more custom results. Default is NULL.}
 
 \item{ptSize}{(Optional) Numeric indicating point size. Default is 1.}
 
 \item{xlim}{(Optional) Two value numeric vector indicating the size of the
-region in the x-direction. Default is c(min(x),max(x)).}
+region in the x-direction. Default is c(min(x), max(x)).}
 
 \item{ylim}{(Optional) Two value numeric vector indicating the size of the
-region in the y-direction. Default is c(min(y),max(y)).}
+region in the y-direction. Default is c(min(y), max(y)).}
 
-\item{dropAxes}{(Optional) Boolean indicating if the x, y axis title and
+\item{dropAxes}{(Optional) Boolean indicating if the x and y axis title and
 labels should be dropped. Default is FALSE.}
 
 \item{layerBasedOnFrequency}{(Optional) Boolean indicating if the data should be
-layer based on the number of cells of the type. Default is TRUE.}
+layer based on the number of agents of the type. Default is TRUE.}
 
 \item{colors}{(Optional) Vector of colors for the points. Default is NULL, or
 ggplot2 selected colors.}
@@ -43,11 +43,11 @@ ggplot2 selected colors.}
 ggplot2 plot of the spatial point process.
 }
 \description{
-This function is used to plot a spatial point process.
+This function is used to plot a spatial point process. This does not split
+data and puts all given data on a single plot.
 }
 \examples{
-plotPP(TNBC_pheno[TNBC_pheno$Person == 1, c("cellx", "celly", "Phenotype")])
-plotPP(lungcancer[lungcancer$Patient==3 &
-                  lungcancer$Image==1,
-                  c("x","y","cellType")])
+plotPP(TNBC_pheno[TNBC_pheno$Person == 1,
+                  c("cellx", "celly", "Phenotype")],
+       colorGuide = 'none')
 }

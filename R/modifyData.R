@@ -1,52 +1,59 @@
-#' Get Cell Count Data
+#' Get Agent Count Data
 #'
-#' This (underwork) function gets the average percent cell counts per image, if
-#'  there are repeated images (i.e. repeatedId is not NULL), then the cell
-#'  percents are calculated for each image and then then these percentages are
-#'  averaged. The method is classified as underwork because it requires the
-#'  'cellType' column rather than having multiple options.
+#' This (in development) function gets the average percent agent counts per
+#'  replicate, if there are replicates (i.e. replicate is not NULL), then the
+#'  agent percents are calculated for each replicate and then then these
+#'  percentages are averaged. The method is classified as in development.
 #'
-#' @param cell_data Data.frame of cell data information. Must have cellType
-#'  column. Future extensions will remove this restriction.
+#' @param agent_data Data.frame of agent data information. Must have type
+#'  column. Future extensions will remove this restriction.#'
+#' @param outcome String of the column name in data indicating the outcome or
+#'  response.
+#' @param unit String of the column name in data indicating a unit or
+#'     base thing. Note this unit may have replicates.
+#' @param replicate (Optional) String of the column name in data indicating the
+#'  replicate id. Default is NULL.
 #' @param data_append (Optional) Data.frame with outcome, patient that the
 #'  results can be appended to if desired. Default is NULL.
 #' @inheritParams funkyForest
 #'
 #' @return List with two elements:
-#'  1. dat: Data.frame with outcome, unit, any data_append and the count
-#'    data. Columns of the count data are named after the cellType and are given
+#'     \itemize{
+#'         \item dat: Data.frame with outcome, unit, data_append, and the count
+#'    data. Columns of the count data are named after the type and are given
 #'    in the next list entry.
-#'  2. cells: Vector of cellTypes, i.e. the column names for the new count
-#'    data. This is treated as meta data for funkyForest.
+#'         \item agents: Vector of the the types, i.e. the column names for the
+#'    new count data. This can be treated as meta data for funkyForest.
+#'     }
 #' @export
 #'
 #' @examples
 #' dat <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 50, 1 / 100),
 #'       "C" = c(1 / 100, 1 / 100)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B", "C"),
-#'     "clusterCell" = c(NA, "A", NA),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B", "C"),
+#'     "clusterAgent" = c(NA, "A", NA),
 #'     "kappa" = c(20, 5, 10)
 #'   ),
-#'   peoplePerStage = 10,
-#'   imagesPerPerson = 2,
+#'   unitsPerOutcome = 10,
+#'   replicatesPerUnit = 2,
 #'   silent = FALSE
 #' )
 #'
 #' # Use Case 1
-#' data_ct <- getCountData(dat, "Stage", "Person", "Image")
+#' data_ct <- getCountData(dat, "outcome", "unit", "replicate")
 #'
 #' \dontrun{
 #' dat_mod <- funkyModel(
 #'   data = data_ct$dat,
-#'   outcome = "Stage", unit = "Person",
-#'   metaNames = data_ct$cells,
+#'   outcome = "outcome", unit = "unit",
+#'   metaNames = data_ct$agents,
 #'   synthetics = 25, nTrees = 50
 #' )
 #' }
@@ -55,70 +62,70 @@
 #' # Use Case 2
 #' \dontrun{
 #' dat <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 50, 1 / 100),
 #'       "C" = c(1 / 100, 1 / 100),
 #'       "D" = c(1 / 50, 1 / 100)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B", "C", "D"),
-#'     "clusterCell" = c(NA, "A", NA, "B"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B", "C", "D"),
+#'     "clusterAgent" = c(NA, "A", NA, "B"),
 #'     "kappa" = c(20, 5, 10, 4)
 #'   ),
-#'   peoplePerStage = 15,
-#'   imagesPerPerson = 2,
+#'   unitsPerOutcome = 15,
+#'   replicatesPerUnit = 2,
 #'   silent = FALSE
 #' )
 #'
 #' pcaData <- getKsPCAData(dat,
-#'   repeatedUniqueId = "Image",
+#'   replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
-#' data_ct1 <- getCountData(dat, "Stage", "Person", "Image", data_append = pcaData)
+#' data_ct1 <- getCountData(dat, "outcome", "unit", "replicate", data_append = pcaData)
 #'
 #' dat_mod <- funkyModel(
 #'   data = data_ct1$dat,
-#'   outcome = "Stage", unit = "Person",
-#'   metaNames = data_ct1$cells,
+#'   outcome = "outcome", unit = "unit",
+#'   metaNames = data_ct1$agents,
 #'   synthetics = 25, nTrees = 50
 #' )
 #' }
-getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
+getCountData <- function(agent_data, outcome, unit, replicate = NULL,
                          data_append = NULL) {
   # Setup Data
-  results <- unique(cell_data[, c(outcome, unit)])
-  results_tmp <- unique(cell_data[, c(outcome, unit, repeatedId)])
+  results <- unique(agent_data[, c(outcome, unit)])
+  results_tmp <- unique(agent_data[, c(outcome, unit, replicate)])
 
-  cellTypes <- unique(cell_data[["cellType"]])
+  types <- unique(agent_data[["type"]])
 
   results <- cbind(
     results,
-    matrix(ncol = length(cellTypes))
+    matrix(ncol = length(types))
   )
-  colnames(results) <- c(outcome, unit, cellTypes)
+  colnames(results) <- c(outcome, unit, types)
 
   # Get Average Counts
   for (i in 1:nrow(results_tmp)) {
-    for (ct in cellTypes) {
-      if (!is.null(repeatedId)) {
+    for (ct in types) {
+      if (!is.null(replicate)) {
         results_tmp[i, ct] <-
-          nrow(cell_data[cell_data[, unit] == results_tmp[i, unit] &
-            cell_data[, repeatedId] == results_tmp[i, repeatedId] &
-            cell_data[, "cellType"] == ct, ])
+          nrow(agent_data[agent_data[, unit] == results_tmp[i, unit] &
+            agent_data[, replicate] == results_tmp[i, replicate] &
+            agent_data[, "type"] == ct, ])
       } else {
         results_tmp[i, ct] <-
-          nrow(cell_data[cell_data[, unit] == results_tmp[i, unit] &
-            cell_data[, "cellType"] == ct, ])
+          nrow(agent_data[agent_data[, unit] == results_tmp[i, unit] &
+            agent_data[, "type"] == ct, ])
       }
     }
   }
   # Make Percents
-  results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))] <-
-    results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))] /
-      rowSums(results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, repeatedId))])
+  results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, replicate))] <-
+    results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, replicate))] /
+      rowSums(results_tmp[!(colnames(results_tmp) %in% c(outcome, unit, replicate))])
 
   for (i in 1:nrow(results)) {
     results[i, -c(1:2)] <- colMeans(
@@ -126,7 +133,7 @@ getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
         results_tmp[[outcome]] == results[i, outcome] &
           results_tmp[[unit]] == results[i, unit],
         !(colnames(results_tmp) %in%
-          c(outcome, unit, repeatedId))
+          c(outcome, unit, replicate))
       ]
     )
   }
@@ -136,9 +143,9 @@ getCountData <- function(cell_data, outcome, unit, repeatedId = NULL,
   if (!is.null(data_append)) {
     return(list(
       "dat" = merge(data_append, results, keep.x = TRUE),
-      "cells" = cellTypes
+      "types" = types
     ))
   }
 
-  list("dat" = results, "cells" = cellTypes)
+  list("dat" = results, "types" = types)
 }

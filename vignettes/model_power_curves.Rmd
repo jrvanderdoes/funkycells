@@ -61,29 +61,29 @@ for (c in 1:length(changes)) {
     cat(paste0(i, ", "))
     # Generate
     dat <- simulatePP(
-      cellVarData =
+      agentVarData =
         data.frame(
-          "stage" = c(0, 1),
+          "outcome" = c(0, 1),
           "c1" = c(0, 0),
           "c2" = c(baseline, changes[c])^2,
           "c3" = c(1 / 50, 1 / 50),
           "c4" = c(1 / 10, 1 / 10)
         ),
-      cellKappaData = data.frame(
-        "cell" = paste0("c", 1:4),
-        "clusterCell" = c(NA, "c1", "c1", NA),
+      agentKappaData = data.frame(
+        "agent" = paste0("c", 1:4),
+        "clusterAgent" = c(NA, "c1", "c1", NA),
         "kappa" = c(
           30,
           5, 5,
           30
         )
       ),
-      peoplePerStage = 17,
-      imagesPerPerson = 1,
+      unitsPerOutcome = 17,
+      replicatesPerUnit = 1,
       silent = T
     )
     pcaData <- getKsPCAData(
-      data = dat, repeatedUniqueId = "Image",
+      data = dat, replicate = "replicate",
       xRange = c(0, 1), yRange = c(0, 1),
       agents_df = cells_interactions,
       silent = TRUE
@@ -92,8 +92,8 @@ for (c in 1:length(changes)) {
       metaInfo = data.frame(
         "var" = c("age"),
         "rdist" = c("rnorm"),
-        "Stage_0" = c("25"),
-        "Stage_1" = c("25")
+        "outcome_0" = c("25"),
+        "outcome_1" = c("25")
       )
     )
     info[[i]] <- list(dat, pcaData, pcaMeta)
@@ -131,7 +131,7 @@ for (c in 1:length(changes)) {
 
     rfcv <- funkyModel(
       data = rfdat[[i]],
-      outcome = "Stage", unit = "Person",
+      outcome = "outcome", unit = "unit",
       metaNames = c("age"), silent = TRUE
     )
 
@@ -281,9 +281,9 @@ for (c in 1:length(changes)) {
     cat(paste0(i, ", "))
     # Generate
     dat <- simulatePP(
-      cellVarData =
+      agentVarData =
         data.frame(
-          "stage" = c(0, 1),
+          "outcome" = c(0, 1),
           "c1" = c(0, 0),
           "c2" = c(baseline, changes[c])^2, "c3" = c(1 / 50, 1 / 50),
           "c4" = c(0, 0), "c5" = c(0, 0), "c6" = c(0, 0),
@@ -292,17 +292,17 @@ for (c in 1:length(changes)) {
           "c13" = c(0, 0), "c14" = c(1 / 50, 1 / 50)^2,
           "c15" = c(1 / 100, 1 / 100)^2, "c16" = c(1 / 10, 1 / 10)
         ),
-      cellKappaData = data.frame(
-        "cell" = paste0("c", 1:16),
-        "clusterCell" = c(NA, "c1", "c1", rep(NA, 10), rep("c1", 3)),
+      agentKappaData = data.frame(
+        "agent" = paste0("c", 1:16),
+        "clusterAgent" = c(NA, "c1", "c1", rep(NA, 10), rep("c1", 3)),
         "kappa" = c(30, 5, 5, rep(30, 10), rep(5, 3))
       ),
-      peoplePerStage = 17,
-      imagesPerPerson = 1,
+      unitsPerOutcome = 17,
+      replicatesPerUnit = 1,
       silent = T
     )
     pcaData <- getKsPCAData(
-      data = dat, repeatedUniqueId = "Image",
+      data = dat, replicate = "replicate",
       xRange = c(0, 1), yRange = c(0, 1),
       agents_df = cells_interactions,
       silent = TRUE
@@ -311,8 +311,8 @@ for (c in 1:length(changes)) {
       metaInfo = data.frame(
         "var" = c("age"),
         "rdist" = c("rnorm"),
-        "Stage_0" = c("25"),
-        "Stage_1" = c("25")
+        "outcome_0" = c("25"),
+        "outcome_1" = c("25")
       )
     )
     info[[i]] <- list(dat, pcaData, pcaMeta)
@@ -353,7 +353,7 @@ for (c in 1:length(changes)) {
 
     rfcv <- funkyModel(
       data = rfdat[[i]],
-      outcome = "Stage", unit = "Person",
+      outcome = "outcome", unit = "unit",
       metaNames = c("age"), silent = TRUE
     )
 
