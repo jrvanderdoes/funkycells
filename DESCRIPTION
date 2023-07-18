@@ -1,5 +1,5 @@
 Package: funkycells
-Title: Functional K Function Analysis of Multiplexed Images of Cells
+Title: Functional Analysis of Multiplexed Images of Cells
 Version: 1.0.0
 Authors@R: c( 
     person("Jeremy", "VanderDoes",
