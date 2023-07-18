@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">funkycells</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.0001</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,9 @@
     <a class="dropdown-item" href="../articles/model_power_curves.html">model_power_curves</a>
     <a class="dropdown-item" href="../articles/model_walkthrough.html">model_walkthrough</a>
   </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../news/index.html">Changelog</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -144,9 +147,9 @@ each class that are indistinguishable to add some noise to the data.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
-<span>  cellVarData <span class="op">=</span></span>
+<span>  agentVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>      <span class="st">"stage"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      <span class="st">"outcome"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c2"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span><span class="op">)</span>, <span class="st">"c3"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c4"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
@@ -157,9 +160,9 @@ each class that are indistinguishable to add some noise to the data.</p>
 <span>      <span class="st">"c13"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c14"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c15"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c16"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>  cellKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    <span class="st">"cell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
-<span>    <span class="st">"clusterCell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
+<span>  agentKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    <span class="st">"agent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
+<span>    <span class="st">"clusterAgent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"kappa"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
@@ -177,16 +180,16 @@ each class that are indistinguishable to add some noise to the data.</p>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">0.5</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  peoplePerStage <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  imagesPerPerson <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  unitsPerOutcome <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  replicatesPerUnit <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
-<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
+<span><span class="co">#&gt; Outcome: 0 (1/2)</span></span>
+<span><span class="co">#&gt; Outcome: 1 (2/2)</span></span>
 <span><span class="va">dat1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
-<span>  cellVarData <span class="op">=</span></span>
+<span>  agentVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>      <span class="st">"stage"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      <span class="st">"outcome"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c2"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span><span class="op">)</span>, <span class="st">"c3"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c4"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
@@ -197,9 +200,9 @@ each class that are indistinguishable to add some noise to the data.</p>
 <span>      <span class="st">"c13"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c14"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c15"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c16"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>  cellKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    <span class="st">"cell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
-<span>    <span class="st">"clusterCell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
+<span>  agentKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    <span class="st">"agent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
+<span>    <span class="st">"clusterAgent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"kappa"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
@@ -217,23 +220,23 @@ each class that are indistinguishable to add some noise to the data.</p>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">0.5</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  peoplePerStage <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  imagesPerPerson <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  unitsPerOutcome <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  replicatesPerUnit <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Stage: 0 (1/2)</span></span>
-<span><span class="co">#&gt; Stage: 1 (2/2)</span></span>
-<span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p1"</span>, <span class="st">"p31"</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p2"</span>, <span class="st">"p32"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p3"</span>, <span class="st">"p33"</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p4"</span>, <span class="st">"p34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Outcome: 0 (1/2)</span></span>
+<span><span class="co">#&gt; Outcome: 1 (2/2)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u1"</span>, <span class="st">"u31"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u2"</span>, <span class="st">"u32"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u3"</span>, <span class="st">"u33"</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u4"</span>, <span class="st">"u34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"1"</span>, <span class="st">"31"</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"2"</span>, <span class="st">"32"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"3"</span>, <span class="st">"33"</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"4"</span>, <span class="st">"34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"1"</span>, <span class="st">"31"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"2"</span>, <span class="st">"32"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"3"</span>, <span class="st">"33"</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"4"</span>, <span class="st">"34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -250,7 +253,7 @@ TNBC Patient Image
 </p>
 </div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPP.html">plotPP</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span><span class="va">dat</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="fl">18</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"cellType"</span><span class="op">)</span><span class="op">]</span>,</span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plotPP.html">plotPP</a></span><span class="op">(</span><span class="va">dat</span><span class="op">[</span><span class="va">dat</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="fl">18</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span>, <span class="st">"type"</span><span class="op">)</span><span class="op">]</span>,</span>
 <span>  ptSize <span class="op">=</span> <span class="fl">1</span>, dropAxes <span class="op">=</span> <span class="cn">T</span>, colorGuide <span class="op">=</span> <span class="st">"none"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
@@ -269,7 +272,7 @@ effect).</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">12345</span><span class="op">)</span></span>
 <span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKsPCAData.html">getKsPCAData</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">dat</span>, repeatedUniqueId <span class="op">=</span> <span class="st">"Image"</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">dat</span>, replicate <span class="op">=</span> <span class="st">"replicate"</span>,</span>
 <span>  agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
 <span>  xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">F</span></span>
@@ -278,8 +281,8 @@ effect).</p>
 <span>  metaInfo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"var"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"rdist"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rnorm"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Stage_0"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Stage_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span></span>
+<span>    <span class="st">"outcome_0"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"outcome_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>We analyze the data.</p>
@@ -287,8 +290,8 @@ effect).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pcaMeta</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"Stage"</span>,</span>
-<span>  unit <span class="op">=</span> <span class="st">"Person"</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"outcome"</span>,</span>
+<span>  unit <span class="op">=</span> <span class="st">"unit"</span>,</span>
 <span>  metaNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Resulting in the variable importance figures. The code for these is
@@ -302,9 +305,9 @@ this vignette.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123456</span><span class="op">)</span></span>
 <span><span class="va">dat0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
-<span>  cellVarData <span class="op">=</span></span>
+<span>  agentVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>      <span class="st">"stage"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      <span class="st">"outcome"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c2"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">60</span><span class="op">)</span>, <span class="st">"c3"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c4"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
@@ -315,9 +318,9 @@ this vignette.</p>
 <span>      <span class="st">"c13"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c14"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c15"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c16"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>  cellKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    <span class="st">"cell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
-<span>    <span class="st">"clusterCell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
+<span>  agentKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    <span class="st">"agent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
+<span>    <span class="st">"clusterAgent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"kappa"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
@@ -335,14 +338,14 @@ this vignette.</p>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">0.5</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  peoplePerStage <span class="op">=</span> <span class="fl">15</span>,</span>
-<span>  imagesPerPerson <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  unitsPerOutcome <span class="op">=</span> <span class="fl">15</span>,</span>
+<span>  replicatesPerUnit <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">dat1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/simulatePP.html">simulatePP</a></span><span class="op">(</span></span>
-<span>  cellVarData <span class="op">=</span></span>
+<span>  agentVarData <span class="op">=</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>      <span class="st">"stage"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
+<span>      <span class="st">"outcome"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c2"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">25</span><span class="op">)</span>, <span class="st">"c3"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">50</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c4"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
@@ -353,9 +356,9 @@ this vignette.</p>
 <span>      <span class="st">"c13"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c14"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>      <span class="st">"c15"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, <span class="st">"c16"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">10</span><span class="op">)</span></span>
 <span>    <span class="op">)</span>,</span>
-<span>  cellKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>    <span class="st">"cell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
-<span>    <span class="st">"clusterCell"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
+<span>  agentKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    <span class="st">"agent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"c"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">16</span><span class="op">)</span>,</span>
+<span>    <span class="st">"clusterAgent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"c1"</span>, <span class="st">"c1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">12</span><span class="op">)</span>, <span class="st">"c1"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"kappa"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
@@ -373,21 +376,21 @@ this vignette.</p>
 <span>      <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">0.5</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  peoplePerStage <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  imagesPerPerson <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  unitsPerOutcome <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  replicatesPerUnit <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">F</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p1"</span>, <span class="st">"p31"</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p2"</span>, <span class="st">"p32"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p3"</span>, <span class="st">"p33"</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="st">"p4"</span>, <span class="st">"p34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u1"</span>, <span class="st">"u31"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u2"</span>, <span class="st">"u32"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u3"</span>, <span class="st">"u33"</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u4"</span>, <span class="st">"u34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"1"</span>, <span class="st">"31"</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"2"</span>, <span class="st">"32"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"3"</span>, <span class="st">"33"</span>,</span>
-<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">Image</span> <span class="op">==</span> <span class="st">"4"</span>, <span class="st">"34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
+<span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"1"</span>, <span class="st">"31"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"2"</span>, <span class="st">"32"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"3"</span>, <span class="st">"33"</span>,</span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">dat1</span><span class="op">$</span><span class="va">replicate</span> <span class="op">==</span> <span class="st">"4"</span>, <span class="st">"34"</span>, <span class="cn">NA</span><span class="op">)</span></span>
 <span>    <span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
@@ -400,7 +403,7 @@ this vignette.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">pcaData</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getKsPCAData.html">getKsPCAData</a></span><span class="op">(</span></span>
-<span>  data <span class="op">=</span> <span class="va">dat</span>, repeatedUniqueId <span class="op">=</span> <span class="st">"Image"</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">dat</span>, replicate <span class="op">=</span> <span class="st">"replicate"</span>,</span>
 <span>  agents_df <span class="op">=</span> <span class="va">cells_interactions</span>,</span>
 <span>  xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">F</span></span>
@@ -409,15 +412,15 @@ this vignette.</p>
 <span>  metaInfo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"var"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span>,</span>
 <span>    <span class="st">"rdist"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rnorm"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Stage_0"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Stage_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"27"</span><span class="op">)</span></span>
+<span>    <span class="st">"outcome_0"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"25"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"outcome_1"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"27"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">rfcv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/funkyModel.html">funkyModel</a></span><span class="op">(</span></span>
 <span>  data <span class="op">=</span> <span class="va">pcaMeta</span>,</span>
-<span>  outcome <span class="op">=</span> <span class="st">"Stage"</span>,</span>
-<span>  unit <span class="op">=</span> <span class="st">"Person"</span>,</span>
+<span>  outcome <span class="op">=</span> <span class="st">"outcome"</span>,</span>
+<span>  unit <span class="op">=</span> <span class="st">"unit"</span>,</span>
 <span>  metaNames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Creating the variable importance plots as before (code below, perhaps
@@ -471,14 +474,14 @@ significant and insignificant interactions.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"r"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">r</span>,</span>
 <span>    <span class="st">"K"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">value</span>,</span>
-<span>    <span class="st">"Unit"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">name</span>,</span>
-<span>    <span class="st">"Outcome"</span> <span class="op">=</span> <span class="st">"0"</span></span>
+<span>    <span class="st">"unit"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">name</span>,</span>
+<span>    <span class="st">"outcome"</span> <span class="op">=</span> <span class="st">"0"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"r"</span> <span class="op">=</span> <span class="va">tmp1_1</span><span class="op">$</span><span class="va">r</span>,</span>
 <span>    <span class="st">"K"</span> <span class="op">=</span> <span class="va">tmp1_1</span><span class="op">$</span><span class="va">value</span>,</span>
-<span>    <span class="st">"Unit"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">name</span>, <span class="st">"_1"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Outcome"</span> <span class="op">=</span> <span class="st">"1"</span></span>
+<span>    <span class="st">"unit"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">name</span>, <span class="st">"_1"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"outcome"</span> <span class="op">=</span> <span class="st">"1"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Creating the following figure.</p>
@@ -509,14 +512,14 @@ TNBC Phenotype Significant K Function
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"r"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">r</span>,</span>
 <span>    <span class="st">"K"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">value</span>,</span>
-<span>    <span class="st">"Unit"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">name</span>,</span>
-<span>    <span class="st">"Outcome"</span> <span class="op">=</span> <span class="st">"0"</span></span>
+<span>    <span class="st">"unit"</span> <span class="op">=</span> <span class="va">tmp_1</span><span class="op">$</span><span class="va">name</span>,</span>
+<span>    <span class="st">"outcome"</span> <span class="op">=</span> <span class="st">"0"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    <span class="st">"r"</span> <span class="op">=</span> <span class="va">tmp1_1</span><span class="op">$</span><span class="va">r</span>,</span>
 <span>    <span class="st">"K"</span> <span class="op">=</span> <span class="va">tmp1_1</span><span class="op">$</span><span class="va">value</span>,</span>
-<span>    <span class="st">"Unit"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">name</span>, <span class="st">"_1"</span><span class="op">)</span>,</span>
-<span>    <span class="st">"Outcome"</span> <span class="op">=</span> <span class="st">"1"</span></span>
+<span>    <span class="st">"unit"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">tmp1_1</span><span class="op">$</span><span class="va">name</span>, <span class="st">"_1"</span><span class="op">)</span>,</span>
+<span>    <span class="st">"outcome"</span> <span class="op">=</span> <span class="st">"1"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Creating the following figure.</p>

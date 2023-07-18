@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="index.html">funkycells</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.0001</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,6 +49,9 @@
     <a class="dropdown-item" href="articles/model_power_curves.html">model_power_curves</a>
     <a class="dropdown-item" href="articles/model_walkthrough.html">model_walkthrough</a>
   </div>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="news/index.html">Changelog</a>
 </li>
       </ul>
 <form class="form-inline my-2 my-lg-0" role="search">
@@ -74,16 +77,18 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The term funkycells comes from <strong>fun</strong>ctional <strong>K</strong> function anal<strong>y</strong>sis of multiplexed images of <strong>cells</strong>. This package organizes ways to analyze cell relationships based on their (empirical) K functions. Approaches tailors to different data sizes are present in this packages and we encourage all feedback and improvements through this github repo.</p>
-<p>If you would like to understand how to use funkycells, we recommend viewing the vignette <code><a href="articles/funkycells.html">vignette("funkycells")</a></code>, available in the package or on the <a href="https://jrvanderdoes.github.io/funkycells/">website</a>.</p>
+<p>The term <span class="math inline">${\tt funkycells}$</span> comes from <strong>fun</strong>ctional <strong>K</strong> function anal<strong>y</strong>sis of multiplexed images of <strong>cells</strong>. This package organizes ways to analyze cell relationships based on their (empirical) K functions. Approaches tailors to different data sizes are present in this packages and we encourage all feedback and improvements through this github repo.</p>
+<p>If you would like to understand how to use <span class="math inline">${\tt funkycells}$</span>, we recommend viewing the vignette <code><a href="articles/funkycells.html">vignette("funkycells")</a></code>, available in the package or on the <a href="https://jrvanderdoes.github.io/funkycells/">website</a>. Several other vignettes are also present to show applications and simulated performance.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of funkycells from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>The stable version of <span class="math inline">${\tt funkycells}$</span> can be found on CRAN. Install using:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"funkycells"</span><span class="op">)</span></span></code></pre></div>
+<p>You can also install the development version of <span class="math inline">${\tt funkycells}$</span> from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"jrvanderdoes/funkycells"</span><span class="op">)</span></span></code></pre></div>
-<p>Currently we are undergoing testing and aim to publish this to CRAN soon.</p>
 <!-- 
 Don't forget to build this! devtools::build_readme() , also check out https://github.com/r-lib/actions/tree/v1/examples to setup github actions for it 
 -->
