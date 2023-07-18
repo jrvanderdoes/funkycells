@@ -23,9 +23,13 @@
 #' @export
 #'
 #' @examples
-#' plotPP(TNBC_pheno[TNBC_pheno$Person == 1,
-#'                   c("cellx", "celly", "Phenotype")],
-#'        colorGuide = 'none')
+#' plotPP(
+#'   TNBC_pheno[
+#'     TNBC_pheno$Person == 1,
+#'     c("cellx", "celly", "Phenotype")
+#'   ],
+#'   colorGuide = "none"
+#' )
 plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    xlim = c(min(data[, 1]), max(data[, 1])),
                    ylim = c(min(data[, 2]), max(data[, 2])),

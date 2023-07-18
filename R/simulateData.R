@@ -80,8 +80,10 @@ simulatePP <- function(agentVarData =
     unitAdj <- (outcomeIdx - 1) * (unitsPerOutcome) # Adjustment for unit due to stage
     data_outcomes[[outcomeIdx]] <- data.frame() # Make this so no errors
     if (!silent) {
-      cat(paste0("Outcome: ", outcome, " (", outcomeIdx, "/",
-                 nrow(agentVarData), ")\n"))
+      cat(paste0(
+        "Outcome: ", outcome, " (", outcomeIdx, "/",
+        nrow(agentVarData), ")\n"
+      ))
     }
 
     ## Do all non-clustering or inv-clustering first
@@ -121,8 +123,10 @@ simulatePP <- function(agentVarData =
           "var" = NA
         )
       invClusterAgents_data$var <-
-        as.numeric(agentVarData[agentVarData[, "outcome"] == outcome,
-                                invClusterAgents_data$agent])
+        as.numeric(agentVarData[
+          agentVarData[, "outcome"] == outcome,
+          invClusterAgents_data$agent
+        ])
 
       data_outcomes[[outcomeIdx]] <- rbind(
         data_outcomes[[outcomeIdx]],
@@ -236,7 +240,8 @@ simulatePP <- function(agentVarData =
 #'
 #' ## Another simple example
 #' data <- simulateMeta(
-#'  data.frame('outcome'=c(0,0,0,1,1,1), 'unit'=1:6))
+#'   data.frame("outcome" = c(0, 0, 0, 1, 1, 1), "unit" = 1:6)
+#' )
 simulateMeta <- function(data,
                          outcome = colnames(data)[1],
                          metaInfo = data.frame(
@@ -459,9 +464,9 @@ simulateMeta <- function(data,
 #'     type, unit, and replicate.
 #' @noRd
 .clusterAroundAgents <- function(clusterData, agentVarData,
-                                outcomeName,
-                                types, clusterAgents, kappas,
-                                minPts = 1) {
+                                 outcomeName,
+                                 types, clusterAgents, kappas,
+                                 minPts = 1) {
   newData <- data.frame()
   # Go through each agent
   for (i in 1:length(types)) {

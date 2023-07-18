@@ -183,8 +183,8 @@ funkyModel <- function(data, K = 10,
                        rGuessSims = 500,
                        subsetPlotSize = 25, nTrees = 500,
                        method = "class") {
-  if(synthetics==0) warning("No Synthetics given, variables cannot be aligned.")
-  if(synthetics<0) stop('Number of synthetics must be positive.')
+  if (synthetics == 0) warning("No Synthetics given, variables cannot be aligned.")
+  if (synthetics < 0) stop("Number of synthetics must be positive.")
   ## Error checking
   # .checkData(alignmentMethod) ## TODO:: Add something in
 

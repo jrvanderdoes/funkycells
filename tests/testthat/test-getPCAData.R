@@ -9,8 +9,10 @@ test_that("PCA Function - All Classes, people, pca present", {
   # All classes present
   expect_setequal(c(0, 1), unique(dataPCA_pheno$Class))
   # All People computed
-  expect_equal(c(1:14, 16:18, 20:21, 23, 27:29, 31:37, 39:41),
-               dataPCA_pheno$Person)
+  expect_equal(
+    c(1:14, 16:18, 20:21, 23, 27:29, 31:37, 39:41),
+    dataPCA_pheno$Person
+  )
   # All pca's considered
   expect_equal(5, ncol(dataPCA_pheno))
 })

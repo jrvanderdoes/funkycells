@@ -1,6 +1,8 @@
 test_that("Plotting Function - Test plotPP", {
-  tmp <- plotPP(TNBC_pheno[TNBC_pheno$Person == 1,
-                           c("cellx", "celly", "Phenotype")])
+  tmp <- plotPP(TNBC_pheno[
+    TNBC_pheno$Person == 1,
+    c("cellx", "celly", "Phenotype")
+  ])
 
   expect_s3_class(tmp, "ggplot")
 })
