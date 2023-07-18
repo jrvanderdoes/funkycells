@@ -2,7 +2,7 @@
 #'
 #' A funky model ready set of principle components from K functions based on
 #'   triple negative breast cancer data from patients. The original data was
-#'   proteins are coded as T/F values. Additionally, the age meta-variable was
+#'   proteins as coded in T/F values. Additionally, the age meta-variable was
 #'   added.
 #'
 #' @format ## `TNBC`
@@ -20,8 +20,7 @@
 
 #' Triple Negative Breast Cancer Phenotypes
 #'
-#' Data of triple negative breast cancer biopsies from patients, with. Additionally, the age meta-variable was
-#'   added.
+#' Data of triple negative breast cancer biopsies from patients.
 #'
 #' @format ## `TNBC_pheno`
 #' A data frame with 170,171 rows and 5 columns:
@@ -38,8 +37,8 @@
 
 #' Triple Negative Breast Cancer Phenotypes
 #'
-#' Data of triple negative breast cancer biopsies from patients, with. Additionally, the age meta-variable was
-#'   added.
+#' Data of meta-variable age related to triple negative breast cancer biopsies
+#'  from patients.
 #'
 #' @format ## `TNBC_meta`
 #' A data frame with 33 rows and 2 columns:

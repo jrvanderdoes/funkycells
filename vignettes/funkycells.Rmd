@@ -28,35 +28,35 @@ This documents a sample view of `funkycells`. Every function will be examined th
 
 # Data
 
-This package is interested in investigating spatial data. Although potentially combined, in the most raw form the data of interest would be (1) cell information (locations, patient, image, etc.) and (2) meta-data (patient demographics, etc.).
+This package is interested in investigating spatial data. Although potentially combined, in the most raw form the data of interest would be (1) agent, or cell, information (locations, patient, image, etc.) and (2) meta-data (patient demographics, etc.).
 
 Rather than loading in data, we will generate data with such properties. The cell data is constructed using `simulatePP()`, as given below. 
 ```{r simulate_cells}
 set.seed(123)
 cell_data <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 100, 1 / 500),
       "C" = c(1 / 500, 1 / 250),
       "D" = c(1 / 100, 1 / 100)
     ),
-  cellKappaData =
+  agentKappaData =
     data.frame(
-      "cell" = c("A", "B", "C", "D"),
-      "clusterCell" = c(NA, "A", NA, NA),
+      "agent" = c("A", "B", "C", "D"),
+      "clusterAgent" = c(NA, "A", NA, NA),
       "kappa" = c(20, 5, 15, 15)
     ),
-  peoplePerStage = 40,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 40,
+  replicatesPerUnit = 1,
   silent = FALSE
 )
 ```
 
 We look at some pictures using `plotPP()`.
 ```{r plot_data}
-plotPP(cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
+plotPP(cell_data[cell_data$replicate == 1, c("x", "y", "type")],
   dropAxes = TRUE,
   colorGuide = "none",
   xlim = c(0, 1),
@@ -67,19 +67,19 @@ plotPP(cell_data[cell_data$Image == 1, c("x", "y", "cellType")],
 In funkycells we often explain the cell interactions using $K$ functions, although many functions are feasible. For example, K functions could be computed as the following function.
 ```{r compute_k}
 k_data <- getKFunction(
-  data = cell_data[cell_data$Person == "p1", -1],
+  data = cell_data[cell_data$unit == "u1", -1],
   agents = c("A", "A"),
-  unit = "Person",
-  repeatedUniqueId = "Image",
+  unit = "unit",
+  replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01),
   xRange = c(0, 1),
   yRange = c(0, 1)
 )
 ```
 
-However, `funkyModel()` does not use functions directly, but the principle components of functions. Because of the commonness of $K$ functions, currently we implemented the steps in the same function^[This may be changed soon]. Although in our data, the cellTypes are in a single column, the functions accepts when the cell properties are defined in many columns (see documentation on `getKsPCAData()`). We also note that we only consider one-direction of the interactions to reduce variables and improve model power.
+However, `funkyModel()` does not use functions directly, but the principle components of functions. Because of the commonness of $K$ functions, currently we implemented the steps in the same function. Although in our data, the types are in a single column, the functions accepts when the cell properties are defined in many columns (see documentation on `getKsPCAData()`). We also note that we only consider one-direction of the interactions to reduce variables and improve model power.
 ```{r compute_pca}
-cells <- unique(cell_data$cellType)
+cells <- unique(cell_data$type)
 cells_interactions <- rbind(
   data.frame(t(combn(cells, 2))),
   data.frame("X1" = cells, "X2" = cells)
@@ -87,9 +87,9 @@ cells_interactions <- rbind(
 
 pca_data <- getKsPCAData(
   data = cell_data,
-  outcome = "Stage",
-  unit = "Person",
-  repeatedUniqueId = "Image",
+  outcome = "outcome",
+  unit = "unit",
+  replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01),
   agents_df = cells_interactions,
   xRange = c(0, 1), yRange = c(0, 1),
@@ -101,12 +101,12 @@ Upon this data, we attach the meta information. For example, to this data we wil
 ```{r add_meta}
 set.seed(123)
 pcaMeta <- simulateMeta(pca_data,
-  outcome = "Stage",
+  outcome = "outcome",
   metaInfo = data.frame(
     "var" = c("gender", "age"),
     "rdist" = c("rbinom", "rnorm"),
-    "Stage_0" = c("0.5", "30"),
-    "Stage_1" = c("0.5", "31")
+    "outcome_0" = c("0.5", "30"),
+    "outcome_1" = c("0.5", "31")
   )
 )
 ```
@@ -118,8 +118,8 @@ We now jump into the model. We use `funkyModel()` as it employs cross-validation
 set.seed(123)
 model_fc <- funkyModel(
   data = pcaMeta,
-  outcome = "Stage",
-  unit = "Person",
+  outcome = "outcome",
+  unit = "unit",
   metaNames = c("gender", "age")
 )
 ```
@@ -133,30 +133,30 @@ The results of the model from `funkyModel()` also includes the model from `funky
 ```{r predict_data, eval=full_run}
 set.seed(12345)
 cell_data_pred <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 100, 1 / 500),
       "C" = c(1 / 500, 1 / 250),
       "D" = c(1 / 100, 1 / 100)
     ),
-  cellKappaData =
+  agentKappaData =
     data.frame(
-      "cell" = c("A", "B", "C", "D"),
-      "clusterCell" = c(NA, "A", NA, NA),
+      "agent" = c("A", "B", "C", "D"),
+      "clusterAgent" = c(NA, "A", NA, NA),
       "kappa" = c(20, 5, 15, 15)
     ),
-  peoplePerStage = 2,
-  imagesPerPerson = 2,
+  unitsPerOutcome = 2,
+  replicatesPerUnit = 2,
   silent = FALSE
 )
 
 pca_data_pred <- getKsPCAData(
   data = cell_data_pred,
-  outcome = "Stage",
-  unit = "Person",
-  repeatedUniqueId = "Image",
+  outcome = "outcome",
+  unit = "unit",
+  replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01),
   agents_df = cells_interactions,
   xRange = c(0, 1), yRange = c(0, 1),
@@ -165,12 +165,12 @@ pca_data_pred <- getKsPCAData(
 
 set.seed(12345)
 pcaMeta_pred <- simulateMeta(pca_data_pred,
-  outcome = "Stage",
+  outcome = "outcome",
   metaInfo = data.frame(
     "var" = c("gender", "age"),
     "rdist" = c("rbinom", "rnorm"),
-    "Stage_0" = c("0.5", "30"),
-    "Stage_1" = c("0.5", "31")
+    "outcome_0" = c("0.5", "30"),
+    "outcome_1" = c("0.5", "31")
   )
 )
 
@@ -181,32 +181,32 @@ predictions <- predict_funkyForest(model = model_fc$model, data_pred = pcaMeta_p
 
 We also can compare K functions by group.
 ```{r compare_k_functions}
-ab_stage0 <- getKFunction(cell_data[cell_data$Stage == 0, -1],
-  agents = c("A", "B"), unit = "Person",
-  repeatedUniqueId = "Image",
+ab_outcome0 <- getKFunction(cell_data[cell_data$outcome == 0, -1],
+  agents = c("A", "B"), unit = "unit",
+  replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01)
 )
-ab_stage1 <- getKFunction(cell_data[cell_data$Stage == 1, -1],
-  agents = c("A", "B"), unit = "Person",
-  repeatedUniqueId = "Image",
+ab_outcome1 <- getKFunction(cell_data[cell_data$outcome == 1, -1],
+  agents = c("A", "B"), unit = "unit",
+  replicate = "replicate",
   rCheckVals = seq(0, 0.25, 0.01)
 )
 
-ab_stage0_long <- tidyr::pivot_longer(data = ab_stage0, cols = K1:K15)
-ab_stage1_long <- tidyr::pivot_longer(data = ab_stage1, cols = K1:K15)
+ab_outcome0_long <- tidyr::pivot_longer(data = ab_outcome0, cols = K1:K15)
+ab_outcome1_long <- tidyr::pivot_longer(data = ab_outcome1, cols = K1:K15)
 
 data_k_plot <- rbind(
   data.frame(
-    "r" = ab_stage0_long$r,
-    "K" = ab_stage0_long$value,
-    "Unit" = ab_stage0_long$name,
-    "Outcome" = "0"
+    "r" = ab_outcome0_long$r,
+    "K" = ab_outcome0_long$value,
+    "unit" = ab_outcome0_long$name,
+    "outcome" = "0"
   ),
   data.frame(
-    "r" = ab_stage1_long$r,
-    "K" = ab_stage1_long$value,
-    "Unit" = paste0(ab_stage1_long$name, "_1"),
-    "Outcome" = "1"
+    "r" = ab_outcome1_long$r,
+    "K" = ab_outcome1_long$value,
+    "unit" = paste0(ab_outcome1_long$name, "_1"),
+    "outcome" = "1"
   )
 )
 
@@ -220,7 +220,7 @@ pred_roc <- predict_funkyForest(
   data_pred = pcaMeta[-2],
   data = pcaMeta[-2]
 )
-computePseudoROCCurves(pcaMeta$Stage, pred_roc$PredPerc[-1])
+computePseudoROCCurves(pcaMeta$outcome, pred_roc$PredPerc[-1])
 ```
 
 # Conclusion

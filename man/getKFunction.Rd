@@ -8,7 +8,7 @@ getKFunction(
   data,
   agents,
   unit,
-  repeatedUniqueId = NULL,
+  replicate = NULL,
   rCheckVals = NULL,
   xRange = NULL,
   yRange = NULL,
@@ -18,63 +18,60 @@ getKFunction(
 \arguments{
 \item{data}{Dataframe with column titles for at least x, y, agents,
 and unit. For consistency (and avoiding errors), use that order.
-Additionally, repeatedUniqueId can be added.}
+Additionally, replicate can be added.}
 
 \item{agents}{Two value vector indicating the two agents to use for the K
 function, the first to the second. These should be in the unit column.}
 
 \item{unit}{String of the column name in data indicating a unit or base
-thing. Note this unit may have repeated measures.}
+thing. Note this unit may have replicates.}
 
-\item{repeatedUniqueId}{(optional) String of the column name in data
-indicating the unique ID when using repeated measures.}
+\item{replicate}{(Optional) String of the column name in data indicating the
+unique replicates, or repeated measures.}
 
-\item{rCheckVals}{(optional) numeric vector indicating the radius to check.
+\item{rCheckVals}{(Optional) Numeric vector indicating the radius to check.
 Note, if note specified, this could take a lot of memory, particularly
-with many units and repeated measures.}
+with many units and replicates.}
 
-\item{xRange}{(optional) two value numeic vector indicating the min and max
-x values. Note this is re-used for all images. The default just takes
-the min and max x from each image. This allows different sized images,
-but note that the edges are defined by some cell.}
+\item{xRange, yRange}{(Optional) Two value numeric vector indicating the min
+and max x / y values. Note this is re-used for all images. The default just
+takes the min and max from each image. This allows different sized images,
+but the edges are defined by some agent location.}
 
-\item{yRange}{(optional) two value numeic vector indicating the min and max
-y values. Note this is re-used for all images. The default just takes
-the min and max y from each image. This allows different sized images,
-but note that the edges are defined by some cell.}
-
-\item{edgeCorrection}{(optional) String indicating type of edgeCorrection to
-use in spatStat for computation of K functions.}
+\item{edgeCorrection}{(Optional) String indicating type of edgeCorrection(s)
+to apply when computing the K functions. Options include: "border",
+"bord.modif", "isotropic", "Ripley", "translate", "translation", "periodic",
+"none", "best" or "all" selects all options.}
 }
 \value{
 data.frame with the first column being the checked radius and the
-rest relating to the K function for each unit at those points. If a K
-function could not be computed, perhaps due to lack of data, an NA is
-returned for the K function.
+remaining columns relating to the K function for each unit at those
+points. If a K function could not be computed, perhaps due to lack of
+data, an NA is returned for the K function.
 }
 \description{
 This function computes the K function between the two agents for each unit,
-potentially averaging over repeated measures.
+potentially averaging over replicates, or repeated measures.
 }
 \examples{
 \dontrun{
 data1 <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1, 2),
+      "outcome" = c(0, 1, 2),
       "A" = c(0, 0, 0),
       "B" = c(1 / 100, 1 / 500, 1 / 500)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B"),
-    "clusterCell" = c(NA, "A"),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B"),
+    "clusterAgent" = c(NA, "A"),
     "kappa" = c(20, 5)
   )
 )
-KData <- data1[data1$Person == "p1", colnames(data1) != "Stage"]
+KData <- data1[data1$unit == "u1", colnames(data1) != "outcome"]
 KFunction <- getKFunction(
-  agents = c("A", "B"), unit = "Person",
-  repeatedUniqueId = "Image",
+  agents = c("A", "B"), unit = "unit",
+  replicate = "replicate",
   data = KData,
   rCheckVals = seq(0, 0.25, 0.01),
   xRange = c(0, 1), yRange = c(0, 1),

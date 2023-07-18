@@ -1,60 +1,59 @@
-#' Simulate a Point Processes
+#' Simulate a Point Process
 #'
-#' This function simulates a point pattern with optional clustering ( visible
-#'     and invisible). Multiple outcomes, people, and repeated measure are
-#'     possible.
+#' This function simulates a point pattern with optional clustering (visible
+#'     and invisible). Multiple outcomes, units, and replicates are
+#'     possible, e.g. a 3 stage disease (outcomes) over 20 people (units) with
+#'     3 images each (replicates).
 #'
-#' Upcoming: cellVarData unnamed. Rename to general names (agent, unit, etc.)
+#' @param agentVarData (Optional) Data.frame describing variances with each
+#'  agent type.
 #'
-#' @param cellVarData (Optional) Data.frame describing variances with each agent
-#'     type.
-#'
-#' The data.frame has a stage column and a named column for each agent type.
+#' The data.frame has a outcome column and a named column for each agent type.
 #'     Currently, these names are mandatory.
-#' @param cellKappaData (Optional) Data.frame describing cell interactions.
+#' @param agentKappaData (Optional) Data.frame describing agent interactions.
 #'
-#' The data.frame has a cell column giving agent names (matching cellVarData),
-#'     a clusterCell column indicating which agent the agent clusters (put NA
+#' The data.frame has a agent column giving agent names (matching agentVarData),
+#'     a clusterAgent column indicating which agent the agent clusters (put NA
 #'     if the agent doesn't cluster or clusters a hidden agent / self-clusters),
-#'     and a kappa column directing the number of agents of per image.
-#' @param peoplePerStage (Optional) Numeric indicating the number of units per
+#'     and a kappa column directing the number of agents of per replicate.
+#' @param unitsPerOutcome (Optional) Numeric indicating the number of units per
 #'     outcome.
-#' @param imagesPerPerson (Optional) Numeric indicating the number of repeated
-#'     measures.
+#' @param replicatesPerUnit (Optional) Numeric indicating the number of
+#'  replicates, or repeated measures, per unit.
 #' @param silent (Optional) Boolean indicating if progress output should be
 #'     printed.
 #'
 #' @return Data.frame containing each point the defined patterns.
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
-#'     type, unit, and unique repeated measure id.
+#'     type, unit, and replicate id.
 #' @export
 #'
 #' @examples
 #' data <- simulatePP(
-#'   cellVarData = data.frame(
-#'     "stage" = c(0, 1),
+#'   agentVarData = data.frame(
+#'     "outcome" = c(0, 1),
 #'     "A" = c(0, 0),
 #'     "B" = c(1 / 100, 1 / 500),
 #'     "C" = c(1 / 500, 1 / 250),
 #'     "D" = c(1 / 100, 1 / 100),
 #'     "E" = c(1 / 500, 1 / 500)
 #'   ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B", "C", "D", "E"),
-#'     "clusterCell" = c(NA, "A", "B", "C", NA),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B", "C", "D", "E"),
+#'     "clusterAgent" = c(NA, "A", "B", "C", NA),
 #'     "kappa" = c(10, 3, 2, 1, 8)
 #'   ),
-#'   peoplePerStage = 4,
-#'   imagesPerPerson = 1
+#'   unitsPerOutcome = 4,
+#'   replicatesPerUnit = 1
 #' )
 #'
 #' \dontrun{
-#'   data <- simulatePP()
+#' data <- simulatePP()
 #' }
-simulatePP <- function(cellVarData =
+simulatePP <- function(agentVarData =
                          data.frame(
-                           "stage" = c(0, 1, 2),
+                           "outcome" = c(0, 1, 2),
                            "A" = c(0, 0, 0),
                            "B" = c(1 / 100, 1 / 500, 1 / 500),
                            "C" = c(1 / 500, 1 / 250, 1 / 100),
@@ -62,119 +61,125 @@ simulatePP <- function(cellVarData =
                            "E" = c(1 / 500, 1 / 500, 1 / 500),
                            "F" = c(1 / 250, 1 / 250, 1 / 250)
                          ),
-                       cellKappaData = data.frame(
-                         "cell" = c("A", "B", "C", "D", "E", "F"),
-                         "clusterCell" = c(NA, "A", "B", "C", NA, "A"),
+                       agentKappaData = data.frame(
+                         "agent" = c("A", "B", "C", "D", "E", "F"),
+                         "clusterAgent" = c(NA, "A", "B", "C", NA, "A"),
                          "kappa" = c(20, 5, 4, 2, 15, 5)
                        ),
-                       peoplePerStage = 20,
-                       imagesPerPerson = 5,
+                       unitsPerOutcome = 20,
+                       replicatesPerUnit = 5,
                        silent = FALSE) {
   ## Setup
-  data_stages <- list()
-  data_stages1 <- list()
-  # Go through each stage
-  for (stageIdx in 1:nrow(cellVarData)) {
+  data_outcomes <- list()
+  data_outcomes1 <- list()
+  # Go through each outcome
+  for (outcomeIdx in 1:nrow(agentVarData)) {
     # General Vars
-    stage <- cellVarData$stage[stageIdx] # Current Stage
-    imageAdj <- (stageIdx - 1) * (peoplePerStage * imagesPerPerson) # Adjustment for images due to stage
-    personAdj <- (stageIdx - 1) * (peoplePerStage) # Adjustment for person due to stage
-    data_stages[[stageIdx]] <- data.frame() # Make this so no errors
+    outcome <- agentVarData$outcome[outcomeIdx] # Current Stage
+    replicateAdj <- (outcomeIdx - 1) * (unitsPerOutcome * replicatesPerUnit) # Adjustment for replicates due to stage
+    unitAdj <- (outcomeIdx - 1) * (unitsPerOutcome) # Adjustment for unit due to stage
+    data_outcomes[[outcomeIdx]] <- data.frame() # Make this so no errors
     if (!silent) {
-      cat(paste0("Stage: ", stage, " (", stageIdx, "/", nrow(cellVarData), ")\n"))
+      cat(paste0(
+        "Outcome: ", outcome, " (", outcomeIdx, "/",
+        nrow(agentVarData), ")\n"
+      ))
     }
 
     ## Do all non-clustering or inv-clustering first
-    clusterCellsNA_cKD_Idx <- which(is.na(cellKappaData$clusterCell))
-    clusterCellsNA_Names <- cellKappaData$cell[clusterCellsNA_cKD_Idx]
-    clusterCellsNA_Vars <-
-      cellVarData[cellVarData[, "stage"] == stage, clusterCellsNA_Names]
+    clusterAgentsNA_cKD_Idx <- which(is.na(agentKappaData$clusterAgent))
+    clusterAgentsNA_Names <- agentKappaData$agent[clusterAgentsNA_cKD_Idx]
+    clusterAgentsNA_Vars <-
+      agentVarData[agentVarData[, "outcome"] == outcome, clusterAgentsNA_Names]
 
-    nonClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars == 0]
-    invClusterCells_cKD_Idx <- clusterCellsNA_cKD_Idx[clusterCellsNA_Vars > 0]
+    nonClusterAgents_cKD_Idx <- clusterAgentsNA_cKD_Idx[clusterAgentsNA_Vars == 0]
+    invClusterAgents_cKD_Idx <- clusterAgentsNA_cKD_Idx[clusterAgentsNA_Vars > 0]
 
     ## Non-clustering
-    if (length(nonClusterCells_cKD_Idx) > 0) {
-      nonClusterCells_data <-
+    if (length(nonClusterAgents_cKD_Idx) > 0) {
+      nonClusterAgents_data <-
         data.frame(
-          "cell" = cellKappaData[nonClusterCells_cKD_Idx, "cell"],
-          "kappa" = cellKappaData[nonClusterCells_cKD_Idx, "kappa"]
+          "agent" = agentKappaData[nonClusterAgents_cKD_Idx, "agent"],
+          "kappa" = agentKappaData[nonClusterAgents_cKD_Idx, "kappa"]
         )
 
-      data_stages[[stageIdx]] <-
+      data_outcomes[[outcomeIdx]] <-
         .generateCSRPatterns(
-          stageName = stage,
-          peoplePerStage = peoplePerStage,
-          imagesPerPerson = imagesPerPerson,
-          kappas = nonClusterCells_data$kappa,
-          cellTypes = nonClusterCells_data$cell,
-          kappaSep = TRUE, imageAdj = imageAdj,
-          personAdj = personAdj
+          outcomeName = outcome,
+          unitsPerOutcome = unitsPerOutcome,
+          replicatesPerUnit = replicatesPerUnit,
+          kappas = nonClusterAgents_data$kappa,
+          types = nonClusterAgents_data$agent,
+          replicateAdj = replicateAdj,
+          unitAdj = unitAdj
         )
     }
     ## Inv-clustering
-    if (length(invClusterCells_cKD_Idx) > 0) {
-      invClusterCells_data <-
+    if (length(invClusterAgents_cKD_Idx) > 0) {
+      invClusterAgents_data <-
         data.frame(
-          "cell" = cellKappaData[invClusterCells_cKD_Idx, "cell"],
-          "kappa" = cellKappaData[invClusterCells_cKD_Idx, "kappa"],
+          "agent" = agentKappaData[invClusterAgents_cKD_Idx, "agent"],
+          "kappa" = agentKappaData[invClusterAgents_cKD_Idx, "kappa"],
           "var" = NA
         )
-      invClusterCells_data$var <-
-        as.numeric(cellVarData[cellVarData[, "stage"] == stage, invClusterCells_data$cell])
+      invClusterAgents_data$var <-
+        as.numeric(agentVarData[
+          agentVarData[, "outcome"] == outcome,
+          invClusterAgents_data$agent
+        ])
 
-      data_stages[[stageIdx]] <- rbind(
-        data_stages[[stageIdx]],
+      data_outcomes[[outcomeIdx]] <- rbind(
+        data_outcomes[[outcomeIdx]],
         .generateInvClusterPatterns(
-          stageName = stage,
-          peoplePerStage = peoplePerStage,
-          imagesPerPerson = imagesPerPerson,
-          kappas = invClusterCells_data$kappa,
-          cellTypes = invClusterCells_data$cell,
-          cellVars = invClusterCells_data$var,
-          kappaSep = TRUE, imageAdj = imageAdj,
-          personAdj = personAdj
+          outcomeName = outcome,
+          unitsPerOutcome = unitsPerOutcome,
+          replicatesPerUnit = replicatesPerUnit,
+          kappas = invClusterAgents_data$kappa,
+          types = invClusterAgents_data$agent,
+          agentVars = invClusterAgents_data$var,
+          replicateAdj = replicateAdj,
+          unitAdj = unitAdj
         )
       )
     }
 
     ## Recursively plot clusters
-    completeCells <- clusterCellsNA_Names # Record completed cell generation
-    while (length(completeCells) != nrow(cellKappaData)) {
-      # See all cells that cluster around newly added (not previously added)
-      nextCell_cKD_Idx <- which(cellKappaData$clusterCell %in% completeCells &
-        !(cellKappaData$cell %in% completeCells))
-      nextCell_cKD <- cellKappaData[nextCell_cKD_Idx, ]
-      nextCell_Vars <-
-        cellVarData[cellVarData[, "stage"] == stage, nextCell_cKD$cell]
+    completeAgents <- clusterAgentsNA_Names # Record completed agent generation
+    while (length(completeAgents) != nrow(agentKappaData)) {
+      # See all types that cluster around newly added (not previously added)
+      nextAgent_cKD_Idx <- which(agentKappaData$clusterAgent %in% completeAgents &
+        !(agentKappaData$agent %in% completeAgents))
+      nextAgent_cKD <- agentKappaData[nextAgent_cKD_Idx, ]
+      nextAgent_Vars <-
+        agentVarData[agentVarData[, "outcome"] == outcome, nextAgent_cKD$agent]
 
-      if (nrow(nextCell_cKD) == 0) {
-        stop("Error: There is an impossibility in cell placement")
+      if (nrow(nextAgent_cKD) == 0) {
+        stop("Error: There is an impossibility in agent placement")
       }
 
-      data_stages[[stageIdx]] <- rbind(
-        data_stages[[stageIdx]],
-        .clusterAroundCells(
-          clusterData = data_stages[[stageIdx]][
-            data_stages[[stageIdx]]$cellType %in% unique(nextCell_cKD$clusterCell),
+      data_outcomes[[outcomeIdx]] <- rbind(
+        data_outcomes[[outcomeIdx]],
+        .clusterAroundAgents(
+          clusterData = data_outcomes[[outcomeIdx]][
+            data_outcomes[[outcomeIdx]]$type %in% unique(nextAgent_cKD$clusterAgent),
           ],
-          cellVarData = as.numeric(nextCell_Vars),
-          stageName = stage,
-          cells = nextCell_cKD$cell,
-          clusterCells = nextCell_cKD$clusterCell,
-          kappas = nextCell_cKD$kappa,
+          agentVarData = as.numeric(nextAgent_Vars),
+          outcomeName = outcome,
+          types = nextAgent_cKD$agent,
+          clusterAgents = nextAgent_cKD$clusterAgent,
+          kappas = nextAgent_cKD$kappa,
           minPts = 1
         )
       )
 
       # Record generation
-      completeCells <- c(completeCells, nextCell_cKD$cell)
+      completeAgents <- c(completeAgents, nextAgent_cKD$agent)
     }
   }
 
   ## Organize and return
-  data_ret <- do.call("rbind", data_stages)[, c(6, 1:3, 5, 4)]
-  data_ret$Stage <- as.character(data_ret$Stage)
+  data_ret <- do.call("rbind", data_outcomes)[, c(6, 1:3, 5, 4)]
+  data_ret$outcome <- as.character(data_ret$outcome)
 
   data_ret
 }
@@ -182,57 +187,63 @@ simulatePP <- function(cellVarData =
 
 #' Simulate Meta Variables
 #'
-#' This function simulates meta-variables to append to pca data.
+#' This function simulates meta-variables with varying distributions to append
+#'  to some data.
 #'
 #' Notes: runif may induce useless information so don't recommend correlating it
 #'
-#' @param pcaData Data.frame with the outcome, unit and principle components of
-#'     computed K functions.
-#' @param outcome (Optional) Column title for the outcome in the pcaData.
-#' @param metaInfo (Optional) Data.frame indicating the metavariables to
-#'     include.
+#' @param data Data.frame with the outcome and unit. Typically this also
+#'  includes PCA data as it is run after computing the principle components (see
+#'  examples).
+#' @param outcome (Optional) String for column title of the data's outcome.
+#'  Default is the first column.
+#' @param metaInfo (Optional) Data.frame indicating the meta-variables (and
+#'  properties) to generate. Default has some examples of possible options.
 #'
 #' The data.frame has a var column, rdist column, and columns for each outcome.
 #'     The var column names the meta-variables, rdist indicates the distribution
-#'     (the options as runif, rbinom, and rnorm), and each outcome. column gives
-#'     the expected value (must be positive) of the random variables for each
-#'     outcome.
+#'     (options are runif, rbinom, and rnorm), and the outcome columns indicate
+#'     mean of the variable for that outcome.
 #'
 #' In order to allow designation of the expected values, the following rules are
 #'     imposed on each distribution:
 #'     \itemize{
 #'         \item runif: a=0, so b is modified,
 #'         \item rbinom: n=1, so this defines the probability
-#'         \item runif: the standard deviation is set to 1
+#'         \item runif: variance is set to 1
 #'     }
 #'
-#' @return Data.frame with the outcome, unit, principle components of
-#'     computed K functions, and the meta-variables. pcaData with appended
-#'     appended columns at the end.
+#' @return Data.frame of the original data with meta-variables appended (as
+#' columns) at the end.
 #' @export
 #'
 #' @examples
 #' data <- simulatePP(
-#'   cellVarData = data.frame(
-#'     "stage" = c(0, 1, 2),
+#'   agentVarData = data.frame(
+#'     "outcome" = c(0, 1, 2),
 #'     "A" = c(0, 0, 0),
 #'     "B" = c(1 / 100, 1 / 500, 1 / 1000)
 #'   ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(10, 3)
 #'   ),
-#'   peoplePerStage = 5,
-#'   imagesPerPerson = 1
+#'   unitsPerOutcome = 5,
+#'   replicatesPerUnit = 1
 #' )
 #' pcaData <- getKsPCAData(
-#'   data = data, repeatedUniqueId = "Image",
+#'   data = data, replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1)
 #' )
 #' pcaMeta <- simulateMeta(pcaData)
-simulateMeta <- function(pcaData,
-                         outcome = colnames(pcaData)[1],
+#'
+#' ## Another simple example
+#' data <- simulateMeta(
+#'   data.frame("outcome" = c(0, 0, 0, 1, 1, 1), "unit" = 1:6)
+#' )
+simulateMeta <- function(data,
+                         outcome = colnames(data)[1],
                          metaInfo = data.frame(
                            "var" = c(
                              "randUnif", "randBin", "rNorm",
@@ -242,39 +253,41 @@ simulateMeta <- function(pcaData,
                              "runif", "rbinom", "rnorm",
                              "runif", "rbinom", "rnorm"
                            ),
-                           "Stage_0" = c(
+                           "outcome_0" = c(
                              "0.5", "0.5", "1",
                              "0.5", "0.6", "1"
                            ),
-                           "Stage_1" = c(
+                           "outcome_1" = c(
                              "0.5", "0.5", "1",
                              "0.75", "0.65", "1.5"
                            ),
-                           "Stage_2" = c(
+                           "outcome_2" = c(
                              "0.5", "0.5", "1",
                              "0.95", "0.75", "1.5"
                            )
                          )) {
   # Setup Outcome_df
   outcomes_df <- data.frame(
-    "outcome" = unique(pcaData[[outcome]]),
+    "outcome" = unique(data[[outcome]]),
     "MetaInfoCol" = NA
   )
   for (i in 1:nrow(outcomes_df)) {
     outcomes_df$MetaInfoCol[i] <-
-      which(colnames(metaInfo) == paste0("Stage_", outcomes_df[i, "outcome"]))
+      which(colnames(metaInfo) == paste0("outcome_", outcomes_df[i, "outcome"]))
   }
 
 
   for (i in 1:nrow(metaInfo)) {
     # Setup
-    pcaData[[metaInfo[i, 1]]] <- NA
+    data[[metaInfo[i, 1]]] <- NA
     typeDist <- metaInfo[i, 2]
 
-    # Stages
+    # Outcomes
     for (j in 1:nrow(outcomes_df)) {
       EX <- as.numeric(metaInfo[i, outcomes_df$MetaInfoCol[j]])
-      n <- nrow(pcaData[pcaData[, outcome] == outcomes_df[j, "outcome"], ])
+      signEX <- sign(EX)
+      EX <- abs(EX)
+      n <- nrow(data[data[, outcome] == outcomes_df[j, "outcome"], ])
       if (EX <= 0) stop("Error: EX must be positive")
       if (typeDist == "runif") {
         # 1/2(b-a)=EX -> b = 2*EX
@@ -295,12 +308,12 @@ simulateMeta <- function(pcaData,
         stop("Error: Only runif, rnorm, and rbinom accepted.")
       }
 
-      pcaData[pcaData[, outcome] == outcomes_df[j, "outcome"], metaInfo[i, 1]] <-
-        eval(parse(text = parseString))
+      data[data[, outcome] == outcomes_df[j, "outcome"], metaInfo[i, 1]] <-
+        eval(parse(text = parseString)) * signEX
     }
   }
 
-  pcaData
+  data
 }
 
 
@@ -312,59 +325,55 @@ simulateMeta <- function(pcaData,
 #'
 #' See usage in simulatePP.
 #'
-#' Upcoming: Try to eliminate or indicate when kappaSep is used.
-#'
-#' @param stageName String inidicating the outcome name that should be given.
-#' @param peoplePerStage Numeric indicating the number of units per
+#' @param outcomeName String indicating the outcome name that should be given.
+#' @param unitsPerOutcome Numeric indicating the number of units per
 #'     outcome.
-#' @param imagesPerPerson Numeric indicating the number of repeated
-#'     measures.
+#' @param replicatesPerUnit Numeric indicating the number of replicates, or
+#'  repeated measures, per unit.
 #' @param kappas Numeric vector directing the number of agents per type per
-#'     image.
-#' @param cellTypes Vector with the agent types of interest being generated.
-#'     Corresponds to the kappas.
-#' @param kappaSep (Optional) Boolean. Current use understood but not used. May
-#'     remove.
+#'     replicate.
+#' @param types Character vector with the agent types of interest being
+#'  generated. Corresponds to the kappas.
+#' @param replicateAdj (Optional) Numeric that increments replicate name. Used
+#'  when replicates have already been generated in the resulting data set and
+#'  this will be appended.
+#' @param unitAdj (Optional) Numeric that increments unit name. Used when replicates
+#'     have already been generated in the resulting data set and this will be
+#'     appended.
 #'
 #' @return Data.frame containing each point in the defined CSR patterns.
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
-#'     type, unit, and unique repeated measure id.
+#'     type, unit, and replicate.
 #' @noRd
-.generateCSRPatterns <- function(stageName,
-                                 peoplePerStage,
-                                 imagesPerPerson,
+.generateCSRPatterns <- function(outcomeName,
+                                 unitsPerOutcome,
+                                 replicatesPerUnit,
                                  kappas,
-                                 cellTypes,
-                                 kappaSep = TRUE,
-                                 imageAdj = 0,
-                                 personAdj = 0) {
+                                 types,
+                                 replicateAdj = 0,
+                                 unitAdj = 0) {
   data <- NULL
 
-  for (personCt in 1:peoplePerStage) {
-    for (imageCt in 1:imagesPerPerson) {
+  for (unitCt in 1:unitsPerOutcome) {
+    for (replicateCt in 1:replicatesPerUnit) {
       data_tmp <- list()
-      for (cell in 1:length(cellTypes)) {
-        if (cell == 1 || kappaSep) {
-          kapVal <- kappas[cell]
-        } else {
-          ## Used so that there are more cells when there is no clustering
-          #   TODO: See if ever used
-          kapVal <- nrow(data_tmp[[cell - 1]]) * kappas[cell]
-        }
-        data_tmp[[cell]] <- .generateCSRData(
+      for (agent in 1:length(types)) {
+        kapVal <- kappas[agent]
+        data_tmp[[agent]] <- .generateCSRData(
           xRange = c(0, 1), yRange = c(0, 1),
           kappa = kapVal,
-          cellType = cellTypes[cell]
+          type = types[agent]
         )
       }
       # Clean data (with correct info)
       data_tmp_df <- do.call("rbind", data_tmp)
-      data_tmp_df$Image <- imageCt + (personCt - 1) * imagesPerPerson + imageAdj
-      data_tmp_df$Person <- paste0("p", personCt + personAdj)
-      data_tmp_df$Stage <- stageName
+      data_tmp_df$replicate <- replicateCt + (unitCt - 1) *
+        replicatesPerUnit + replicateAdj
+      data_tmp_df$unit <- paste0("u", unitCt + unitAdj)
+      data_tmp_df$outcome <- outcomeName
 
-      # Save to full data
+      # Add to full data
       data <- rbind(data, data_tmp_df)
     }
   }
@@ -376,68 +385,53 @@ simulateMeta <- function(pcaData,
 #' Generate Self/Invisible Clustering Patterns
 #'
 #' This (internal) function creates self or invisible clustering patterns. It
-#'     relies on .generateCSRPatterns and .clusterAroundCells, dropping
+#'     relies on .generateCSRPatterns and .clusterAroundAgents, dropping
 #'     unnecessary data.
 #'
 #' See usage in simulatePP.
 #'
 #' Upcoming: Determine (generally) how many clusters and how big of clusters to
 #'     build.
+#' @inheritParams .generateCSRPatterns
+#' @param agentVars Vector with the variables for each agent type being
+#'     generated. Corresponds to the kappas and types.
 #'
-#' @param stageName String inidicating the outcome name that should be given.
-#' @param peoplePerStage Numeric indicating the number of units per
-#'     outcome.
-#' @param imagesPerPerson Numeric indicating the number of repeated
-#'     measures.
-#' @param kappas Numeric vector directing the number of agents per type per
-#'     image.
-#' @param cellTypes Vector with the agent types of interest being generated.
-#'     Corresponds to the kappas.
-#' @param cellVars Vector with the variables for each agent type being
-#'     generated. Corresponds to the kappas and cellTypes.
-#' @param kappaSep (Optional) Boolean. Current use understood but not used. May
-#'     remove.
-#' @param imageAdj (Optional) Numeric to add to image count. Used when images
-#'     have already been generated in the resulting dataset and this will be
-#'     appended.
 #' @return Data.frame containing each point in the defined clustered patterns.
 #'     Note, this does not include the data that it clustered around, hence
 #'     creating self/invisible clustering.
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
-#'     type, unit, and unique repeated measure id.
+#'     type, unit, and replicate.
 #' @noRd
-.generateInvClusterPatterns <- function(stageName,
-                                        peoplePerStage,
-                                        imagesPerPerson,
+.generateInvClusterPatterns <- function(outcomeName,
+                                        unitsPerOutcome,
+                                        replicatesPerUnit,
                                         kappas,
-                                        cellTypes,
-                                        cellVars,
-                                        kappaSep = FALSE,
-                                        imageAdj = 0,
-                                        personAdj = 0) {
+                                        types,
+                                        agentVars,
+                                        replicateAdj = 0,
+                                        unitAdj = 0) {
   data <- NULL
   # Consider ways to decide how many clusters
   clusterKappas <- rep(3, length(kappas))
   dataKappas <- kappas / clusterKappas
 
   # Generate data to cluster around
-  cluster_data <- .generateCSRPatterns(stageName,
-    peoplePerStage,
-    imagesPerPerson,
+  cluster_data <- .generateCSRPatterns(outcomeName,
+    unitsPerOutcome,
+    replicatesPerUnit,
     clusterKappas,
-    paste0(cellTypes, "_Cluster"),
-    kappaSep = TRUE,
-    imageAdj = imageAdj,
-    personAdj = personAdj
+    paste0(types, "_Cluster"),
+    replicateAdj = replicateAdj,
+    unitAdj = unitAdj
   )
   # Cluster data
-  data <- .clusterAroundCells(
+  data <- .clusterAroundAgents(
     clusterData = cluster_data,
-    cellVarData = cellVars,
-    stageName = stageName,
-    cells = cellTypes,
-    clusterCells = paste0(cellTypes, "_Cluster"),
+    agentVarData = agentVars,
+    outcomeName = outcomeName,
+    types = types,
+    clusterAgents = paste0(types, "_Cluster"),
     kappas = dataKappas,
     minPts = 1
   )
@@ -445,57 +439,51 @@ simulateMeta <- function(pcaData,
 }
 
 
-#' Cluster Point Around Cells
+#' Cluster Point Around Types
 #'
-#' This (internal) function generates cells that cluster around the given
-#'     points.
+#' This (internal) function generates types that cluster around the given type.
 #'
 #' See usage in simulatePP.
 #'
-#' Upcoming: Convert from cells to agents. Allow different clusterData column
-#'     names.
-#'
-#' @param clusterData Data.frame with columns x, y, cellType, Image, Person, and
-#'     Stage. These names are required.
-#' @param stageName String inidicating the outcome name that should be given.
-#' @param cells Vector indicating the agents that are clustering.
-#' @param clusterCells Vector indicating the agents in which each agent in cells
+#' @inheritParams .generateCSRPatterns
+#' @param clusterData Data.frame with columns x, y, type, replicate, unit, and
+#'     outcome. These names are required (could be extended, but internal
+#'     function, so no rush).
+#' @param clusterAgents Vector indicating the agents in which each agent in types
 #'     will cluster around. These should be found in clusterData column
-#'     cellType. Corresponds to cells.
-#' @param kappas Numeric vector directing the number of agents per type per
-#'     image. Corresponds to cells.
+#'     type. Corresponds to types.
 #' @param minPts (Optional) Numeric indicating the minimum number of points.
 #'     Although potentially distributive to the process, the default is 1 to
-#'     ensure the cells are placed and any cells that cluster around these can
+#'     ensure the types are placed and any types that cluster around these can
 #'     be placed.
 #'
 #' @return Data.frame containing each point in the defined clustered patterns.
 #'     Note, this does not include the data that it clustered around.
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
-#'     type, unit, and unique repeated measure id.
+#'     type, unit, and replicate.
 #' @noRd
-.clusterAroundCells <- function(clusterData, cellVarData,
-                                stageName,
-                                cells, clusterCells, kappas,
-                                minPts = 1) {
+.clusterAroundAgents <- function(clusterData, agentVarData,
+                                 outcomeName,
+                                 types, clusterAgents, kappas,
+                                 minPts = 1) {
   newData <- data.frame()
-  # Go through each cell
-  for (i in 1:length(cells)) {
-    clusterCellData <- clusterData[clusterData$cellType == clusterCells[i], ]
+  # Go through each agent
+  for (i in 1:length(types)) {
+    clusterAgentData <- clusterData[clusterData$type == clusterAgents[i], ]
 
-    # Go through each cell and develop clusters
-    for (j in 1:nrow(clusterCellData)) {
+    # Go through each agent and develop clusters
+    for (j in 1:nrow(clusterAgentData)) {
       data_pts <- .placeClusteredPts(
-        currXY = as.numeric(clusterCellData[j, c("x", "y")]),
-        cell = cells[i],
+        currXY = as.numeric(clusterAgentData[j, c("x", "y")]),
+        agent = types[i],
         numPts = stats::rpois(1, kappas[i]),
-        varValue = cellVarData[i]
+        varValue = agentVarData[i]
       )
       if (!is.null(data_pts)) {
-        data_pts$Image <- clusterCellData[j, "Image"]
-        data_pts$Person <- clusterCellData[j, "Person"]
-        data_pts$Stage <- clusterCellData[j, "Stage"]
+        data_pts$replicate <- clusterAgentData[j, "replicate"]
+        data_pts$unit <- clusterAgentData[j, "unit"]
+        data_pts$outcome <- clusterAgentData[j, "outcome"]
 
         newData <- rbind(newData, data_pts)
       }
@@ -503,24 +491,24 @@ simulateMeta <- function(pcaData,
 
     # Require minPts
     #     Note, this can change your distribution if not thought about!
-    while (nrow(newData[newData$cellType == cells[i], ]) < minPts) {
+    while (nrow(newData[newData$type == types[i], ]) < minPts) {
       # Select a point from previous iteration
-      preItrPt <- sample(nrow(clusterCellData), 1)
+      preItrPt <- sample(nrow(clusterAgentData), 1)
       # Fill with enough pts
       numPts <- stats::rpois(1, kappas[i])
-      if (numPts + nrow(newData[newData$cellType == cells[i], ] < minPts)) {
-        numPts <- minPts - nrow(newData[newData$cellType == cells[i], ])
+      if (numPts + nrow(newData[newData$type == types[i], ] < minPts)) {
+        numPts <- minPts - nrow(newData[newData$type == types[i], ])
       }
 
       data_pts <- .placeClusteredPts(
-        currXY = as.numeric(clusterCellData[j, c("x", "y")]),
-        cell = cells[i],
+        currXY = as.numeric(clusterAgentData[j, c("x", "y")]),
+        agent = types[i],
         numPts = stats::rpois(1, kappas[i]),
-        varValue = cellVarData[i]
+        varValue = agentVarData[i]
       )
-      data_pts$Image <- clusterCellData[j, "Image"]
-      data_pts$Person <- clusterCellData[j, "Person"]
-      data_pts$Stage <- clusterCellData[j, "Stage"]
+      data_pts$replicate <- clusterAgentData[j, "replicate"]
+      data_pts$unit <- clusterAgentData[j, "unit"]
+      data_pts$outcome <- clusterAgentData[j, "outcome"]
 
       newData <- rbind(newData, data_pts)
     }
@@ -533,16 +521,14 @@ simulateMeta <- function(pcaData,
 #' Place Clustered Points
 #'
 #' This (internal) function places points following a normal distribution around
-#'     some given corridinates.
+#'     some given coordinates.
 #'
 #' See usage in simulatePP.
-#'
-#' Upcoming: Generalize naming
 #'
 #' @param currXY Vector of two numerics, the first relating the x coordinate
 #'     and the second to the y coordinate. These turn into the mean of the
 #'     normal distribution
-#' @param cell String indicating the agent type of the currently placed agents.
+#' @param agent String indicating the agent type of the currently placed agents.
 #' @param numPts Numeric indicating the number of agents to place.
 #' @param varValue Numeric giving the variance of the normal distribution for
 #'     placement of the agents.
@@ -551,17 +537,17 @@ simulateMeta <- function(pcaData,
 #' @param yRange (Optional) Vector of two values indicating the x range of the
 #'     region. Default is c(0,1).
 #'
-#' @return Data.frame with placed cells.
+#' @return Data.frame with placed types.
 #'
-#' The data.frame has 3 columns, x, y, and cellType.
+#' The data.frame has 3 columns, x, y, and type.
 #' @noRd
-.placeClusteredPts <- function(currXY, cell, numPts, varValue,
+.placeClusteredPts <- function(currXY, agent, numPts, varValue,
                                xRange = c(0, 1), yRange = c(0, 1)) {
   if (numPts <= 0) {
     return()
   }
 
-  data_ret <- data.frame("x" = rep(NA, numPts), "y" = NA, "cellType" = cell)
+  data_ret <- data.frame("x" = rep(NA, numPts), "y" = NA, "type" = agent)
 
   compPts <- 0
   while (compPts < numPts) {

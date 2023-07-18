@@ -2,70 +2,69 @@
 % Please edit documentation in R/modifyData.R
 \name{getCountData}
 \alias{getCountData}
-\title{Get Cell Count Data}
+\title{Get Agent Count Data}
 \usage{
-getCountData(cell_data, outcome, unit, repeatedId = NULL, data_append = NULL)
+getCountData(agent_data, outcome, unit, replicate = NULL, data_append = NULL)
 }
 \arguments{
-\item{cell_data}{Data.frame of cell data information. Must have cellType
-column. Future extensions will remove this restriction.}
+\item{agent_data}{Data.frame of agent data information. Must have type
+column. Future extensions will remove this restriction.#'}
 
-\item{outcome}{(Optional) String indicating the outcome column name in data.
-Default is the first column of data.}
+\item{outcome}{String of the column name in data indicating the outcome or
+response.}
 
-\item{unit}{(Optional) String indicating the unit column name in data.
-Default is the second column of data.}
+\item{unit}{String of the column name in data indicating a unit or
+base thing. Note this unit may have replicates.}
 
-\item{repeatedId}{(Optional) String indicating the repeated measure column
-name in data (if present). Default is NULL indicating no repeated measures.}
+\item{replicate}{(Optional) String of the column name in data indicating the
+replicate id. Default is NULL.}
 
 \item{data_append}{(Optional) Data.frame with outcome, patient that the
 results can be appended to if desired. Default is NULL.}
 }
 \value{
 List with two elements:
-\enumerate{
-\item dat: Data.frame with outcome, unit, any data_append and the count
-data. Columns of the count data are named after the cellType and are given
+\itemize{
+\item dat: Data.frame with outcome, unit, data_append, and the count
+data. Columns of the count data are named after the type and are given
 in the next list entry.
-\item cells: Vector of cellTypes, i.e. the column names for the new count
-data. This is treated as meta data for funkyForest.
+\item agents: Vector of the the types, i.e. the column names for the
+new count data. This can be treated as meta data for funkyForest.
 }
 }
 \description{
-This (underwork) function gets the average percent cell counts per image, if
-there are repeated images (i.e. repeatedId is not NULL), then the cell
-percents are calculated for each image and then then these percentages are
-averaged. The method is classified as underwork because it requires the
-'cellType' column rather than having multiple options.
+This (in development) function gets the average percent agent counts per
+replicate, if there are replicates (i.e. replicate is not NULL), then the
+agent percents are calculated for each replicate and then then these
+percentages are averaged. The method is classified as in development.
 }
 \examples{
 dat <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 50, 1 / 100),
       "C" = c(1 / 100, 1 / 100)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B", "C"),
-    "clusterCell" = c(NA, "A", NA),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B", "C"),
+    "clusterAgent" = c(NA, "A", NA),
     "kappa" = c(20, 5, 10)
   ),
-  peoplePerStage = 10,
-  imagesPerPerson = 2,
+  unitsPerOutcome = 10,
+  replicatesPerUnit = 2,
   silent = FALSE
 )
 
 # Use Case 1
-data_ct <- getCountData(dat, "Stage", "Person", "Image")
+data_ct <- getCountData(dat, "outcome", "unit", "replicate")
 
 \dontrun{
 dat_mod <- funkyModel(
   data = data_ct$dat,
-  outcome = "Stage", unit = "Person",
-  metaNames = data_ct$cells,
+  outcome = "outcome", unit = "unit",
+  metaNames = data_ct$agents,
   synthetics = 25, nTrees = 50
 )
 }
@@ -74,34 +73,34 @@ dat_mod <- funkyModel(
 # Use Case 2
 \dontrun{
 dat <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 50, 1 / 100),
       "C" = c(1 / 100, 1 / 100),
       "D" = c(1 / 50, 1 / 100)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B", "C", "D"),
-    "clusterCell" = c(NA, "A", NA, "B"),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B", "C", "D"),
+    "clusterAgent" = c(NA, "A", NA, "B"),
     "kappa" = c(20, 5, 10, 4)
   ),
-  peoplePerStage = 15,
-  imagesPerPerson = 2,
+  unitsPerOutcome = 15,
+  replicatesPerUnit = 2,
   silent = FALSE
 )
 
 pcaData <- getKsPCAData(dat,
-  repeatedUniqueId = "Image",
+  replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )
-data_ct1 <- getCountData(dat, "Stage", "Person", "Image", data_append = pcaData)
+data_ct1 <- getCountData(dat, "outcome", "unit", "replicate", data_append = pcaData)
 
 dat_mod <- funkyModel(
   data = data_ct1$dat,
-  outcome = "Stage", unit = "Person",
-  metaNames = data_ct1$cells,
+  outcome = "outcome", unit = "unit",
+  metaNames = data_ct1$agents,
   synthetics = 25, nTrees = 50
 )
 }

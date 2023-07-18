@@ -2,13 +2,12 @@
 % Please edit documentation in R/funkyForest.R
 \name{funkyForest}
 \alias{funkyForest}
-\title{Compute Random Forest for Data with multiple PC (Along With Meta-Variables)}
+\title{Compute a Modified Random Forest Model}
 \usage{
 funkyForest(
   data,
   outcome = colnames(data)[1],
   unit = colnames(data)[2],
-  repeatedId = NULL,
   nTrees = 500,
   varImpPlot = TRUE,
   metaNames = NULL,
@@ -18,19 +17,20 @@ funkyForest(
 )
 }
 \arguments{
-\item{data}{Data.frame of outcome and predictors (PCs and meta-variables).
-Note, currently Unit or repeated measures should not be included.
-Generally use the results from getKsPCAData, potentially with meta-
-variables attached.}
+\item{data}{Data.frame of outcome and predictors. The predictors include
+groups of variables which are finite projections of a higher dimensional
+variables as well as single meta-variables.
+
+Any replicate data, i.e. repeated observations, should already be handled.
+The unit column is needed just to drop data (so pre-removing and giving
+NULL works). Typically use the results from getKsPCAData, potentially with
+meta-variables attached.}
 
 \item{outcome}{(Optional) String indicating the outcome column name in data.
 Default is the first column of data.}
 
 \item{unit}{(Optional) String indicating the unit column name in data.
 Default is the second column of data.}
-
-\item{repeatedId}{(Optional) String indicating the repeated measure column
-name in data (if present). Default is NULL indicating no repeated measures.}
 
 \item{nTrees}{(Optional) Numeric indicating the number of trees to use in the
 random forest model. Default is 500.}
@@ -42,13 +42,15 @@ should also be returned with the model. Default is TRUE.}
 correspond to metavariables. Default is NULL.}
 
 \item{keepModels}{(Optional) Boolean indicating if the individual models
-should be kept. Can get large in size. Default is TRUE.}
+should be kept. Can get large in size. Default is TRUE as it is needed
+for predictions.}
 
-\item{varSelPercent}{Numeric in (0,1) indicating (approx) percentage of
-features to keep for each tree.}
+\item{varSelPercent}{(Optional) Numeric in (0,1) indicating (approx)
+percentage of variables to keep for each tree. Default is 0.8.}
 
-\item{method}{(Optional) Method for rpart tree to build random forest. Default
-is "class".}
+\item{method}{(Optional) Method for rpart tree to build random forest.
+Default is "class". Currently this is the only tested method. This will
+be expanded in future releases.}
 }
 \value{
 A list with  entries
@@ -60,54 +62,53 @@ information.
 }
 }
 \description{
-This function creates a random forest model for data with PCs and
-meta-variables. This includes proper combination for variable importance.
-Recommend to users to use randomForest_CVPC in general and perhaps just
-this for a final model
+This function creates a modified random forest model for principal component
+and meta-data. This can be useful to get a final model, but we recommend
+use of randomForest_CVPC in general, which includes the final model.
 }
 \examples{
 data <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 100, 1 / 500)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B"),
-    "clusterCell" = c(NA, "A"),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B"),
+    "clusterAgent" = c(NA, "A"),
     "kappa" = c(6, 5)
   ),
-  peoplePerStage = 5,
-  imagesPerPerson = 1
+  unitsPerOutcome = 5,
+  replicatesPerUnit = 1
 )
 pcaData <- getKsPCAData(
-  data = data, repeatedUniqueId = "Image",
+  data = data, replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1)
 )
 RF <- funkyForest(data = pcaData[-2])
 
 \dontrun{
 data <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 100, 1 / 500),
       "C" = c(1 / 500, 1 / 250),
       "D" = c(1 / 100, 1 / 100),
       "E" = c(1 / 500, 1 / 500)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B", "C", "D", "E"),
-    "clusterCell" = c(NA, "A", "B", "C", NA),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B", "C", "D", "E"),
+    "clusterAgent" = c(NA, "A", "B", "C", NA),
     "kappa" = c(6, 3, 2, 1, 4)
   ),
-  peoplePerStage = 2,
-  imagesPerPerson = 1
+  unitsPerOutcome = 2,
+  replicatesPerUnit = 1
 )
 pcaData <- getKsPCAData(
-  data = data, repeatedUniqueId = "Image",
+  data = data, replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1)
 )
 RF1 <- funkyForest(data = pcaData[-2])

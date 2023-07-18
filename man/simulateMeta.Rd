@@ -5,66 +5,71 @@
 \title{Simulate Meta Variables}
 \usage{
 simulateMeta(
-  pcaData,
-  outcome = colnames(pcaData)[1],
+  data,
+  outcome = colnames(data)[1],
   metaInfo = data.frame(var = c("randUnif", "randBin", "rNorm", "corrUnif", "corrBin",
     "corrNorm"), rdist = c("runif", "rbinom", "rnorm", "runif", "rbinom", "rnorm"),
-    Stage_0 = c("0.5", "0.5", "1", "0.5", "0.6", "1"), Stage_1 = c("0.5", "0.5", "1",
-    "0.75", "0.65", "1.5"), Stage_2 = c("0.5", "0.5", "1", "0.95", "0.75", "1.5"))
+    outcome_0 = c("0.5", "0.5", "1", "0.5", "0.6", "1"), outcome_1 = c("0.5", "0.5", "1",
+    "0.75", "0.65", "1.5"), outcome_2 = c("0.5", "0.5", "1", "0.95", "0.75", "1.5"))
 )
 }
 \arguments{
-\item{pcaData}{Data.frame with the outcome, unit and principle components of
-computed K functions.}
+\item{data}{Data.frame with the outcome and unit. Typically this also
+includes PCA data as it is run after computing the principle components (see
+examples).}
 
-\item{outcome}{(Optional) Column title for the outcome in the pcaData.}
+\item{outcome}{(Optional) String for column title of the data's outcome.
+Default is the first column.}
 
-\item{metaInfo}{(Optional) Data.frame indicating the metavariables to
-include.
+\item{metaInfo}{(Optional) Data.frame indicating the meta-variables (and
+properties) to generate. Default has some examples of possible options.
 
 The data.frame has a var column, rdist column, and columns for each outcome.
 The var column names the meta-variables, rdist indicates the distribution
-(the options as runif, rbinom, and rnorm), and each outcome. column gives
-the expected value (must be positive) of the random variables for each
-outcome.
+(options are runif, rbinom, and rnorm), and the outcome columns indicate
+mean of the variable for that outcome.
 
 In order to allow designation of the expected values, the following rules are
 imposed on each distribution:
 \itemize{
 \item runif: a=0, so b is modified,
 \item rbinom: n=1, so this defines the probability
-\item runif: the standard deviation is set to 1
+\item runif: variance is set to 1
 }}
 }
 \value{
-Data.frame with the outcome, unit, principle components of
-computed K functions, and the meta-variables. pcaData with appended
-appended columns at the end.
+Data.frame of the original data with meta-variables appended (as
+columns) at the end.
 }
 \description{
-This function simulates meta-variables to append to pca data.
+This function simulates meta-variables with varying distributions to append
+to some data.
 }
 \details{
 Notes: runif may induce useless information so don't recommend correlating it
 }
 \examples{
 data <- simulatePP(
-  cellVarData = data.frame(
-    "stage" = c(0, 1, 2),
+  agentVarData = data.frame(
+    "outcome" = c(0, 1, 2),
     "A" = c(0, 0, 0),
     "B" = c(1 / 100, 1 / 500, 1 / 1000)
   ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B"),
-    "clusterCell" = c(NA, "A"),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B"),
+    "clusterAgent" = c(NA, "A"),
     "kappa" = c(10, 3)
   ),
-  peoplePerStage = 5,
-  imagesPerPerson = 1
+  unitsPerOutcome = 5,
+  replicatesPerUnit = 1
 )
 pcaData <- getKsPCAData(
-  data = data, repeatedUniqueId = "Image",
+  data = data, replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1)
 )
 pcaMeta <- simulateMeta(pcaData)
+
+## Another simple example
+data <- simulateMeta(
+ data.frame('outcome'=c(0,0,0,1,1,1), 'unit'=1:6))
 }

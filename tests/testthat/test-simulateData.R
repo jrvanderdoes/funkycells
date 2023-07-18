@@ -1,28 +1,28 @@
 test_that("Simulate Data - Ensure Production", {
   data <- simulatePP(
-    cellVarData =
+    agentVarData =
       data.frame(
-        "stage" = c(0, 1),
+        "outcome" = c(0, 1),
         "A" = c(0, 0),
         "B" = c(1 / 100, 1 / 500),
         "C" = c(1 / 500, 1 / 250),
         "D" = c(1 / 100, 1 / 100),
         "E" = c(1 / 500, 1 / 500)
       ),
-    cellKappaData = data.frame(
-      "cell" = c("A", "B", "C", "D", "E"),
-      "clusterCell" = c(NA, "A", "B", "C", NA),
+    agentKappaData = data.frame(
+      "agent" = c("A", "B", "C", "D", "E"),
+      "clusterAgent" = c(NA, "A", "B", "C", NA),
       "kappa" = c(10, 3, 2, 1, 8)
     ),
-    peoplePerStage = 4,
-    imagesPerPerson = 1,
+    unitsPerOutcome = 4,
+    replicatesPerUnit = 1,
     silent = TRUE
   )
 
   expect_equal(6, ncol(data))
-  expect_setequal(c(0, 1), unique(data$Stage))
-  expect_equal("p8", max(data$Person))
-  expect_equal(8, max(data$Image))
+  expect_setequal(c(0, 1), unique(data$outcome))
+  expect_equal("u8", max(data$unit))
+  expect_equal(8, max(data$replicate))
 })
 
 
@@ -41,8 +41,8 @@ test_that("Simulate Meta - Verify Production", {
     metaInfo = data.frame(
       "var" = c("randBin"),
       "rdist" = c("rbinom"),
-      "Stage_0" = c("1"),
-      "Stage_1" = c("1")
+      "outcome_0" = c("1"),
+      "outcome_1" = c("1")
     )
   )
 

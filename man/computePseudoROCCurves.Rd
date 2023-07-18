@@ -11,37 +11,44 @@ computePseudoROCCurves(trueOutcomes, modelPercents)
 
 \item{modelPercents}{Data.frame with columns named after the true outcomes,
 giving the percent of selecting that outcome. This is what is returned
-predict.RandomForest_PC when type='all' and look at \code{PredPerc[-1]} (first
+predict.RandomForest_PC with type='all' in object \code{PredPerc[-1]} (first
 column is the predictions).}
 }
 \value{
-ggplot object for the ROC curves.
+ggplot object containing the ROC curves.
 }
 \description{
-True ROC can only be computed for two-options, but we can consider each one
-as right or wrong and overlay the plots. Note this means the lines may
-cover each other
+An receiver operating characteristic (ROC) curve is a curve showing the
+performance of a classification model at all classification thresholds.
+True ROC can only be computed for two-options, but we can consider each
+classification, i.e. prediction, correct or incorrect and overlay the
+curves. Note this means the lines may cover each other and be difficult to
+see.
+}
+\details{
+This function requires the package 'pROC' to be installed.
 }
 \examples{
+set.seed(123)
 data_pp_roc <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "A" = c(0, 0),
       "B" = c(1 / 50, 1 / 50)
     ),
-  cellKappaData = data.frame(
-    "cell" = c("A", "B"),
-    "clusterCell" = c(NA, "A"),
+  agentKappaData = data.frame(
+    "agent" = c("A", "B"),
+    "clusterAgent" = c(NA, "A"),
     "kappa" = c(20, 5)
   ),
-  peoplePerStage = 10,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 10,
+  replicatesPerUnit = 1,
   silent = FALSE
 )
 # Caution, in general use more than 5 nTrees (Default is 500)
 pcaData_roc <- getKsPCAData(data_pp_roc,
-  repeatedUniqueId = "Image",
+  replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 )
 RF_roc <- funkyForest(data = pcaData_roc[-2], nTrees = 5)
@@ -50,5 +57,5 @@ pred_roc <- predict_funkyForest(
   data_pred = pcaData_roc[-2],
   data = pcaData_roc[-2]
 )
-computePseudoROCCurves(pcaData_roc$Stage, pred_roc$PredPerc[-1])
+computePseudoROCCurves(pcaData_roc$outcome, pred_roc$PredPerc[-1])
 }

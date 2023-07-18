@@ -1,32 +1,27 @@
-#' Generate Completely Spatially Random Data (Point Process)
+#' Generate Completely Spatially Random Point Process Data
 #'
-#' This (internal) function generating a completely spatially random (CSR)
+#' This (internal) function generates a completely spatially random (CSR)
 #'     process on some region. Some Poisson number of points are placed
 #'     uniformly in the region by both x and y.
 #'
 #' See use in simulatePP_Mult_PCA_Meta.
 #'
-#' @param xRange (Optional) Two value numeric vector indicating the size of the
-#'     region in the x-direction. Default is c(0,1).
-#' @param yRange (Optional) Two value numeric vector indicating the size of the
-#'     region in the y-direction. Default is c(0,1).
+#' @param xRange,yRange (Optional) Two value numeric vector indicating the size
+#'  of the region in the x/y-direction. Default is c(0,1).
 #' @param kappa (Optional) Numeric influencing the number of points. Kappa times
 #'     area defines the mean of a Poisson random variable which is randomly
-#'     drawn to indicate the number of cells in the area. Default is 25.
-#' @param percentAwayFromEdge (Optional) Numeric in [0,0.5] which limits how
-#'     close to the edge a point may be placed. This can be used to limit or
-#'     test edge effects. Default is 0.025 on each edge.
+#'     drawn to indicate the number of agents in the area. Default is 25.
 #' @param requireOne (Optional) Boolean that indicating if at least one point
 #'     must be placed. This can affect the Poisson distribution, but is valuable
 #'     in ensuring a non-empty region. Default is TRUE.
-#' @param cellType (Optional) Value (often character) indicating the label the
+#' @param type (Optional) Value (often character) indicating the label the
 #'     points in the process should be given. Default is A.
 #'
-#' @return Data.frame with x, y, and cellType specified. Each row is a new
+#' @return Data.frame with x, y, and type specified. Each row is a new
 #'     point.
 #' @noRd
 .generateCSRData <- function(xRange = c(0, 1), yRange = c(0, 1),
-                             kappa = 25, requireOne = TRUE, cellType = "A") {
+                             kappa = 25, requireOne = TRUE, type = "A") {
   area <- (xRange[2] - xRange[1]) * (yRange[2] - yRange[1])
   intensityValue <- kappa * area
   numPts <- stats::rpois(1, intensityValue)
@@ -48,7 +43,7 @@
   pointPattern <- data.frame(
     "x" = stats::runif(numPts, min = xRange[1], max = xRange[2]),
     "y" = stats::runif(numPts, min = yRange[1], max = yRange[2]),
-    "cellType" = cellType
+    "type" = type
   )
 
   if (nrow(unique(pointPattern)) != nrow(pointPattern)) {

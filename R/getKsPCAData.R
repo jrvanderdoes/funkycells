@@ -1,43 +1,39 @@
 #' Get K's PCA Data
 #'
-#' This function computes K functions from PP data then converts it into PCs.
-#'     Note, if there are repeated measures, i.e. multiple images per unit,
-#'     the K functions will be (weighted) averaged together based on the number
-#'     of agent1s.
+#' This function computes K functions from point process data then converts it
+#'  into PCs. Note, if there are replicates, i.e. multiple observations per
+#'  unit, the K functions will be a weighted average based on the number of
+#'  the first agents.
 #'
-#' @param data Dataframe with column titles for at least outcome, x, y, agents,
+#' @inheritParams getKFunction
+#' @param data Data.frame with column titles for at least outcome, x, y, agents,
 #'     and unit. For consistency (and avoiding errors), use that order.
-#'     Additionally, repeatedUniqueId can be added.
+#'     Additionally, replicate can be added.
 #' @param outcome (Optional) String of the column name in data indicating the
 #'     outcome or response. Default is the 1st column.
 #' @param unit (Optional) String of the column name in data indicating a unit or
-#'     base thing. Note this unit may have repeated measures. Default is the 4th
+#'     base thing. Note this unit may have replicates. Default is the 4th
 #'     column.
-#' @param repeatedUniqueId (optional) String of the column name in data
-#'     indicating the unique ID when using repeated measures.
-#' @param rCheckVals (optional) numeric vector indicating the radius to check.
-#'    Note, if note specified, this could take a lot of memory, particularly
-#'    with many units and repeated measures.
-#' @param nPCs (optional) Numeric indicating the number of principal components
-#' @param agents_df (optional) Two-column data.frame. The first for agents 1
+#' @param replicate (Optional) String of the column name in data indicating the
+#'  replicate id. Default is NULL.
+#' @param rCheckVals (Optional) Numeric vector indicating the radius to check.
+#'    Note, if not specified, this could take a lot of memory, particularly
+#'    with many units and replicates.
+#' @param nPCs (Optional) Numeric indicating the number of principal components.
+#' @param agents_df (Optional) Two-column data.frame. The first for agent 1
 #'     and the second for agent 2. Both should be in data agents column. This
 #'     determines which K functions to compute. Default is to compute all, but
-#'     may be misspecified if data in different order.
-#' @param xRange (optional) two value numeic vector indicating the min and max
-#'     x values. Note this is re-used for all images. The default just takes
-#'     the min and max x from each image. This allows different sized images,
-#'     but note that the edges are defined by some cell.
-#' @param yRange (optional) two value numeic vector indicating the min and max
-#'     y values. Note this is re-used for all images. The default just takes
-#'     the min and max y from each image. This allows different sized images,
-#'     but note that the edges are defined by some cell.
-#' @param edgeCorrection (optional) String indicating type of edgeCorrection to
-#'     use in spatStat for computation of K functions.
-#' @param nbasis (optional) Numeric indicating number of basis functions to fit
-#'     K functions in order to compute PCA.
-#' @param silent (optional) Boolean indicating if progress should be printed
+#'     may be misspecified if the data is in a different order.
+#' @param xRange,yRange (Optional) Two value numeric vector indicating the min
+#'  and max x/y values. Note this is re-used for all replicates. The default
+#'  just takes the min and max x from each replicate. This allows different
+#'  sized images, but the edges are defined by some agent location.
+#' @param nbasis (Optional) Numeric indicating number of basis functions to fit
+#'     K functions in order to compute PCA. Current implementation uses a
+#'     b-spline basis.
+#' @param silent (Optional) Boolean indicating if progress should be printed.
 #' @param displayTVE (Optional) Boolean to  indicate if total variance explained
-#'   (TvE) should be displayed. Default is FALSE.
+#'   (TVE) should be displayed. Default is FALSE.
 #'
 #' @return Data.frame with the outcome, unit and principle components of
 #'     computed K functions.
@@ -46,29 +42,29 @@
 #' @examples
 #' \dontrun{
 #' data <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 50, 1 / 50)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(20, 5)
 #'   ),
-#'   peoplePerStage = 100,
-#'   imagesPerPerson = 1,
+#'   unitsPerOutcome = 100,
+#'   replicatesPerUnit = 1,
 #'   silent = FALSE
 #' )
 #' agents_df_tmp <- as.data.frame(expand.grid(
-#'   unique(data$cellType),
-#'   unique(data$cellType),
+#'   unique(data$type),
+#'   unique(data$type),
 #'   stringsAsFactors = FALSE
 #' ))
 #' dat_pca <- getKsPCAData(
-#'   data = data, outcome = "Stage", unit = "Person",
-#'   repeatedUniqueId = "Image",
+#'   data = data, outcome = "outcome", unit = "unit",
+#'   replicate = "replicate",
 #'   rCheckVals = seq(0, 0.25, 0.01), nPCs = 3,
 #'   agents_df = agents_df_tmp,
 #'   xRange = c(0, 1), yRange = c(0, 1)
@@ -84,7 +80,7 @@
 #' )
 getKsPCAData <- function(data, outcome = colnames(data)[1],
                          unit = colnames(data)[5],
-                         repeatedUniqueId = NULL,
+                         replicate = NULL,
                          rCheckVals = NULL, nPCs = 3,
                          agents_df = as.data.frame(expand.grid(
                            unique(data[, 4]),
@@ -96,7 +92,7 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
   # Define pcaData
   pcaData <- unique(data[, c(outcome, unit)])
 
-  ## Compute PCA for each cell-cell K-function
+  ## Compute PCA for each agent-agent K-function
   if (!silent) cat("PCA Pairs (", nrow(agents_df), "): ", sep = "")
   pcaData_list <- apply(
     cbind(
@@ -106,18 +102,18 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
     MARGIN = 1,
     FUN = function(agents, nPCs, rCheckVals, data,
                    outcome, unit,
-                   repeatedUniqueId,
+                   replicate,
                    xRange, yRange,
                    edgeCorrection, nbasis,
                    maxIters) {
       if (!silent) cat(trimws(agents[1]), sep = "")
 
       ## Compute K-Function for each unit
-      #     Reminder, repeated measures -> weighted averages
+      #     Reminder, replicates -> weighted averages
       evaled_fd_K <- getKFunction(
         agents = agents[-1],
         unit = unit,
-        repeatedUniqueId = repeatedUniqueId,
+        replicate = replicate,
         data = data[, colnames(data) != outcome],
         rCheckVals = rCheckVals,
         xRange = xRange, yRange = yRange,
@@ -139,12 +135,12 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
         "Unit" = unique(data[, unit]),
         as.data.frame(K_pca_scores)
       )
-      colnames(retData) <- c(unit,colnames(K_pca_scores))
+      colnames(retData) <- c(unit, colnames(K_pca_scores))
       retData
     },
     nPCs = nPCs, rCheckVals = rCheckVals,
     data = data, outcome = outcome, unit = unit,
-    repeatedUniqueId = repeatedUniqueId,
+    replicate = replicate,
     xRange = xRange, yRange = yRange,
     edgeCorrection = edgeCorrection,
     nbasis = nbasis, maxIters = nrow(agents_df)
@@ -161,11 +157,12 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
 
 #' Get Principal Components
 #'
-#' This function coverts the radius and K functions into principal components
-#'     and recturns the scores.
+#' This (internal) function converts the radius and K functions into principal
+#'  components and returns the scores.
 #'
 #' See getKsPCAData for use.
 #'
+#' @inheritParams getKsPCAData
 #' @param rKData data.frame with the first column being the checked radius and the
 #'     rest relating to the K function for each unit at those points. NA columns
 #'     for any K functions that could not be computed will be handled.

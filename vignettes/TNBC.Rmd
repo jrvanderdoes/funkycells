@@ -58,13 +58,9 @@ pheno_interactions_subset <- data.frame(
 We notice there are `r length(phenos)` total phenotypes with 
 `r nrow(pheno_interactions)` total possible interactions. Alternatively, we can 
 also focus on a subset of phenotypes (`r length(phenos_subset)`) and 
-interactions (`r nrow(pheno_interactions_subset)`) of particular interest. 
-Another analysis on the subset interaction set has been considered but was 
-suppressed for brevity.
+interactions (`r nrow(pheno_interactions_subset)`) of particular interest. Another analysis on the subset interaction set has been considered but was suppressed for brevity.
 
-In order to build confidence in our approach, we begin by simulating data with a
-similar structure to the full phenotype data and evaluating the effectiveness of
-the approach.
+In order to build confidence in our approach, we begin by simulating data with a similar structure to the full phenotype data and evaluating the effectiveness of the approach.
 
 To start, let us determine the agent information in a typical image.
 ```{r TNBCInfo}
@@ -126,9 +122,9 @@ The non-interactive data is simulated as follows.
 ```{r buildNUllData}
 set.seed(123)
 dat0 <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "c1" = c(0, 0),
       "c2" = c(1 / 25, 1 / 25), "c3" = c(1 / 50, 1 / 50),
       "c4" = c(0, 0),
@@ -139,9 +135,9 @@ dat0 <- simulatePP(
       "c13" = c(0, 0), "c14" = c(0, 0),
       "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
     ),
-  cellKappaData = data.frame(
-    "cell" = paste0("c", 1:16),
-    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+  agentKappaData = data.frame(
+    "agent" = paste0("c", 1:16),
+    "clusterAgent" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
     "kappa" = c(
       rbinom(1, 100, 0.5),
       rbinom(1, 100, 0.5),
@@ -159,14 +155,14 @@ dat0 <- simulatePP(
       rbinom(1, 5, 0.5)
     )
   ),
-  peoplePerStage = 15,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 15,
+  replicatesPerUnit = 1,
   silent = FALSE
 )
 dat1 <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "c1" = c(0, 0),
       "c2" = c(1 / 25, 1 / 25), "c3" = c(1 / 50, 1 / 50),
       "c4" = c(0, 0),
@@ -177,9 +173,9 @@ dat1 <- simulatePP(
       "c13" = c(0, 0), "c14" = c(0, 0),
       "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
     ),
-  cellKappaData = data.frame(
-    "cell" = paste0("c", 1:16),
-    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+  agentKappaData = data.frame(
+    "agent" = paste0("c", 1:16),
+    "clusterAgent" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
     "kappa" = c(
       rbinom(1, 100, 0.5),
       rbinom(1, 100, 0.5),
@@ -197,21 +193,21 @@ dat1 <- simulatePP(
       rbinom(1, 5, 0.5)
     )
   ),
-  peoplePerStage = 2,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 2,
+  replicatesPerUnit = 1,
   silent = F
 )
-dat1$Person <- ifelse(dat1$Person == "p1", "p31",
-  ifelse(dat1$Person == "p2", "p32",
-    ifelse(dat1$Person == "p3", "p33",
-      ifelse(dat1$Person == "p4", "p34", NA)
+dat1$unit <- ifelse(dat1$unit == "u1", "u31",
+  ifelse(dat1$unit == "u2", "u32",
+    ifelse(dat1$unit == "u3", "u33",
+      ifelse(dat1$unit == "u4", "u34", NA)
     )
   )
 )
-dat1$Image <- ifelse(dat1$Image == "1", "31",
-  ifelse(dat1$Image == "2", "32",
-    ifelse(dat1$Image == "3", "33",
-      ifelse(dat1$Image == "4", "34", NA)
+dat1$replicate <- ifelse(dat1$replicate == "1", "31",
+  ifelse(dat1$replicate == "2", "32",
+    ifelse(dat1$replicate == "3", "33",
+      ifelse(dat1$replicate == "4", "34", NA)
     )
   )
 )
@@ -226,13 +222,13 @@ plotPP(
 )
 ```
 ```{r sim_image, fig.width=5, fig.height=5, fig.cap="Simulated Patient Image"}
-plotPP(dat[dat$Image == 18, c("x", "y", "cellType")],
+plotPP(dat[dat$replicate == 18, c("x", "y", "type")],
   ptSize = 1, dropAxes = T, colorGuide = "none"
 )
 ```
 
 ```{r paper_simtnbc_comparision, echo=FALSE, eval=paperRun}
-tmp <- length(table(dat[dat$Image == 1, c("cellType")]))
+tmp <- length(table(dat[dat$replicate == 1, c("type")]))
 clrs <- scales::hue_pal()(tmp)
 
 tnbc_image <- plotPP(
@@ -246,7 +242,7 @@ print(tnbc_image)
 dev.off()
 
 sim_image <- plotPP(
-  data = dat[dat$Image == 18, c("x", "y", "cellType")],
+  data = dat[dat$replicate == 18, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors = c(clrs[1:2], clrs[16], clrs[3:7], clrs[15], clrs[8:14])
 )
@@ -266,7 +262,7 @@ cells_interactions <- rbind(
 
 set.seed(12345)
 pcaData <- getKsPCAData(
-  data = dat, repeatedUniqueId = "Image",
+  data = dat, replicate = "replicate",
   agents_df = cells_interactions,
   xRange = c(0, 1), yRange = c(0, 1),
   silent = F
@@ -275,8 +271,8 @@ pcaMeta <- simulateMeta(pcaData,
   metaInfo = data.frame(
     "var" = c("age"),
     "rdist" = c("rnorm"),
-    "Stage_0" = c("25"),
-    "Stage_1" = c("25")
+    "outcome_0" = c("25"),
+    "outcome_1" = c("25")
   )
 )
 ```
@@ -286,8 +282,8 @@ We analyze the data.
 set.seed(123)
 rfcv <- funkyModel(
   data = pcaMeta,
-  outcome = "Stage",
-  unit = "Person",
+  outcome = "outcome",
+  unit = "unit",
   metaNames = c("age")
 )
 ```
@@ -429,9 +425,9 @@ Now we consider the simulated model with effects.
 ```{r effectSimulationAndModel, eval=full_run}
 set.seed(123456)
 dat0 <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "c1" = c(0, 0),
       "c2" = c(1 / 25, 1 / 60), "c3" = c(1 / 50, 1 / 10),
       "c4" = c(0, 0),
@@ -442,9 +438,9 @@ dat0 <- simulatePP(
       "c13" = c(0, 0), "c14" = c(0, 0),
       "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
     ),
-  cellKappaData = data.frame(
-    "cell" = paste0("c", 1:16),
-    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+  agentKappaData = data.frame(
+    "agent" = paste0("c", 1:16),
+    "clusterAgent" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
     "kappa" = c(
       rbinom(1, 100, 0.5),
       rbinom(1, 100, 0.5),
@@ -462,14 +458,14 @@ dat0 <- simulatePP(
       rbinom(1, 5, 0.5)
     )
   ),
-  peoplePerStage = 15,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 15,
+  replicatesPerUnit = 1,
   silent = F
 )
 dat1 <- simulatePP(
-  cellVarData =
+  agentVarData =
     data.frame(
-      "stage" = c(0, 1),
+      "outcome" = c(0, 1),
       "c1" = c(0, 0),
       "c2" = c(1 / 25, 1 / 25), "c3" = c(1 / 50, 1 / 50),
       "c4" = c(0, 0),
@@ -480,9 +476,9 @@ dat1 <- simulatePP(
       "c13" = c(0, 0), "c14" = c(0, 0),
       "c15" = c(0, 0), "c16" = c(1 / 10, 1 / 10)
     ),
-  cellKappaData = data.frame(
-    "cell" = paste0("c", 1:16),
-    "clusterCell" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
+  agentKappaData = data.frame(
+    "agent" = paste0("c", 1:16),
+    "clusterAgent" = c(NA, "c1", "c1", rep(NA, 12), "c1"),
     "kappa" = c(
       rbinom(1, 100, 0.5),
       rbinom(1, 100, 0.5),
@@ -500,21 +496,21 @@ dat1 <- simulatePP(
       rbinom(1, 5, 0.5)
     )
   ),
-  peoplePerStage = 2,
-  imagesPerPerson = 1,
+  unitsPerOutcome = 2,
+  replicatesPerUnit = 1,
   silent = F
 )
-dat1$Person <- ifelse(dat1$Person == "p1", "p31",
-  ifelse(dat1$Person == "p2", "p32",
-    ifelse(dat1$Person == "p3", "p33",
-      ifelse(dat1$Person == "p4", "p34", NA)
+dat1$unit <- ifelse(dat1$unit == "u1", "u31",
+  ifelse(dat1$unit == "u2", "u32",
+    ifelse(dat1$unit == "u3", "u33",
+      ifelse(dat1$unit == "u4", "u34", NA)
     )
   )
 )
-dat1$Image <- ifelse(dat1$Image == "1", "31",
-  ifelse(dat1$Image == "2", "32",
-    ifelse(dat1$Image == "3", "33",
-      ifelse(dat1$Image == "4", "34", NA)
+dat1$replicate <- ifelse(dat1$replicate == "1", "31",
+  ifelse(dat1$replicate == "2", "32",
+    ifelse(dat1$replicate == "3", "33",
+      ifelse(dat1$replicate == "4", "34", NA)
     )
   )
 )
@@ -527,7 +523,7 @@ cells_interactions <- rbind(
 )
 
 pcaData <- getKsPCAData(
-  data = dat, repeatedUniqueId = "Image",
+  data = dat, replicate = "replicate",
   agents_df = cells_interactions,
   xRange = c(0, 1), yRange = c(0, 1),
   silent = F
@@ -536,15 +532,15 @@ pcaMeta <- simulateMeta(pcaData,
   metaInfo = data.frame(
     "var" = c("age"),
     "rdist" = c("rnorm"),
-    "Stage_0" = c("25"),
-    "Stage_1" = c("27")
+    "outcome_0" = c("25"),
+    "outcome_1" = c("27")
   )
 )
 
 rfcv <- funkyModel(
   data = pcaMeta,
-  outcome = "Stage",
-  unit = "Person",
+  outcome = "outcome",
+  unit = "unit",
   metaNames = c("age")
 )
 ```
@@ -854,14 +850,14 @@ data_plot <- rbind(
   data.frame(
     "r" = tmp_1$r,
     "K" = tmp_1$value,
-    "Unit" = tmp_1$name,
-    "Outcome" = "0"
+    "unit" = tmp_1$name,
+    "outcome" = "0"
   ),
   data.frame(
     "r" = tmp1_1$r,
     "K" = tmp1_1$value,
-    "Unit" = paste0(tmp1_1$name, "_1"),
-    "Outcome" = "1"
+    "unit" = paste0(tmp1_1$name, "_1"),
+    "outcome" = "1"
   )
 )
 ```
@@ -875,24 +871,24 @@ plot_K_functions(data_plot)
 data <- data_plot
 
 # Prep Legend
-info <- unique(data[, c("Unit", "Outcome")])
+info <- unique(data[, c("unit", "outcome")])
 info$Missing <- NA
 for (i in 1:nrow(info)) {
-  info[i, 3] <- nrow(data[data$Unit == info$Unit[i] &
+  info[i, 3] <- nrow(data[data$unit == info$unit[i] &
     !stats::complete.cases(data), ]) > 0
 }
 
 info_labels <- data.frame(
-  "Outcome" = unique(data$Outcome),
-  "Units" = NA,
+  "outcome" = unique(data$outcome),
+  "units" = NA,
   "Missing" = NA,
   "Label" = NA
 )
 for (i in 1:nrow(info_labels)) {
-  info_labels[i, 2] <- nrow(info[info$Outcome == info_labels[i, 1], ])
-  info_labels[i, 3] <- nrow(info[info$Outcome == info_labels[i, 1] &
+  info_labels[i, 2] <- nrow(info[info$outcome == info_labels[i, 1], ])
+  info_labels[i, 3] <- nrow(info[info$outcome == info_labels[i, 1] &
     info$Missing, ])
-  # Only label Outcomes with numbers if at least one is missing in whole set
+  # Only label outcomes with numbers if at least one is missing in whole set
   if (sum(info$Missing) != 0) {
     info_labels[i, 4] <- paste0(
       info_labels[i, 1], " (",
@@ -906,19 +902,19 @@ for (i in 1:nrow(info_labels)) {
 
 # Build Averages
 data_wide <- tidyr::pivot_wider(data,
-  names_from = "Unit",
+  names_from = "unit",
   values_from = "K"
 )
 data_avg <- data.frame("r" = unique(data_wide$r))
 
 for (i in 1:nrow(info_labels)) {
-  data_avg[[info_labels[i, "Outcome"]]] <-
-    rowMeans(data_wide[data_wide$Outcome == info_labels[i, "Outcome"], -c(1:2)],
+  data_avg[[info_labels[i, "outcome"]]] <-
+    rowMeans(data_wide[data_wide$outcome == info_labels[i, "outcome"], -c(1:2)],
       na.rm = TRUE
     )
 }
 data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-colnames(data_avg) <- c("r", "Outcome", "Value")
+colnames(data_avg) <- c("r", "outcome", "Value")
 
 # Plot
 return_plot <-
@@ -926,14 +922,14 @@ return_plot <-
     data = stats::na.omit(data),
     ggplot2::aes(
       x = r, y = K,
-      group = Unit, color = Outcome
+      group = unit, color = outcome
     )
   ) +
   ggplot2::geom_line(alpha = 0.2, linewidth = 1.25) +
   ggplot2::geom_line(
     ggplot2::aes(
       x = r, y = Value,
-      group = Outcome, color = Outcome
+      group = outcome, color = outcome
     ),
     data = data_avg, linewidth = 2
   ) +
@@ -948,7 +944,7 @@ return_plot <-
     legend.position = "none"
   ) # +
 # ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
-#                                 group = Outcome),
+#                                 group = outcome),
 #                    data = data_avg, linewidth = 1.25,
 #                    color = "black", linetype = "dashed"
 # )
@@ -979,14 +975,14 @@ data_plot <- rbind(
   data.frame(
     "r" = tmp_1$r,
     "K" = tmp_1$value,
-    "Unit" = tmp_1$name,
-    "Outcome" = "0"
+    "unit" = tmp_1$name,
+    "outcome" = "0"
   ),
   data.frame(
     "r" = tmp1_1$r,
     "K" = tmp1_1$value,
-    "Unit" = paste0(tmp1_1$name, "_1"),
-    "Outcome" = "1"
+    "unit" = paste0(tmp1_1$name, "_1"),
+    "outcome" = "1"
   )
 )
 ```
@@ -1000,24 +996,24 @@ plot_K_functions(data_plot)
 data <- data_plot
 
 # Prep Legend
-info <- unique(data[, c("Unit", "Outcome")])
+info <- unique(data[, c("unit", "outcome")])
 info$Missing <- NA
 for (i in 1:nrow(info)) {
-  info[i, 3] <- nrow(data[data$Unit == info$Unit[i] &
+  info[i, 3] <- nrow(data[data$unit == info$unit[i] &
     !stats::complete.cases(data), ]) > 0
 }
 
 info_labels <- data.frame(
-  "Outcome" = unique(data$Outcome),
-  "Units" = NA,
+  "outcome" = unique(data$outcome),
+  "units" = NA,
   "Missing" = NA,
   "Label" = NA
 )
 for (i in 1:nrow(info_labels)) {
-  info_labels[i, 2] <- nrow(info[info$Outcome == info_labels[i, 1], ])
-  info_labels[i, 3] <- nrow(info[info$Outcome == info_labels[i, 1] &
+  info_labels[i, 2] <- nrow(info[info$outcome == info_labels[i, 1], ])
+  info_labels[i, 3] <- nrow(info[info$outcome == info_labels[i, 1] &
     info$Missing, ])
-  # Only label Outcomes with numbers if at least one is missing in whole set
+  # Only label outcomes with numbers if at least one is missing in whole set
   if (sum(info$Missing) != 0) {
     info_labels[i, 4] <- paste0(
       info_labels[i, 1], " (",
@@ -1031,19 +1027,19 @@ for (i in 1:nrow(info_labels)) {
 
 # Build Averages
 data_wide <- tidyr::pivot_wider(data,
-  names_from = "Unit",
+  names_from = "unit",
   values_from = "K"
 )
 data_avg <- data.frame("r" = unique(data_wide$r))
 
 for (i in 1:nrow(info_labels)) {
-  data_avg[[info_labels[i, "Outcome"]]] <-
-    rowMeans(data_wide[data_wide$Outcome == info_labels[i, "Outcome"], -c(1:2)],
+  data_avg[[info_labels[i, "outcome"]]] <-
+    rowMeans(data_wide[data_wide$outcome == info_labels[i, "outcome"], -c(1:2)],
       na.rm = TRUE
     )
 }
 data_avg <- tidyr::pivot_longer(data_avg, cols = -r)
-colnames(data_avg) <- c("r", "Outcome", "Value")
+colnames(data_avg) <- c("r", "outcome", "Value")
 
 # Plot
 return_plot <-
@@ -1051,14 +1047,14 @@ return_plot <-
     data = stats::na.omit(data),
     ggplot2::aes(
       x = r, y = K,
-      group = Unit, color = Outcome
+      group = unit, color = outcome
     )
   ) +
   ggplot2::geom_line(alpha = 0.2, linewidth = 1.25) +
   ggplot2::geom_line(
     ggplot2::aes(
       x = r, y = Value,
-      group = Outcome, color = Outcome
+      group = outcome, color = outcome
     ),
     data = data_avg, linewidth = 2
   ) +
@@ -1073,7 +1069,7 @@ return_plot <-
     legend.position = "none"
   ) # +
 # ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
-#                                 group = Outcome),
+#                                 group = outcome),
 #                    data = data_avg, linewidth = 1.25,
 #                    color = "black", linetype = "dashed"
 # )

@@ -1,53 +1,52 @@
-#' Fit a Random Forest model with PC data (Using CV for Improvements)
+#' Fit a Modified Random Forest Model with Bounds and Alignment
 #'
-#' The function fits a random forest model to the data along with using cross-
-#'     validation to quantify variable importance. Warning, if there are no
-#'     synthetics, this may break (will fix it eventually).
+#' The function fits a modified random forest model to principal components
+#'  of spatial interactions as well as meta-data. Additionally permutation and
+#'  cross-validation is employed to improve understanding of the data.
 #'
-#' @param data Data.frame of outcome and predictors (PCs and meta-variables).
-#'     Generally use the results from getKsPCAData, potentially with meta-
-#'     variables attached.
 #' @param K (Optional) Numeric indicating the number of folds to use in K-fold
-#'     CV. The default is 10.
+#'     cross-validation. The default is 10.
 #' @param metaNames (Optional) Vector indicating the meta-variables to be
 #'     considered. Default is NULL.
-#' @param synthetics (Optional)
+#' @param synthetics (Optional) Numeric indicating the number of synthetics for
+#'  variables (one set of sythethics for functional variables and one for each
+#'  meta-variable). If 0 are used, the data cannot be aligned properly. Default
+#'  is 100.
 #' @param alpha (Optional) Numeric in (0,1) indicating the significance used
-#'     throughout the analysis. Default is 0.05.#'
+#'     throughout the analysis. Default is 0.05.
 #' @param silent (Optional) Boolean indicating if output should be suppressed
 #'     when the function is running. Default is FALSE.
 #' @param rGuessSims (Optional) Numeric value indicating the number of
 #'     simulations used for guessing and creating the guess estimate on the
 #'     plot. Default is 500.
 #' @param subsetPlotSize (Optional) Numeric indicating the number of top
-#'     variables to include in a subset graph (note if there are less variables)
-#'     than this value indicates then no subset graph will be produced. Default
-#'     is 25.
+#'     variables to include in a subset graph. If this is larger than the total
+#'     number then no subset graph will be produced. Default is 25.
 #' @inheritParams funkyForest
 #'
 #' @return List with the following items:
 #'     \enumerate{
+#'         \item model: The funkyForest Model fit on the entire given data.
 #'         \item VariableImportance: Data.frame with the results of variable
 #'                   importance indices from the models and CV. The columns are
-#'                   var, est, and sd. The columns lower and upper are made with
-#'                   significance alpha.
+#'                   var, est, sd, and cvSD.
 #'         \item AccuracyEstimate: Data.frame with model accuracy estimates:
 #'                   out-of-bag accuracy (OOB), biased estimate (bias), and
 #'                   random guess (guess). The columns are OOB, bias, and guess.
-#'         \item NoiseCutoff: Numeric indicating noise cutoff (vertical line)
+#'         \item NoiseCutoff: Numeric indicating noise cutoff (vertical line).
 #'         \item InterpolationCutoff: Vector of numerics indicating the
-#'                   interpolation cutoff (curved line)
-#'         \item AdditionalParams: List of additional params for reference:
+#'                   interpolation cutoff (curved line).
+#'         \item AdditionalParams: List of additional parameters for reference:
 #'                   Alpha and subsetPlotSize.
 #'         \item viPlot: ggplot2 object for vi plot with standardized results.
 #'                   It displays ordered underlying functions and meta-variables
 #'                   with point estimates, sd, noise cutoff, and interpolation
-#'                   cutoff all based on variable importance values
-#'         \item subset_viPlot: ggplot2 object for vi plot with standardized
-#'                   results and only top subsetPlotSize variables. It displays
-#'                   ordered underlying functions and meta-variables with point
-#'                   estimates, sd, noise cutoff, and interpolation cutoff all
-#'                   based on variable importance values
+#'                   cutoff all based on variable importance values.
+#'         \item subset_viPlot: (Optional) ggplot2 object for vi plot with
+#'                   standardized results and only top subsetPlotSize variables.
+#'                   It displays ordered underlying functions and meta-variables
+#'                   with point estimates, sd, noise cutoff, and interpolation
+#'                   cutoff all based on variable importance values.
 #'         }
 #' @export
 #'
@@ -66,60 +65,60 @@
 #'
 #' \dontrun{
 #' dat <- simulatePP(
-#'   cellVarData =
-#'     data.frame("stage" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 50)),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentVarData =
+#'     data.frame("outcome" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 50)),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(20, 5)
 #'   ),
-#'   peoplePerStage = 50,
-#'   imagesPerPerson = 1,
+#'   unitsPerOutcome = 50,
+#'   replicatesPerUnit = 1,
 #'   silent = FALSE
 #' )
 #' pcaData <- getKsPCAData(dat,
-#'   repeatedUniqueId = "Image",
+#'   replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
 #' pcaMeta <- simulateMeta(pcaData,
 #'   metaInfo = data.frame(
 #'     "var" = c("randUnif", "randBin", "corrNorm"),
 #'     "rdist" = c("runif", "rbinom", "rnorm"),
-#'     "Stage_0" = c("0.5", "0.5", "1"),
-#'     "Stage_1" = c("0.5", "0.5", "2")
+#'     "outcome_0" = c("0.5", "0.5", "1"),
+#'     "outcome_1" = c("0.5", "0.5", "2")
 #'   )
 #' )
 #' rfcv <- funkyModel(
-#'   data = pcaMeta, outcome = "Stage", unit = "Person",
+#'   data = pcaMeta, outcome = "outcome", unit = "unit",
 #'   metaNames = c("randUnif", "randBin", "corrNorm")
 #' )
 #'
 #' dat <- simulatePP(
-#'   cellVarData =
-#'     data.frame("stage" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 100)),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentVarData =
+#'     data.frame("outcome" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 100)),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(20, 5)
 #'   ),
-#'   peoplePerStage = 20,
-#'   imagesPerPerson = 3,
+#'   unitsPerOutcome = 20,
+#'   replicatesPerUnit = 3,
 #'   silent = FALSE
 #' )
 #' pcaData <- getKsPCAData(dat,
-#'   repeatedUniqueId = "Image",
+#'   replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
 #' pcaMeta <- simulateMeta(pcaData,
 #'   metaInfo = data.frame(
 #'     "var" = c("randUnif", "randBin", "corrNorm"),
 #'     "rdist" = c("runif", "rbinom", "rnorm"),
-#'     "Stage_0" = c("0.5", "0.5", "1"),
-#'     "Stage_1" = c("0.5", "0.5", "2")
+#'     "outcome_0" = c("0.5", "0.5", "1"),
+#'     "outcome_1" = c("0.5", "0.5", "2")
 #'   )
 #' )
 #' rfcv <- funkyModel(
-#'   data = pcaMeta, outcome = "Stage", unit = "Person",
+#'   data = pcaMeta, outcome = "outcome", unit = "unit",
 #'   metaNames = c("randUnif", "randBin", "corrNorm"),
 #'   subsetPlotSize = 2
 #' )
@@ -128,48 +127,48 @@
 #' \dontrun{
 #' set.seed(1234567)
 #' dat <- simulatePP(
-#'   cellVarData =
+#'   agentVarData =
 #'     data.frame(
-#'       "stage" = c(0, 1),
+#'       "outcome" = c(0, 1),
 #'       "A" = c(0, 0),
 #'       "B" = c(1 / 50, 1 / 100)
 #'     ),
-#'   cellKappaData = data.frame(
-#'     "cell" = c("A", "B"),
-#'     "clusterCell" = c(NA, "A"),
+#'   agentKappaData = data.frame(
+#'     "agent" = c("A", "B"),
+#'     "clusterAgent" = c(NA, "A"),
 #'     "kappa" = c(20, 5)
 #'   ),
-#'   peoplePerStage = 20,
-#'   imagesPerPerson = 3,
+#'   unitsPerOutcome = 20,
+#'   replicatesPerUnit = 3,
 #'   silent = FALSE
 #' )
 #' pcaData <- getKsPCAData(dat,
-#'   repeatedUniqueId = "Image",
+#'   replicate = "replicate",
 #'   xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
 #' )
 #' pcaMeta <- simulateMeta(pcaData,
 #'   metaInfo = data.frame(
 #'     "var" = c("randUnif", "randBin", "corrNorm"),
 #'     "rdist" = c("runif", "rbinom", "rnorm"),
-#'     "Stage_0" = c("0.5", "0.5", "1"),
-#'     "Stage_1" = c("0.5", "0.5", "2")
+#'     "outcome_0" = c("0.5", "0.5", "1"),
+#'     "outcome_1" = c("0.5", "0.5", "2")
 #'   )
 #' )
 #'
 #' rfcv1 <- funkyModel(
-#'   data = pcaMeta, outcome = "Stage", unit = "Person",
+#'   data = pcaMeta, outcome = "outcome", unit = "unit",
 #'   metaNames = c("randUnif", "randBin", "corrNorm"),
 #'   nTrees = 10, synthetics = 25
 #' )
 #'
 #' rfcv2 <- funkyModel(
-#'   data = pcaData, outcome = "Stage", unit = "Person",
+#'   data = pcaData, outcome = "outcome", unit = "unit",
 #'   nTrees = 10, synthetics = 25
 #' )
 #'
-#' onlyMeta <- pcaMeta[, c("Stage", "Person", "randUnif", "randBin", "corrNorm")]
+#' onlyMeta <- pcaMeta[, c("outcome", "unit", "randUnif", "randBin", "corrNorm")]
 #' rfcv3 <- funkyModel(
-#'   data = onlyMeta, outcome = "Stage", unit = "Person",
+#'   data = onlyMeta, outcome = "outcome", unit = "unit",
 #'   metaNames = c("randUnif", "randBin", "corrNorm"),
 #'   nTrees = 10, synthetics = 25
 #' )
@@ -184,15 +183,14 @@ funkyModel <- function(data, K = 10,
                        rGuessSims = 500,
                        subsetPlotSize = 25, nTrees = 500,
                        method = "class") {
-  ## From moving code over, will remove
-  repeatedId <- NULL
-
+  if (synthetics == 0) warning("No Synthetics given, variables cannot be aligned.")
+  if (synthetics < 0) stop("Number of synthetics must be positive.")
   ## Error checking
   # .checkData(alignmentMethod) ## TODO:: Add something in
 
   ## Generate Synthetics And Connect
   components <- colnames(data)[!(colnames(data) %in%
-    c(outcome, unit, repeatedId, metaNames))]
+    c(outcome, unit, metaNames))]
   nPCs <- ifelse(length(components) == 0,
     0,
     as.numeric(max(sub(".*_PC", "", components)))
@@ -204,8 +202,7 @@ funkyModel <- function(data, K = 10,
     returnUnique = FALSE
   )
   underlyingVars <- unique(underlyingDataAlignedFunctions)
-  underlyingVars <- underlyingVars[!(underlyingVars %in%
-    c(outcome, unit, repeatedId))]
+  underlyingVars <- underlyingVars[!(underlyingVars %in% c(outcome, unit))]
 
   underlyingNoiseVars <- c(underlyingVars)
   if (length(KFunctions) > 0) {
@@ -238,10 +235,10 @@ funkyModel <- function(data, K = 10,
     RF <- funkyForest(
       data = data[-groups[[i]], ],
       outcome = outcome,
-      unit = unit, repeatedId = repeatedId,
+      unit = unit,
       varImpPlot = FALSE,
       metaNames = c(metaNames),
-      nTrees = nTrees, method = method
+      nTrees = nTrees, method = method,
     )
 
     data_merge <- RF$varImportanceData[, c("var", "avgVI")]
@@ -270,7 +267,7 @@ funkyModel <- function(data, K = 10,
     RF_full <- funkyForest(
       data = data_full$data,
       outcome = outcome,
-      unit = unit, repeatedId = repeatedId,
+      unit = unit,
       varImpPlot = FALSE,
       metaNames = data_full$metaNames,
       nTrees = nTrees, keepModels = FALSE
@@ -300,7 +297,7 @@ funkyModel <- function(data, K = 10,
     RF <- funkyForest(
       data = data_permute$data,
       outcome = outcome,
-      unit = unit, repeatedId = repeatedId,
+      unit = unit,
       varImpPlot = FALSE,
       metaNames = data_permute$metaNames,
       nTrees = nTrees, keepModels = FALSE
@@ -432,7 +429,6 @@ funkyModel <- function(data, K = 10,
         data = data,
         outcome = outcome,
         unit = unit,
-        repeatedId = repeatedId,
         varImpPlot = FALSE,
         metaNames = c(metaNames),
         nTrees = nTrees,
