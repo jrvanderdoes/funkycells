@@ -6,21 +6,21 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/jrvanderdoes/funkycells/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jrvanderdoes/funkycells/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
+<!-- badges: end --> Functional Analysis of K Functions+ for Multiplexed
+Cell Images The term ${\tt funkycells}$ comes from **fun**ctional data
+anal**y**sis of **K** functions+ for multiplexed images of **cells**.
+This package organizes ways to analyze cell relationships based on their
+(empirical) K functions, or other such functions. The approach achieves
+effective analysis for many different data constructions and accounts
+for issues such as overfitting. We encourage all feedback and
+improvements through this github repo.
 
-The term ${\tt funkycells}$ comes from **fun**ctional (**K** function)
-anal**y**sis of multiplexed images of **cells**. This package organizes
-ways to analyze cell relationships based on their (empirical) K
-functions. Approaches tailors to different data sizes are present in
-this packages and we encourage all feedback and improvements through
-this github repo.
-
-If you would like to understand how to use ${\tt funkycells}$, we
-recommend viewing the vignette `vignette("funkycells")`, available in
-the package or on the
-[website](https://jrvanderdoes.github.io/funkycells/). Several other
-vignettes are also present to show applications and simulated
-performance.
+Please see the package
+[website](https://jrvanderdoes.github.io/funkycells/) for an
+introduction to ${\tt funkycells}$, given in the vignette
+`vignette("funkycells")`. Additional vignettes are also present showing
+applications and simulated performance. The website also contains the
+change log, documenting changes for each version of the package.
 
 ## Installation
 
@@ -38,6 +38,10 @@ You can also install the development version of ${\tt funkycells}$ from
 install.packages("devtools")
 devtools::install_github("jrvanderdoes/funkycells")
 ```
+
+We are actively developing the package. So while new functionality
+consistently pops up in the development version, we regularly update the
+CRAN version with the stable additions.
 
 <!-- 
 Don't forget to build this! devtools::build_readme() , also check out https://github.com/r-lib/actions/tree/v1/examples to setup github actions for it 

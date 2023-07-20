@@ -71,5 +71,6 @@ pcaMeta <- simulateMeta(pcaData)
 
 ## Another simple example
 data <- simulateMeta(
- data.frame('outcome'=c(0,0,0,1,1,1), 'unit'=1:6))
+  data.frame("outcome" = c(0, 0, 0, 1, 1, 1), "unit" = 1:6)
+)
 }

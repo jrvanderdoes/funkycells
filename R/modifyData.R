@@ -15,7 +15,6 @@
 #'  replicate id. Default is NULL.
 #' @param data_append (Optional) Data.frame with outcome, patient that the
 #'  results can be appended to if desired. Default is NULL.
-#' @inheritParams funkyForest
 #'
 #' @return List with two elements:
 #'     \itemize{

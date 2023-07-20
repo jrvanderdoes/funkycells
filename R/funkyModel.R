@@ -59,7 +59,7 @@
 #'   data = TNBC[, c(1:8, ncol(TNBC))],
 #'   outcome = "Class", unit = "Person",
 #'   metaNames = c("Age"),
-#'   nTrees = 15, synthetics = 10,
+#'   nTrees = 5, synthetics = 10,
 #'   silent = TRUE
 #' )
 #'

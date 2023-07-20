@@ -77,7 +77,7 @@ data <- simulatePP(
   agentKappaData = data.frame(
     "agent" = c("A", "B"),
     "clusterAgent" = c(NA, "A"),
-    "kappa" = c(6, 5)
+    "kappa" = c(10, 5)
   ),
   unitsPerOutcome = 5,
   replicatesPerUnit = 1
@@ -86,7 +86,7 @@ pcaData <- getKsPCAData(
   data = data, replicate = "replicate",
   xRange = c(0, 1), yRange = c(0, 1)
 )
-RF <- funkyForest(data = pcaData[-2])
+RF <- funkyForest(data = pcaData[-2],nTrees = 10)
 
 \dontrun{
 data <- simulatePP(

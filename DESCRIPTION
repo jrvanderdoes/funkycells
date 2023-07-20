@@ -1,24 +1,29 @@
 Package: funkycells
-Title: Functional Analysis of Multiplexed Images of Cells
+Title: Functional Analysis of K Functions+ for Multiplexed Cell Images
 Version: 1.0.0
-Authors@R: c( 
-    person("Jeremy", "VanderDoes",
- 	   email = "jeremy.vanderdoes@gmail.com", 
-	   role = c("aut", "cre","cph"),
-           comment = c(ORCID = "0009-0001-9885-3073") ),
-    person("Jack", "Hywood", role = c("aut") ),
-    person("Gregory", "Rice", role = c("aut") )  )
-Description: Determines variables of interest between (potentially large numbers of) spatial interactions and non-spatial meta-variables. Approach based on a random forest model, with required preparation, for functional spatial data analysis, such as the included multiplexed ion beam imaging (MIBI) data.
+Authors@R: c(
+    person("Jeremy", "VanderDoes", , "jeremy.vanderdoes@gmail.com", 
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0009-0001-9885-3073")),
+    person("Jack", "Hywood", role = "aut",
+           comment = c(ORCID = "0000-0002-2028-2629")),
+    person("Gregory", "Rice", role = "aut")
+  )
+Description: Compare variables of interest between (potentially large
+    numbers of) spatial interactions and meta-variables. Spatial variables
+    are summarized using K, or other, functions, and projected for use in
+    a modified random forest model. The model allows comparison of
+    functional and non-functional variables to each other and to noise,
+    giving statistical significance to the results. Included are
+    preparation, modeling, and interpreting tools along with example
+    datasets, as described in VanderDoes et al., (2023)
+    <doi:10.1101/2023.07.18.549619>.
 License: GPL (>= 3)
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
 URL: https://github.com/jrvanderdoes/funkycells,
     https://jrvanderdoes.github.io/funkycells/
 BugReports: https://github.com/jrvanderdoes/funkycells/issues
 Depends: 
     R (>= 2.10)
-LazyData: true
 Imports: 
     fda,
     ggplot2,
@@ -34,5 +39,10 @@ Suggests:
     rmarkdown,
     scales,
     testthat (>= 3.0.0)
-VignetteBuilder: knitr
+VignetteBuilder: 
+    knitr
 Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3

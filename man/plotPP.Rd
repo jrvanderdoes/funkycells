@@ -47,7 +47,11 @@ This function is used to plot a spatial point process. This does not split
 data and puts all given data on a single plot.
 }
 \examples{
-plotPP(TNBC_pheno[TNBC_pheno$Person == 1,
-                  c("cellx", "celly", "Phenotype")],
-       colorGuide = 'none')
+plotPP(
+  TNBC_pheno[
+    TNBC_pheno$Person == 1,
+    c("cellx", "celly", "Phenotype")
+  ],
+  colorGuide = "none"
+)
 }
