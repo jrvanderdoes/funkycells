@@ -1,6 +1,6 @@
 citHeader("To cite funkycells in publications use:")
 
-citEntry(
+bibentry(
   entry    = "Article",
   title    = "Using random forests to uncover the predictive power of distance-varying cell interactions in tumor microenvironments",
   author   = "Jeremy VanderDoes and Claire Marceaux and Kenta Yokote and Marie-Liesse Asselin-Labat and Gregory Rice and Jack  D. Hywood",
