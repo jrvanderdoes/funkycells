@@ -2,14 +2,13 @@ citHeader("To cite funkycells in publications use:")
 
 citEntry(
   entry    = "Article",
-  title    = "funkycells",
-  author   = "J. VanderDoes, J. Hywood, G. Rice",
-  journal  = "<Upcoming>",
-  year     = 2023,
-  volume   = "<Upcoming>",
-  number   = "<Upcoming>",
-  pages    = "<Upcoming>",
-  url      = "https://github.com/jrvanderdoes/funkycells",
+  title    = "Using random forests to uncover the predictive power of distance-varying cell interactions in tumor microenvironments",
+  author   = "Jeremy VanderDoes and Claire Marceaux and Kenta Yokote and Marie-Liesse Asselin-Labat and Gregory Rice and Jack  D. Hywood",
+  journal  = "bioRxiv",
+  year     = 2023,	
+  doi = "10.1101/2023.07.18.549619",
+  url      = "https://github.com/jrvanderdoes/funkycells",	
+  eprint = "https://www.biorxiv.org/content/early/2023/07/19/2023.07.18.549619.full.pdf",
   textVersion = paste(
 
   )
