@@ -12,7 +12,7 @@ Authors@R: c(
 Description: Compare variables of interest between (potentially large
     numbers of) spatial interactions and meta-variables. Spatial variables
     are summarized using K, or other, functions, and projected for use in
-    a modified random forest model. The model allows comparision of
+    a modified random forest model. The model allows comparison of
     functional and non-functional variables to each other and to noise,
     giving statistical significance to the results. Included are
     preparation, modeling, and interpreting tools along with example
