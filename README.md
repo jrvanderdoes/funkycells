@@ -15,7 +15,7 @@ functions. Approaches tailors to different data sizes are present in
 this packages and we encourage all feedback and improvements through
 this github repo.
 
-If you would like to understand how to use $${\tt funkycells}$$, we
+If you would like to understand how to use ${\tt funkycells}$, we
 recommend viewing the vignette `vignette("funkycells")`, available in
 the package or on the
 [website](https://jrvanderdoes.github.io/funkycells/). Several other
@@ -24,15 +24,15 @@ performance.
 
 ## Installation
 
-The stable version of $${\tt funkycells}$$ can be found on CRAN. Install
+The stable version of ${\tt funkycells}$ can be found on CRAN. Install
 using:
 
 ``` r
 install.packages("funkycells")
 ```
 
-You can also install the development version of $${\tt funkycells}$$
-from [GitHub](https://github.com/) with:
+You can also install the development version of ${\tt funkycells}$ from
+[GitHub](https://github.com/) with:
 
 ``` r
 install.packages("devtools")
