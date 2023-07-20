@@ -6,7 +6,7 @@ Authors@R: c(
  	   email = "jeremy.vanderdoes@gmail.com", 
 	   role = c("aut", "cre","cph"),
            comment = c(ORCID = "0009-0001-9885-3073") ),
-    person("Jack", "Hywood", role = c("aut") ),
+    person("Jack", "Hywood", role = c("aut"), comment=c(ORCID = "0000-0002-2028-2629") ),
     person("Gregory", "Rice", role = c("aut") )  )
 Description: Determines variables of interest between (potentially large numbers of) spatial interactions and non-spatial meta-variables. Approach based on a random forest model, with required preparation, for functional spatial data analysis, such as the included multiplexed ion beam imaging (MIBI) data.
 License: GPL (>= 3)
