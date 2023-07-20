@@ -6,14 +6,16 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/jrvanderdoes/funkycells/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jrvanderdoes/funkycells/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end --> Functional Analysis of K Functions+ for Multiplexed
-Cell Images The term ${\tt funkycells}$ comes from **fun**ctional data
-anal**y**sis of **K** functions+ for multiplexed images of **cells**.
-This package organizes ways to analyze cell relationships based on their
-(empirical) K functions, or other such functions. The approach achieves
-effective analysis for many different data constructions and accounts
-for issues such as overfitting. We encourage all feedback and
-improvements through this github repo.
+<!-- badges: end -->
+
+The term ${\tt funkycells}$ comes from **fun**ctional data anal**y**sis
+of **K** functions+ for multiplexed images of **cells**. This package
+organizes ways to analyze cell relationships based on their (empirical)
+K functions, or other such functions. The approach achieves effective
+analysis for many different data constructions and accounts for issues
+such as overfitting. We encourage all feedback and improvements, which
+can be submitted through this github repo or the package
+[website](https://jrvanderdoes.github.io/funkycells/).
 
 Please see the package
 [website](https://jrvanderdoes.github.io/funkycells/) for an
@@ -35,7 +37,6 @@ You can also install the development version of ${\tt funkycells}$ from
 [GitHub](https://github.com/) with:
 
 ``` r
-install.packages("devtools")
 devtools::install_github("jrvanderdoes/funkycells")
 ```
 
