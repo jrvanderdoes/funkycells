@@ -76,40 +76,9 @@ unit, the K functions will be a weighted average based on the number of
 the first agents.
 }
 \examples{
-\dontrun{
-data <- simulatePP(
-  agentVarData =
-    data.frame(
-      "outcome" = c(0, 1),
-      "A" = c(0, 0),
-      "B" = c(1 / 50, 1 / 50)
-    ),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B"),
-    "clusterAgent" = c(NA, "A"),
-    "kappa" = c(20, 5)
-  ),
-  unitsPerOutcome = 100,
-  replicatesPerUnit = 1,
-  silent = FALSE
-)
-agents_df_tmp <- as.data.frame(expand.grid(
-  unique(data$type),
-  unique(data$type),
-  stringsAsFactors = FALSE
-))
-dat_pca <- getKsPCAData(
-  data = data, outcome = "outcome", unit = "unit",
-  replicate = "replicate",
-  rCheckVals = seq(0, 0.25, 0.01), nPCs = 3,
-  agents_df = agents_df_tmp,
-  xRange = c(0, 1), yRange = c(0, 1)
-)
-}
-
 dataPCA_pheno <- getKsPCAData(
   data = TNBC_pheno, unit = "Person",
-  agents_df = data.frame(rep("B", 2), c("Tumor", "FAKE")),
+  agents_df = data.frame(rep("B", 2), c("Tumor", "Fake")),
   nPCs = 3,
   rCheckVals = seq(0, 50, 1),
   displayTVE = TRUE

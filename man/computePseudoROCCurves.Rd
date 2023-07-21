@@ -43,27 +43,4 @@ computePseudoROCCurves(c(0, 0, 0, 0, 0, 0,
                          1, 1, 1, 1, 1, 1,
                          2, 2, 2, 2, 2, 2),
                        percents)
-
-\dontrun{
-pheno_interactions_subset <- data.frame(
-      Var1 = rep("Tumor", 11),
-      Var2 = c(
-        "Tumor", "CD3T", "CD4T", "CD8T", "B", "DC",
-        "DCMono", "Macrophage", "MonoNeu", "NK", "Treg"
-        )
-      )
-pcaData_roc <- getKsPCAData(
-      data = TNBC_pheno,
-      unit = "Person",
-      agents_df = pheno_interactions_subset,
-      rCheckVals = seq(0, 50, 1)
-      )
-RF_roc <- funkyForest(data = pcaData_roc[-2])
-pred_roc <- predict_funkyForest(
-      model = RF_roc$model,
-      data_pred = pcaData_roc[-2],
-      data = pcaData_roc[-2]
-)
-computePseudoROCCurves(pcaData_roc$Class, pred_roc$PredPerc[-1])
-}
 }

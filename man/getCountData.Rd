@@ -4,11 +4,18 @@
 \alias{getCountData}
 \title{Get Agent Count Data}
 \usage{
-getCountData(agent_data, outcome, unit, replicate = NULL, data_append = NULL)
+getCountData(
+  agent_data,
+  outcome,
+  unit,
+  replicate = NULL,
+  type = "type",
+  data_append = NULL
+)
 }
 \arguments{
-\item{agent_data}{Data.frame of agent data information. Must have type
-column. Future extensions will remove this restriction.#'}
+\item{agent_data}{Data.frame of agent data information, with columns as
+defined in subsequent parameters}
 
 \item{outcome}{String of the column name in data indicating the outcome or
 response.}
@@ -18,6 +25,9 @@ base thing. Note this unit may have replicates.}
 
 \item{replicate}{(Optional) String of the column name in data indicating the
 replicate id. Default is NULL.}
+
+\item{type}{(Optional) String of the column name in data indicating the
+type. Default is type.}
 
 \item{data_append}{(Optional) Data.frame with outcome, patient that the
 results can be appended to if desired. Default is NULL.}
@@ -33,75 +43,11 @@ new count data. This can be treated as meta data for funkyForest.
 }
 }
 \description{
-This (in development) function gets the average percent agent counts per
-replicate, if there are replicates (i.e. replicate is not NULL), then the
-agent percents are calculated for each replicate and then then these
-percentages are averaged. The method is classified as in development.
+This function gets the average percent agent counts per replicate, if there
+are replicates (i.e. replicate is not NULL), then the agent percents are
+calculated for each replicate and these percentages are averaged.
 }
 \examples{
-dat <- simulatePP(
-  agentVarData =
-    data.frame(
-      "outcome" = c(0, 1),
-      "A" = c(0, 0),
-      "B" = c(1 / 50, 1 / 100),
-      "C" = c(1 / 100, 1 / 100)
-    ),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B", "C"),
-    "clusterAgent" = c(NA, "A", NA),
-    "kappa" = c(20, 5, 10)
-  ),
-  unitsPerOutcome = 10,
-  replicatesPerUnit = 2,
-  silent = FALSE
-)
-
-# Use Case 1
-data_ct <- getCountData(dat, "outcome", "unit", "replicate")
-
-\dontrun{
-dat_mod <- funkyModel(
-  data = data_ct$dat,
-  outcome = "outcome", unit = "unit",
-  metaNames = data_ct$agents,
-  synthetics = 25, nTrees = 50
-)
-}
-
-
-# Use Case 2
-\dontrun{
-dat <- simulatePP(
-  agentVarData =
-    data.frame(
-      "outcome" = c(0, 1),
-      "A" = c(0, 0),
-      "B" = c(1 / 50, 1 / 100),
-      "C" = c(1 / 100, 1 / 100),
-      "D" = c(1 / 50, 1 / 100)
-    ),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B", "C", "D"),
-    "clusterAgent" = c(NA, "A", NA, "B"),
-    "kappa" = c(20, 5, 10, 4)
-  ),
-  unitsPerOutcome = 15,
-  replicatesPerUnit = 2,
-  silent = FALSE
-)
-
-pcaData <- getKsPCAData(dat,
-  replicate = "replicate",
-  xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
-)
-data_ct1 <- getCountData(dat, "outcome", "unit", "replicate", data_append = pcaData)
-
-dat_mod <- funkyModel(
-  data = data_ct1$dat,
-  outcome = "outcome", unit = "unit",
-  metaNames = data_ct1$agents,
-  synthetics = 25, nTrees = 50
-)
-}
+data_ct <- getCountData(TNBC_pheno[TNBC_pheno$Phenotype \%in\% c('Tumor','B'),],
+                        outcome="Class", unit="Person",type="Phenotype")
 }
