@@ -1,3 +1,10 @@
+# funkycells 1.1.1
+
+# funkycells 1.1.0
+
+* Back-end changes to prepare for CRAN
+* Clarified documentation
+
 # funkycells 1.0.0
 
 * This is an initial release, so all major functions were tested documented, and many vignettes built.
