@@ -22,7 +22,8 @@ library(funkycells)
 
 ```{r define_functions, echo=FALSE}
 full_run <- FALSE # This runs only computations that are feasibly quick
-paperRun <- FALSE * full_run # This runs code to generate images in paper
+paperRun <- FALSE * full_run  # This creates and saves figures as in paper
+save_path <- tempdir() # Location to save files
 specify_decimal <- function(x, k) {
   trimws(format(round(x, k), nsmall = k))
 }
@@ -82,8 +83,8 @@ tnbc_fig <- plotPP(TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Pheno
   ptSize = 3, colorGuide = "none", dropAxes = T
 )
 
-png("./paper/tnbc_person2_phenotypes.png", width = 800, height = 800)
-# png("./vignettes/paper/tnbc_person2_phenotypes.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/tnbc_person2_phenotypes.png"), 
+    width = 800, height = 800)
 print(tnbc_fig)
 dev.off()
 
@@ -105,8 +106,8 @@ k_fig <- ggplot2::ggplot() +
     axis.text = ggplot2::element_blank()
   )
 
-png("./paper/tnbc_person2_tumor_mononeu_k.png", width = 800, height = 800)
-# png("./vignettes/paper/tnbc_person2_tumor_mononeu_k.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/tnbc_person2_tumor_mononeu_k.png"), 
+    width = 800, height = 800)
 print(k_fig)
 dev.off()
 ```
@@ -236,8 +237,8 @@ tnbc_image <- plotPP(
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors = clrs[-length(clrs)]
 )
-png("./paper/tnbc_image.png", width = 800, height = 800)
-# png("./vignettes/paper/tnbc_image.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/tnbc_image.png"), 
+    width = 800, height = 800)
 print(tnbc_image)
 dev.off()
 
@@ -246,8 +247,8 @@ sim_image <- plotPP(
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors = c(clrs[1:2], clrs[16], clrs[3:7], clrs[15], clrs[8:14])
 )
-png("./paper/sim_image.png", width = 800, height = 800)
-# png("./vignettes/paper/sim_image.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/sim_image.png"), 
+    width = 800, height = 800)
 print(sim_image)
 dev.off()
 ```
@@ -354,8 +355,7 @@ plot_full <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/noeffect_variableimportance.png")
-# png("./vignettes/paper/noeffect_variableimportance.png")
+png(paste0(save_path,"/paper/noeffect_variableimportance.png"))
 print(plot_full)
 dev.off()
 
@@ -415,8 +415,7 @@ plot_top25 <- ggplot2::ggplot(
   ))
 
 
-png("./paper/noeffect_variableimportance_top25.png")
-# png("./vignettes/paper/noeffect_variableimportance_top25.png")
+png(paste0(save_path,"/paper/noeffect_variableimportance_top25.png"))
 print(plot_top25)
 dev.off()
 ```
@@ -611,8 +610,7 @@ plot_full <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/effect_variableimportance.png")
-# png("./vignettes/paper/effect_variableimportance.png")
+png(paste0(save_path,"/paper/effect_variableimportance.png"))
 print(plot_full)
 dev.off()
 
@@ -671,8 +669,7 @@ plot_top25 <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/effect_variableimportance_top25.png")
-# png("./vignettes/paper/effect_variableimportance_top25.png")
+png(paste0(save_path,"/paper/effect_variableimportance_top25.png"))
 print(plot_top25)
 dev.off()
 ```
@@ -764,8 +761,7 @@ plot_full <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/tnbc_variableimportance.png")
-# png("./vignettes/paper/tnbc_variableimportance.png")
+png(paste0(save_path,"/paper/tnbc_variableimportance.png"))
 print(plot_full)
 dev.off()
 
@@ -824,8 +820,7 @@ plot_top25 <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/tnbc_variableimportance_top25.png")
-# png("./vignettes/paper/tnbc_variableimportance_top25.png")
+png(paste0(save_path,"/paper/tnbc_variableimportance_top25.png"))
 print(plot_top25)
 dev.off()
 ```
@@ -949,8 +944,7 @@ return_plot <-
 #                    color = "black", linetype = "dashed"
 # )
 
-png("./paper/TNBC_sig_KFunctions.png")
-# png("./vignettes/paper/TNBC_sig_KFunctions.png")
+png(paste0(save_path,"/paper/TNBC_sig_KFunctions.png"))
 print(return_plot)
 dev.off()
 ```
@@ -1074,8 +1068,7 @@ return_plot <-
 #                    color = "black", linetype = "dashed"
 # )
 
-png("./paper/TNBC_insig_KFunctions.png")
-# png("./vignettes/paper/TNBC_insig_KFunctions.png")
+png(paste0(save_path,"/paper/TNBC_insig_KFunctions.png"))
 print(return_plot)
 dev.off()
 ```

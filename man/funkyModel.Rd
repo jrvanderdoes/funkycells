@@ -99,10 +99,7 @@ of spatial interactions as well as meta-data. Additionally permutation and
 cross-validation is employed to improve understanding of the data.
 }
 \examples{
-
-# Short Example
-#   Parameters are reduced beyond recommended levels for speed
-set.seed(1234)
+# Parameters are reduced beyond recommended levels for speed
 rfcv <- funkyModel(
   data = TNBC[, c(1:8, ncol(TNBC))],
   outcome = "Class", unit = "Person",
@@ -110,115 +107,4 @@ rfcv <- funkyModel(
   nTrees = 5, synthetics = 10,
   silent = TRUE
 )
-
-\dontrun{
-dat <- simulatePP(
-  agentVarData =
-    data.frame("outcome" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 50)),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B"),
-    "clusterAgent" = c(NA, "A"),
-    "kappa" = c(20, 5)
-  ),
-  unitsPerOutcome = 50,
-  replicatesPerUnit = 1,
-  silent = FALSE
-)
-pcaData <- getKsPCAData(dat,
-  replicate = "replicate",
-  xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
-)
-pcaMeta <- simulateMeta(pcaData,
-  metaInfo = data.frame(
-    "var" = c("randUnif", "randBin", "corrNorm"),
-    "rdist" = c("runif", "rbinom", "rnorm"),
-    "outcome_0" = c("0.5", "0.5", "1"),
-    "outcome_1" = c("0.5", "0.5", "2")
-  )
-)
-rfcv <- funkyModel(
-  data = pcaMeta, outcome = "outcome", unit = "unit",
-  metaNames = c("randUnif", "randBin", "corrNorm")
-)
-
-dat <- simulatePP(
-  agentVarData =
-    data.frame("outcome" = c(0, 1), "A" = c(0, 0), "B" = c(1 / 50, 1 / 100)),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B"),
-    "clusterAgent" = c(NA, "A"),
-    "kappa" = c(20, 5)
-  ),
-  unitsPerOutcome = 20,
-  replicatesPerUnit = 3,
-  silent = FALSE
-)
-pcaData <- getKsPCAData(dat,
-  replicate = "replicate",
-  xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
-)
-pcaMeta <- simulateMeta(pcaData,
-  metaInfo = data.frame(
-    "var" = c("randUnif", "randBin", "corrNorm"),
-    "rdist" = c("runif", "rbinom", "rnorm"),
-    "outcome_0" = c("0.5", "0.5", "1"),
-    "outcome_1" = c("0.5", "0.5", "2")
-  )
-)
-rfcv <- funkyModel(
-  data = pcaMeta, outcome = "outcome", unit = "unit",
-  metaNames = c("randUnif", "randBin", "corrNorm"),
-  subsetPlotSize = 2
-)
-}
-
-\dontrun{
-set.seed(1234567)
-dat <- simulatePP(
-  agentVarData =
-    data.frame(
-      "outcome" = c(0, 1),
-      "A" = c(0, 0),
-      "B" = c(1 / 50, 1 / 100)
-    ),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B"),
-    "clusterAgent" = c(NA, "A"),
-    "kappa" = c(20, 5)
-  ),
-  unitsPerOutcome = 20,
-  replicatesPerUnit = 3,
-  silent = FALSE
-)
-pcaData <- getKsPCAData(dat,
-  replicate = "replicate",
-  xRange = c(0, 1), yRange = c(0, 1), silent = FALSE
-)
-pcaMeta <- simulateMeta(pcaData,
-  metaInfo = data.frame(
-    "var" = c("randUnif", "randBin", "corrNorm"),
-    "rdist" = c("runif", "rbinom", "rnorm"),
-    "outcome_0" = c("0.5", "0.5", "1"),
-    "outcome_1" = c("0.5", "0.5", "2")
-  )
-)
-
-rfcv1 <- funkyModel(
-  data = pcaMeta, outcome = "outcome", unit = "unit",
-  metaNames = c("randUnif", "randBin", "corrNorm"),
-  nTrees = 10, synthetics = 25
-)
-
-rfcv2 <- funkyModel(
-  data = pcaData, outcome = "outcome", unit = "unit",
-  nTrees = 10, synthetics = 25
-)
-
-onlyMeta <- pcaMeta[, c("outcome", "unit", "randUnif", "randBin", "corrNorm")]
-rfcv3 <- funkyModel(
-  data = onlyMeta, outcome = "outcome", unit = "unit",
-  metaNames = c("randUnif", "randBin", "corrNorm"),
-  nTrees = 10, synthetics = 25
-)
-}
 }

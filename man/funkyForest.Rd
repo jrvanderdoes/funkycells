@@ -67,58 +67,9 @@ and meta-data. This can be useful to get a final model, but we recommend
 use of randomForest_CVPC in general, which includes the final model.
 }
 \examples{
-data <- simulatePP(
-  agentVarData =
-    data.frame(
-      "outcome" = c(0, 1),
-      "A" = c(0, 0),
-      "B" = c(1 / 100, 1 / 500)
-    ),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B"),
-    "clusterAgent" = c(NA, "A"),
-    "kappa" = c(10, 5)
-  ),
-  unitsPerOutcome = 5,
-  replicatesPerUnit = 1
-)
-pcaData <- getKsPCAData(
-  data = data, replicate = "replicate",
-  xRange = c(0, 1), yRange = c(0, 1)
-)
-RF <- funkyForest(data = pcaData[-2],nTrees = 10)
-
-\dontrun{
-data <- simulatePP(
-  agentVarData =
-    data.frame(
-      "outcome" = c(0, 1),
-      "A" = c(0, 0),
-      "B" = c(1 / 100, 1 / 500),
-      "C" = c(1 / 500, 1 / 250),
-      "D" = c(1 / 100, 1 / 100),
-      "E" = c(1 / 500, 1 / 500)
-    ),
-  agentKappaData = data.frame(
-    "agent" = c("A", "B", "C", "D", "E"),
-    "clusterAgent" = c(NA, "A", "B", "C", NA),
-    "kappa" = c(6, 3, 2, 1, 4)
-  ),
-  unitsPerOutcome = 2,
-  replicatesPerUnit = 1
-)
-pcaData <- getKsPCAData(
-  data = data, replicate = "replicate",
-  xRange = c(0, 1), yRange = c(0, 1)
-)
-RF1 <- funkyForest(data = pcaData[-2])
-
-pcaMeta <- simulateMeta(pcaData)
-RF2 <- funkyForest(pcaMeta[-2],
-  metaNames = c(
-    "randUnif", "randBin", "rNorm",
-    "corrUnif", "corrBin", "corrNorm"
+funkyForest(
+  data = TNBC[, c(1:8, ncol(TNBC))],
+  outcome = "Class", unit = "Person",
+  metaNames = c("Age")
   )
-)
-}
 }

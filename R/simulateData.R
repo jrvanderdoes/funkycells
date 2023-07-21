@@ -47,10 +47,6 @@
 #'   unitsPerOutcome = 4,
 #'   replicatesPerUnit = 1
 #' )
-#'
-#' \dontrun{
-#' data <- simulatePP()
-#' }
 simulatePP <- function(agentVarData =
                          data.frame(
                            "outcome" = c(0, 1, 2),

@@ -68,8 +68,4 @@ data <- simulatePP(
   unitsPerOutcome = 4,
   replicatesPerUnit = 1
 )
-
-\dontrun{
-data <- simulatePP()
-}
 }

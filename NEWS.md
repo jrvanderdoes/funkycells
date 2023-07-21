@@ -1,5 +1,9 @@
 # funkycells 1.1.1
 
+* Update package title
+* Remove don't run examples
+* Update vignettes to not save to home directory (via temp directory and variable to not run those sections)
+
 # funkycells 1.1.0
 
 * Back-end changes to prepare for CRAN

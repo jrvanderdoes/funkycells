@@ -22,8 +22,8 @@ library(funkycells)
 # This indicates if power curves should be built or saved loaded
 #   WARNING, this takes a long time to run!!
 #     If you wish to run, I recommend you run the code in chucks
-full_run <- FALSE
-path <- "./model_power_curves/"
+full_run <- FALSE  # This creates and saves figures as in paper
+path <- paste0(tempdir(),"/model_power_curves/")
 ```
 
 This vignette shows the power curve for the model. This curves are based on data similar to that in the triple negative breast cancer data, for which there is another vignette  `vignette("TNBC")`. To this end, we consider two cases: (1) a few number of interactions and (2) a large number of interactions.
@@ -100,7 +100,7 @@ for (c in 1:length(changes)) {
     rfdata[[i]] <- pcaMeta
   }
 
-  ## Save RDS
+  ## Save RDS (To temp directory)
   saveRDS(info, paste0(path, "change_sim_small_info", c, ".rds"))
   saveRDS(rfdata, paste0(path, "change_sim_small_rfdata", c, ".rds"))
 }
@@ -254,7 +254,7 @@ plot_sm <-
 
 plot_sm
 ```
-```{r show_fake_small, eval=!full_run}
+```{r show_fake_small, eval=!full_run,echo=!full_run}
 knitr::include_graphics("img/change_sm_curve_show.png")
 ```
 
@@ -536,6 +536,6 @@ plot_lg <-
 
 plot_lg
 ```
-```{r show_fake_large, eval=!full_run}
+```{r show_fake_large, eval=!full_run,echo=!full_run}
 knitr::include_graphics("img/change_lg_curve_show.png")
 ```

@@ -20,7 +20,8 @@ library(funkycells)
 
 ```{r define_functions, echo=FALSE}
 full_run <- FALSE # This runs only computations that are feasibly quick
-paper_run <- FALSE
+paper_run <- FALSE # This creates and saves figures as in paper
+save_path <- tempdir() # Save to temp directory as desired
 ```
 
 This vignettes walks through the approach `funkycells` takes to modeling data. The package `funkycells` is best employed when considering spatial data. While this data is typically collected, below such data is created. 
@@ -63,8 +64,7 @@ img1 <- plotPP(
   data = cell_data[cell_data$replicate == 1, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
-png("./paper/diagram_pp1.png", width = 800, height = 800)
-# png("./vignettes/paper/diagram_pp1.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/diagram_pp1.png"), width = 800, height = 800)
 print(img1)
 dev.off()
 
@@ -72,8 +72,7 @@ img21 <- plotPP(
   data = cell_data[cell_data$replicate == 21, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
-png("./paper/diagram_pp21.png", width = 800, height = 800)
-# png("./vignettes/paper/diagram_pp21.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/diagram_pp21.png"), width = 800, height = 800)
 print(img21)
 dev.off()
 
@@ -81,8 +80,7 @@ img41 <- plotPP(
   data = cell_data[cell_data$replicate == 41, c("x", "y", "type")],
   ptSize = 3, dropAxes = T, colorGuide = "none"
 )
-png("./paper/diagram_pp41.png", width = 800, height = 800)
-# png("./vignettes/paper/diagram_pp41.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/diagram_pp41.png"), width = 800, height = 800)
 print(img41)
 dev.off()
 ```
@@ -132,8 +130,7 @@ AAfig_im1 <- ggplot2::ggplot() +
     axis.title = ggplot2::element_blank(),
     axis.text = ggplot2::element_blank()
   )
-png("./paper/diagram_K_AA_i1.png", width = 800, height = 800)
-# png("./vignettes/paper/diagram_K_AA_i1.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/diagram_K_AA_i1.png"), width = 800, height = 800)
 print(AAfig_im1)
 dev.off()
 
@@ -144,13 +141,12 @@ ABfig_im1 <- ggplot2::ggplot() +
     axis.title = ggplot2::element_blank(),
     axis.text = ggplot2::element_blank()
   )
-png("./paper/diagram_K_AB_i1.png", width = 800, height = 800)
-# png("./vignettes/paper/diagram_K_AB_i1.png", width = 800, height = 800)
+png(paste0(save_path,"/paper/diagram_K_AB_i1.png"), width = 800, height = 800)
 print(ABfig_im1)
 dev.off()
 ```
 
-These functions must then be projected into finite dimensions. Since $K$ functions are so commonly used, `funkycells` has a specialized function for computing and projecting the $K$ functions through the popular functional principle components analysis. The following code projects the funtions into $3$ principle components each.
+These functions must then be projected into finite dimensions. Since $K$ functions are so commonly used, `funkycells` has a specialized function for computing and projecting the $K$ functions through the popular functional principle components analysis. The following code projects the functions into $3$ principle components each.
 ```{r pca}
 pcaData <- getKsPCAData(
   data = cell_data, replicate = "replicate",
@@ -248,8 +244,7 @@ plot_vi_full <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/diagram_variableimportance.png")
-# png("./vignettes/paper/diagram_variableimportance.png")
+png(paste0(save_path,"/paper/diagram_variableimportance.png"))
 print(plot_vi_full)
 dev.off()
 
@@ -306,8 +301,7 @@ plot_vi_details <- ggplot2::ggplot(
     specify_decimal(accData$bias, 2), ")"
   ))
 
-png("./paper/diagram_variableimportance_names.png")
-# png("./vignettes/paper/diagram_variableimportance.png")
+png(paste0(save_path,"/paper/diagram_variableimportance_names.png"))
 print(plot_vi_details)
 dev.off()
 ```
