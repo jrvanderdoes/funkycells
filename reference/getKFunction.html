@@ -12,7 +12,7 @@ potentially averaging over replicates, or repeated measures."><!-- mathjax --><s
     
     <a class="navbar-brand me-2" href="../index.html">funkycells</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -133,40 +133,13 @@ data, an NA is returned for the K function.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="va">data1</span> <span class="op">&lt;-</span> <span class="fu"><a href="simulatePP.html">simulatePP</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  agentVarData <span class="op">=</span></span></span>
-<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>      <span class="st">"outcome"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>      <span class="st">"A"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>      <span class="st">"B"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">/</span> <span class="fl">100</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">500</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">500</span><span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">)</span>,</span></span>
-<span class="r-in"><span>  agentKappaData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    <span class="st">"agent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"clusterAgent"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"A"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    <span class="st">"kappa"</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">5</span><span class="op">)</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">KData</span> <span class="op">&lt;-</span> <span class="va">data1</span><span class="op">[</span><span class="va">data1</span><span class="op">$</span><span class="va">unit</span> <span class="op">==</span> <span class="st">"u1"</span>, <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">data1</span><span class="op">)</span> <span class="op">!=</span> <span class="st">"outcome"</span><span class="op">]</span></span></span>
-<span class="r-in"><span><span class="va">KFunction</span> <span class="op">&lt;-</span> <span class="fu">getKFunction</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  agents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span><span class="op">)</span>, unit <span class="op">=</span> <span class="st">"unit"</span>,</span></span>
-<span class="r-in"><span>  replicate <span class="op">=</span> <span class="st">"replicate"</span>,</span></span>
-<span class="r-in"><span>  data <span class="op">=</span> <span class="va">KData</span>,</span></span>
-<span class="r-in"><span>  rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.25</span>, <span class="fl">0.01</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  xRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>, yRange <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  edgeCorrection <span class="op">=</span> <span class="st">"isotropic"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">KFunction</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-in"><span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#'</span></span></span>
 <span class="r-in"><span><span class="va">KFunction</span> <span class="op">&lt;-</span> <span class="fu">getKFunction</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  agents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"Tumor"</span><span class="op">)</span>, unit <span class="op">=</span> <span class="st">"Person"</span>,</span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>  rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">50</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  edgeCorrection <span class="op">=</span> <span class="st">"isotropic"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">KFunction</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="getKFunction-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
