@@ -1,7 +1,7 @@
 ## Resubmission
 
 * The title was updated to removed ambiguity with the plus sign (it was removed)
-* All examples using dontrun were removed
+* All examples using dontrun were removed or redesigned
 * Changed saving figures in vignettes to temp directory 
 * Added a variable to run/not run code that saves files (default is not running)
 

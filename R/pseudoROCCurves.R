@@ -29,10 +29,10 @@
 #'                          0.076, 0.084, 0.156, 0.346, 0.334, 0.263,
 #'                          0.548, 0.651, 0.257, 0.873, 0.994, 0.756))
 #' colnames(percents) <- c('0','1','2')
-#' computePseudoROCCurves(c(0, 0, 0, 0, 0, 0,
-#'                          1, 1, 1, 1, 1, 1,
-#'                          2, 2, 2, 2, 2, 2),
-#'                        percents)
+#' proc <- computePseudoROCCurves(c(0, 0, 0, 0, 0, 0,
+#'                                  1, 1, 1, 1, 1, 1,
+#'                                  2, 2, 2, 2, 2, 2),
+#'                                percents)
 computePseudoROCCurves <- function(trueOutcomes, modelPercents) {
   if (!requireNamespace("pROC", quietly = TRUE)) {
     stop(

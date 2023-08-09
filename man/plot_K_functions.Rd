@@ -58,7 +58,7 @@ data_plot <- rbind(
   )
 )
 
-plot_K_functions(data_plot)
+pk1 <- plot_K_functions(data_plot)
 
 # Example 2
 tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
@@ -88,5 +88,5 @@ data_plot <- rbind(
   )
 )
 
-plot_K_functions(data_plot)
+pk2 <- plot_K_functions(data_plot)
 }

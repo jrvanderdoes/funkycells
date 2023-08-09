@@ -30,7 +30,7 @@
 #'     data, an NA is returned for the K function.
 #' @export
 #'
-#' @examples#'
+#' @examples
 #' KFunction <- getKFunction(
 #'   agents = c("B", "Tumor"), unit = "Person",
 #'   data = TNBC_pheno[TNBC_pheno$Person == 1, -1],

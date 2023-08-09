@@ -1,7 +1,7 @@
 #' Plot Spatial Point Process
 #'
 #' This function is used to plot a spatial point process. This does not split
-#'  data and puts all given data on a single plot.
+#'  data and instead puts all given data on a single plot.
 #'
 #' @param data Data.frame with x, y, and agent type (in that order)
 #' @param colorGuide (Optional) String for 'guides(color=)' in ggplot2. Usually
@@ -23,7 +23,7 @@
 #' @export
 #'
 #' @examples
-#' plotPP(
+#' ppplot <- plotPP(
 #'   TNBC_pheno[
 #'     TNBC_pheno$Person == 1,
 #'     c("cellx", "celly", "Phenotype")
@@ -127,7 +127,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
 #'   )
 #' )
 #'
-#' plot_K_functions(data_plot)
+#' pk1 <- plot_K_functions(data_plot)
 #'
 #' # Example 2
 #' tmp <- getKFunction(TNBC_pheno[TNBC_pheno$Class == 0, -1],
@@ -157,7 +157,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
 #'   )
 #' )
 #'
-#' plot_K_functions(data_plot)
+#' pk2 <- plot_K_functions(data_plot)
 plot_K_functions <- function(data, inc.legend = TRUE, inc.noise = FALSE) {
   # Add this to remove notes when building package
   r <- K <- unit <- outcome <- Value <- NULL

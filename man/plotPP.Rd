@@ -44,10 +44,10 @@ ggplot2 plot of the spatial point process.
 }
 \description{
 This function is used to plot a spatial point process. This does not split
-data and puts all given data on a single plot.
+data and instead puts all given data on a single plot.
 }
 \examples{
-plotPP(
+ppplot <- plotPP(
   TNBC_pheno[
     TNBC_pheno$Person == 1,
     c("cellx", "celly", "Phenotype")

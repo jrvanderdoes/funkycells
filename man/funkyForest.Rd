@@ -67,7 +67,7 @@ and meta-data. This can be useful to get a final model, but we recommend
 use of randomForest_CVPC in general, which includes the final model.
 }
 \examples{
-funkyForest(
+ff <- funkyForest(
   data = TNBC[, c(1:8, ncol(TNBC))],
   outcome = "Class", unit = "Person",
   metaNames = c("Age")
