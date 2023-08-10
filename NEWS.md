@@ -1,3 +1,5 @@
+# funkycells (development version)
+
 # funkycells 1.1.1
 
 * Update package title
