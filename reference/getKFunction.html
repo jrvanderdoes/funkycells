@@ -12,7 +12,7 @@ potentially averaging over replicates, or repeated measures."><!-- mathjax --><s
     
     <a class="navbar-brand me-2" href="../index.html">funkycells</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1.9000</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -133,8 +133,7 @@ data, an NA is returned for the K function.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">#'</span></span></span>
-<span class="r-in"><span><span class="va">KFunction</span> <span class="op">&lt;-</span> <span class="fu">getKFunction</span><span class="op">(</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">KFunction</span> <span class="op">&lt;-</span> <span class="fu">getKFunction</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  agents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"B"</span>, <span class="st">"Tumor"</span><span class="op">)</span>, unit <span class="op">=</span> <span class="st">"Person"</span>,</span></span>
 <span class="r-in"><span>  data <span class="op">=</span> <span class="va">TNBC_pheno</span><span class="op">[</span><span class="va">TNBC_pheno</span><span class="op">$</span><span class="va">Person</span> <span class="op">==</span> <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>,</span></span>
 <span class="r-in"><span>  rCheckVals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">50</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
