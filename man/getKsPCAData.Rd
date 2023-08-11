@@ -2,7 +2,7 @@
 % Please edit documentation in R/getKsPCAData.R
 \name{getKsPCAData}
 \alias{getKsPCAData}
-\title{Get K's PCA Data}
+\title{Get K Functions and Compute Principal Components}
 \usage{
 getKsPCAData(
   data,

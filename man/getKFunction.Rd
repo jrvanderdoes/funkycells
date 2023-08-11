@@ -54,7 +54,6 @@ This function computes the K function between the two agents for each unit,
 potentially averaging over replicates, or repeated measures.
 }
 \examples{
-#'
 KFunction <- getKFunction(
   agents = c("B", "Tumor"), unit = "Person",
   data = TNBC_pheno[TNBC_pheno$Person == 1, -1],

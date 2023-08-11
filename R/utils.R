@@ -1,4 +1,4 @@
-#' Get Mode of vectonr
+#' Get Mode of vector
 #'
 #' This ignores NA. See below internal for other things which may be
 #'  worth trying later.
@@ -12,10 +12,10 @@
 #' @return The mode(s) of the vector
 #'
 #' @examples
-#' .getMode(c(1, 2, 3, 1))
-#' .getMode(c("A", "B", "C", "A", "B"))
-#' .getMode(c(1, 2, 3, "A", "A"))
-#' .getMode(c(1, 2, 3, "A", "A", 2, 2, 2))
+#' m1 <- .getMode(c(1, 2, 3, 1))
+#' m2 <- .getMode(c("A", "B", "C", "A", "B"))
+#' m3 <- .getMode(c(1, 2, 3, "A", "A"))
+#' m4 <- .getMode(c(1, 2, 3, "A", "A", 2, 2, 2))
 #' @noRd
 .getMode <- function(x) {
   a <- table(x)
@@ -66,7 +66,7 @@
 #'     same number of points
 #'
 #' @examples
-#' .getFolds(1:10, 3)
+#' gf <- .getFolds(1:10, 3)
 #' @noRd
 .getFolds <- function(x, K) {
   if (K > length(x)) {

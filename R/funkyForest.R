@@ -41,7 +41,7 @@
 #' @export
 #'
 #' @examples
-#' funkyForest(
+#' ff <- funkyForest(
 #'   data = TNBC[, c(1:8, ncol(TNBC))],
 #'   outcome = "Class", unit = "Person",
 #'   metaNames = c("Age")

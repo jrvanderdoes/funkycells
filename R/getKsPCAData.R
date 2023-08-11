@@ -1,4 +1,4 @@
-#' Get K's PCA Data
+#' Get K Functions and Compute Principal Components
 #'
 #' This function computes K functions from point process data then converts it
 #'  into PCs. Note, if there are replicates, i.e. multiple observations per

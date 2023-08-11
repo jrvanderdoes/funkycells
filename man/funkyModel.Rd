@@ -100,7 +100,7 @@ cross-validation is employed to improve understanding of the data.
 }
 \examples{
 # Parameters are reduced beyond recommended levels for speed
-rfcv <- funkyModel(
+fm <- funkyModel(
   data = TNBC[, c(1:8, ncol(TNBC))],
   outcome = "Class", unit = "Person",
   metaNames = c("Age"),
