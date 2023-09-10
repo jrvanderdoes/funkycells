@@ -340,6 +340,340 @@ funkyModel <- function(data, K = 10,
 }
 
 
+#' Fit a Modified Random Forest Model with Conditional Bounds and Alignment
+#'
+#' The function fits a modified random forest model to principal components
+#'  of spatial interactions as well as meta-data. Additionally permutation and
+#'  cross-validation is employed to improve understanding of the data.
+#'
+#' This function differs from funkyModel in that the curved line to build
+#'  conditionally on accepting the previous values.
+#'
+#' @inheritParams funkyModel
+#'
+#' @return List with the following items:
+#'     \enumerate{
+#'         \item model: The funkyForest Model fit on the entire given data.
+#'         \item VariableImportance: Data.frame with the results of variable
+#'                   importance indices from the models and CV. The columns are
+#'                   var, est, sd, and cvSD.
+#'         \item AccuracyEstimate: Data.frame with model accuracy estimates:
+#'                   out-of-bag accuracy (OOB), biased estimate (bias), and
+#'                   random guess (guess). The columns are OOB, bias, and guess.
+#'         \item NoiseCutoff: Numeric indicating noise cutoff (vertical line).
+#'         \item InterpolationCutoff: Vector of numerics indicating the
+#'                   interpolation cutoff (curved line).
+#'         \item AdditionalParams: List of additional parameters for reference:
+#'                   Alpha and subsetPlotSize.
+#'         \item viPlot: ggplot2 object for vi plot with standardized results.
+#'                   It displays ordered underlying functions and meta-variables
+#'                   with point estimates, sd, noise cutoff, and interpolation
+#'                   cutoff all based on variable importance values.
+#'         \item subset_viPlot: (Optional) ggplot2 object for vi plot with
+#'                   standardized results and only top subsetPlotSize variables.
+#'                   It displays ordered underlying functions and meta-variables
+#'                   with point estimates, sd, noise cutoff, and interpolation
+#'                   cutoff all based on variable importance values.
+#'         }
+#' @export
+#'
+#' @examples
+#' # Parameters are reduced beyond recommended levels for speed
+#' fm <- funkyModel_condInt(
+#'   data = TNBC[, c(1:8, ncol(TNBC))],
+#'   outcome = "Class", unit = "Person",
+#'   metaNames = c("Age"),
+#'   nTrees = 5, synthetics = 10,
+#'   silent = TRUE
+#' )
+funkyModel_condInt <- function(data, K = 10,
+                               outcome = colnames(data)[1],
+                               unit = colnames(data)[2],
+                               metaNames = NULL,
+                               synthetics = 100,
+                               alpha = 0.05,
+                               silent = FALSE,
+                               rGuessSims = 500,
+                               subsetPlotSize = 25, nTrees = 500,
+                               method = "class") {
+  if (synthetics == 0) warning("No Synthetics given, variables cannot be aligned.")
+  if (synthetics < 0) stop("Number of synthetics must be positive.")
+  ## Error checking
+  # .checkData(alignmentMethod) ## TODO:: Add something in
+
+  ## Generate Synthetics And Connect
+  components <- colnames(data)[!(colnames(data) %in%
+                                   c(outcome, unit, metaNames))]
+  nPCs <- ifelse(length(components) == 0,
+                 0,
+                 as.numeric(max(sub(".*_PC", "", components)))
+  )
+
+  KFunctions <- .getUnderlyingVariable(components)
+  # Get Var and data column alignment
+  underlyingDataAlignedFunctions <- .getUnderlyingVariable(colnames(data),
+                                                           returnUnique = FALSE
+  )
+  underlyingVars <- unique(underlyingDataAlignedFunctions)
+  underlyingVars <- underlyingVars[!(underlyingVars %in% c(outcome, unit))]
+
+  underlyingNoiseVars <- c(underlyingVars)
+  if (length(KFunctions) > 0) {
+    underlyingNoiseVars <- c(
+      underlyingNoiseVars,
+      paste0("permuteInternal", 1:synthetics, "K_K")
+    )
+  }
+  if (length(metaNames) > 0) {
+    underlyingNoiseVars <- c(
+      underlyingNoiseVars,
+      as.vector(sapply(metaNames, function(m) {
+        paste0(paste0("permuteInternal", 1:synthetics), m)
+      }))
+    )
+  }
+
+  avgVI <- data.frame("var" = c(underlyingVars))
+  avgVI_full <- data.frame("var" = c(underlyingNoiseVars))
+
+  oobAcc <- rep(NA, K)
+  groups <- .getFolds(1:nrow(data), K)
+
+  # K-Fold Cross-Validation (True Data)
+  if (!silent) cat("CV Trials (", K, "): ", sep = "")
+  for (i in 1:K) {
+    if (!silent) cat(i, ", ", sep = "")
+
+    # Do CV without noise for Sd and OOB
+    RF <- funkyForest(
+      data = data[-groups[[i]], ],
+      outcome = outcome,
+      unit = unit,
+      varImpPlot = FALSE,
+      metaNames = c(metaNames),
+      nTrees = nTrees, method = method,
+    )
+
+    data_merge <- RF$varImportanceData[, c("var", "avgVI")]
+    colnames(data_merge) <- c("var", paste0("avgVIK", i))
+    avgVI <- merge(avgVI, data_merge, by = "var")
+
+    oobAcc[i] <- sum(data[groups[[i]], outcome] ==
+                       predict_funkyForest(
+                         model = RF$model,
+                         data_pred = data[groups[[i]], ],
+                         type = "pred", data = data
+                       )) /
+      nrow(data[groups[[i]], ])
+
+    ## Run on all for VI estimate
+
+    # Permute Noise but do the functional components together
+    data_full <- .permuteData(
+      data_base = data, outcome = outcome, unit = unit,
+      synthetics = synthetics,
+      KFunctions = KFunctions, metaNames = metaNames,
+      underlyingDataAlignedFunctions = underlyingDataAlignedFunctions,
+      nPCs = nPCs, attach.data = TRUE, permute.data = FALSE
+    )
+
+    RF_full <- funkyForest(
+      data = data_full$data,
+      outcome = outcome,
+      unit = unit,
+      varImpPlot = FALSE,
+      metaNames = data_full$metaNames,
+      nTrees = nTrees, keepModels = FALSE
+    )
+
+    data_merge <- RF_full$varImportanceData[, c("var", "avgVI")]
+    colnames(data_merge) <- c("var", paste0("avgVIK", i))
+    avgVI_full <- merge(avgVI_full, data_merge, by = "var")
+  }
+  if (!silent) cat("\n")
+
+
+  # Summarize True Data
+  tmp <- as.data.frame(t(sapply(
+    X = underlyingVars,
+    FUN = function(var1, alpha, data_vi, KFunctions) {
+      if (var1 %in% KFunctions) {
+        tmp <- data.frame(
+          var1,
+          t(as.numeric(apply(
+            X = data_vi[data_vi$var %in% paste0("permuteInternal", 1:100, "K_K"), -1],
+            MARGIN = 2, FUN = stats::quantile, probs = 1 - alpha
+          )))
+        )
+      } else {
+        tmp <- data.frame(
+          var1,
+          t(as.numeric(apply(
+            X = data_vi[data_vi$var %in% paste0("permuteInternal", 1:100, var1), -1],
+            MARGIN = 2, FUN = stats::quantile, probs = 1 - alpha
+          )))
+        )
+      }
+      tmp
+    },
+    alpha = alpha, data_vi = avgVI_full, KFunctions = KFunctions,
+    USE.NAMES = FALSE, simplify = "matrix"
+  )))
+  for (i in 2:ncol(tmp)) {
+    tmp[i] <- unlist(tmp[i])
+  }
+
+  noiseCO <- max(tmp[-1])
+
+  # If value is 0, will just take rather than scale
+  tmp1 <- noiseCO / tmp[, -1]
+  tmp1[sapply(tmp1, simplify = "matrix", is.infinite)] <- 1
+
+  avgVI_std <- cbind(
+    "var" = avgVI_full[avgVI_full$var %in% underlyingVars, 1],
+    avgVI_full[avgVI_full$var %in% underlyingVars, -1] * tmp1
+  )
+  data_summ <- .summData(avgVI_std)
+
+
+  # Add CV SDs (which do not include any noise Vars)
+  tmp <- .summData(avgVI)
+  colnames(tmp)[3] <- "cvSD"
+  data_summ <- merge(
+    data_summ,
+    tmp[, c("var", "cvSD")],
+    all.x = TRUE
+  )
+
+  ######################################
+  interpolationCO <- rep(NA, length(underlyingVars))
+
+  ## Mix up Variables
+  avgVI_perm_list <- list()
+  for(nv in 1:length(underlyingVars)){
+    ## Permutation
+    avgVI_perm <- data.frame("var" = c(underlyingNoiseVars))
+
+    if (!silent) cat("Permutation Trials (",nv,'/',length(underlyingVars),', ', synthetics, "): ", sep = "")
+    for (sim in 1:synthetics) {
+      if (!silent) cat(sim, ", ", sep = "")
+
+      # Permute but do the functional components together
+      data_permute <- .permuteData(data, outcome, unit,
+                                   synthetics, KFunctions, metaNames,
+                                   underlyingDataAlignedFunctions, nPCs,
+                                   attach.data = TRUE, permute.data = TRUE
+      )
+
+      # Get RF and VI
+      RF <- funkyForest(
+        data = data_permute$data,
+        outcome = outcome,
+        unit = unit,
+        varImpPlot = FALSE,
+        metaNames = data_permute$metaNames,
+        nTrees = nTrees, keepModels = FALSE
+      )
+
+      data_merge <- RF$varImportanceData[, c("var", "avgVI")]
+      colnames(data_merge) <- c("var", paste0("avgVIK", sim))
+      avgVI_perm <- merge(avgVI_perm, data_merge, by = "var")
+    }
+    if (!silent) cat("\n")
+
+    ## Proper Interpolation
+    tmp <- as.data.frame(t(sapply(
+      X = underlyingVars,
+      FUN = function(var, alpha, data_vi, KFunctions) {
+        if (var %in% KFunctions) {
+          tmp <- data.frame(
+            var,
+            t(as.numeric(apply(
+              X = data_vi[data_vi$var %in% paste0("permuteInternal", 1:100, "K_K"), -1],
+              MARGIN = 2, FUN = stats::quantile, probs = 1 - alpha
+            )))
+          )
+        } else {
+          tmp <- data.frame(
+            var,
+            t(as.numeric(apply(
+              X = data_vi[data_vi$var %in% paste0("permuteInternal", 1:100, var), -1],
+              MARGIN = 2, FUN = stats::quantile, probs = 1 - alpha
+            )))
+          )
+        }
+        tmp
+      },
+      alpha = alpha, data_vi = avgVI_perm, KFunctions = KFunctions,
+      USE.NAMES = FALSE, simplify = "matrix"
+    )))
+    for (i in 2:ncol(tmp)) {
+      tmp[i] <- unlist(tmp[i])
+    }
+
+    # If value is 0, will just take rather than scale
+    tmp1 <- noiseCO / tmp[, -1]
+    tmp1[sapply(tmp1, simplify = "matrix", is.infinite)] <- 1
+
+    avgVI_perm_std <- cbind(
+      "var" = avgVI_perm[avgVI_perm$var %in% underlyingVars, 1],
+      avgVI_perm[avgVI_perm$var %in% underlyingVars, -1] * tmp1
+    )
+
+    # Get Interpolation cutoff
+    interpolationCO_tmp <- apply(
+      apply(avgVI_perm_std[-1],
+            MARGIN = 2, FUN = sort,
+            decreasing = TRUE
+      ),
+      MARGIN = 1, FUN = stats::quantile, probs = 1 - alpha
+    )
+
+    ## Choose proper interpolation
+    interpolationCO[nv] <- interpolationCO_tmp[nv]
+  }
+
+  ######################################
+
+  # Model accuracy estimates
+  data_modelAcc <- .computeModelAccuracy(
+    oobAcc = oobAcc,
+    outcomes = data[, outcome]
+  )
+
+
+  ## Get plots and organize results
+  append(
+    list(
+      "model" = funkyForest(
+        data = data,
+        outcome = outcome,
+        unit = unit,
+        varImpPlot = FALSE,
+        metaNames = c(metaNames),
+        nTrees = nTrees,
+        method = method
+      )$model,
+      "VariableImportance" = data_summ,
+      "AccuracyEstimate" = data_modelAcc,
+      "NoiseCutoff" = noiseCO,
+      "InterpolationCutoff" = interpolationCO,
+      "AdditionalParams" = list(
+        "alpha" = alpha,
+        "subsetPlotSize" = subsetPlotSize
+      )
+    ),
+    .generateVIPlot(
+      viData = data_summ,
+      accData = data_modelAcc,
+      NoiseCutoff = noiseCO,
+      InterpolationCutoff = interpolationCO,
+      subsetPlotSize = subsetPlotSize
+    )
+  )
+}
+
+
 #' Get Data Summary
 #'
 #' This is an internal functional for summarizing data from different iterations.
