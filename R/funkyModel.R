@@ -346,8 +346,8 @@ funkyModel <- function(data, K = 10,
 #'  of spatial interactions as well as meta-data. Additionally permutation and
 #'  cross-validation is employed to improve understanding of the data.
 #'
-#' This function differs from funkyModel in that the curved line to build
-#'  conditionally on accepting the previous values.
+#' This function differs from `funkyModel()` in that the curved interpolation
+#'  cutoff is built conditionally on accepting previous values.
 #'
 #' @inheritParams funkyModel
 #'
