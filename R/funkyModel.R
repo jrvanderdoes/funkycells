@@ -346,8 +346,8 @@ funkyModel <- function(data, K = 10,
 #'  of spatial interactions as well as meta-data. Additionally permutation and
 #'  cross-validation is employed to improve understanding of the data.
 #'
-#' This function differs from `funkyModel()` in that the curved interpolation
-#'  cutoff is built conditionally on accepting previous values.
+#' This function differs from funkyModel in that the curved line to build
+#'  conditionally on accepting the previous values.
 #'
 #' @inheritParams funkyModel
 #'
@@ -395,7 +395,8 @@ funkyModel_condInt <- function(data, K = 10,
                                silent = FALSE,
                                rGuessSims = 500,
                                subsetPlotSize = 25, nTrees = 500,
-                               method = "class") {
+                               method = "class",
+                               numCondVI = 5) {
   if (synthetics == 0) warning("No Synthetics given, variables cannot be aligned.")
   if (synthetics < 0) stop("Number of synthetics must be positive.")
   ## Error checking
@@ -416,6 +417,8 @@ funkyModel_condInt <- function(data, K = 10,
   )
   underlyingVars <- unique(underlyingDataAlignedFunctions)
   underlyingVars <- underlyingVars[!(underlyingVars %in% c(outcome, unit))]
+  # Only conditional on max number of total vars
+  numCondVI <- min(numCondVI+1,length(underlyingVars)-1)
 
   underlyingNoiseVars <- c(underlyingVars)
   if (length(KFunctions) > 0) {
@@ -548,13 +551,17 @@ funkyModel_condInt <- function(data, K = 10,
   ######################################
   interpolationCO <- rep(NA, length(underlyingVars))
 
+  ## Setup to Condition
+  biggestVars <- data_summ[order(-data_summ$est),1]
+  keepVars <- c()
+
   ## Mix up Variables
   avgVI_perm_list <- list()
-  for(nv in 1:length(underlyingVars)){
+  for(nv in 1:numCondVI){
     ## Permutation
     avgVI_perm <- data.frame("var" = c(underlyingNoiseVars))
 
-    if (!silent) cat("Permutation Trials (",nv,'/',length(underlyingVars),', ', synthetics, "): ", sep = "")
+    if (!silent) cat("Permutation Trials (",nv,'/',numCondVI,', ', synthetics, "): ", sep = "")
     for (sim in 1:synthetics) {
       if (!silent) cat(sim, ", ", sep = "")
 
@@ -562,7 +569,8 @@ funkyModel_condInt <- function(data, K = 10,
       data_permute <- .permuteData(data, outcome, unit,
                                    synthetics, KFunctions, metaNames,
                                    underlyingDataAlignedFunctions, nPCs,
-                                   attach.data = TRUE, permute.data = TRUE
+                                   attach.data = TRUE, permute.data = TRUE,
+                                   keep.vars = keepVars
       )
 
       # Get RF and VI
@@ -631,7 +639,33 @@ funkyModel_condInt <- function(data, K = 10,
 
     ## Choose proper interpolation
     interpolationCO[nv] <- interpolationCO_tmp[nv]
+    if(nv==1){
+      interpolationCO_basic <- interpolationCO_tmp
+    }else if(nv==numCondVI){
+      interpolationCO[(nv+1):length(interpolationCO)] <-
+        interpolationCO_tmp[(nv+1):length(interpolationCO)]
+    }
+    keepVars <- biggestVars[1:nv]
+
+    # # Set-up to save not change most common one
+    # vals_df <- data.frame('var'=avgVI_perm_std[1])
+    # maxIdentify <- apply(avgVI_perm_std[-1],
+    #       MARGIN = 2, FUN = which.max
+    # )
+    # mode_df <- as.data.frame(table(maxIdentify),
+    #                          stringsAsFactors = FALSE)
+    # colnames(mode_df) <- c('var','times')
+    # mode_df$var <- avgVI_perm_std[mode_df$var,1]
+    # vals_df <- merge(vals_df,mode_df,all=TRUE)
+    #
+    # vals_df$avgVal <- rowSums(avgVI_perm_std[-1])/synthetics
+    #
+    # # Remove old, select mode, and biggest avg on ties
+    # newSelection <- vals_df[vals_df$var %in% ]
   }
+
+  # To combat disorder variability
+  interpolationCO <- interpolationCO[order(-interpolationCO)]
 
   ######################################
 
@@ -660,7 +694,8 @@ funkyModel_condInt <- function(data, K = 10,
       "InterpolationCutoff" = interpolationCO,
       "AdditionalParams" = list(
         "alpha" = alpha,
-        "subsetPlotSize" = subsetPlotSize
+        "subsetPlotSize" = subsetPlotSize,
+        "interpolationCO_basic"=interpolationCO_basic
       )
     ),
     .generateVIPlot(
@@ -865,7 +900,8 @@ funkyModel_condInt <- function(data, K = 10,
 .permuteData <- function(data_base, outcome, unit,
                          synthetics, KFunctions, metaNames,
                          underlyingDataAlignedFunctions, nPCs,
-                         attach.data = FALSE, permute.data = FALSE) {
+                         attach.data = FALSE, permute.data = FALSE,
+                         keep.vars = NULL) {
   # Setup Data
   data_permute <- unique(data_base[, c(outcome, unit)])
   underlyingVars <- unique(underlyingDataAlignedFunctions)
@@ -912,19 +948,32 @@ funkyModel_condInt <- function(data, K = 10,
 
   # Permute data
   if (permute.data) {
+    # Permute All Data
     data_base_permute_tmp <-
       lapply(1:length(underlyingVars),
-        function(idx, DF) {
+        function(idx, DF, vars) {
           DF[sample.int(nrow(DF)),
-            underlyingDataAlignedFunctions == underlyingVars[idx],
+            underlyingDataAlignedFunctions == vars[idx],
             drop = FALSE
           ]
         },
-        DF = data_base
+        DF = data_base, vars=underlyingVars
       )
     data_base_permute_tmp <- do.call("cbind", data_base_permute_tmp)
 
-    data_base <- cbind(unique(data_base[, c(outcome, unit)]), data_base_permute_tmp)
+    # Set up data
+    data_base_tmp <- cbind(unique(data_base[, c(outcome, unit)]), data_base_permute_tmp)
+
+    # Reset Data desired to stay same
+    #   Need to optimize this for speed
+    #   But this keeps order easier for now
+    for(keep.var in keep.vars){
+      data_base_tmp[,underlyingDataAlignedFunctions == keep.var] <-
+        data_base[,underlyingDataAlignedFunctions == keep.var]
+    }
+
+    # Prepare final merge data
+    data_base <- data_base_tmp
   }
 
   # Return
