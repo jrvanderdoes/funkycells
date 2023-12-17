@@ -69,8 +69,14 @@ funkyModel <- function(data, K = 10,
                        rGuessSims = 500,
                        subsetPlotSize = 25, nTrees = 500,
                        method = "class") {
-  if (synthetics == 0) warning("No Synthetics given, variables cannot be aligned.")
-  if (synthetics < 0) stop("Number of synthetics must be positive.")
+  if(length(synthetics)==1){
+    synthetics <- c(synthetics,synthetics)
+  }else if(length(synthetics)!=2){
+    stop('Length of Synthetics should be 1 or 2.')
+  }
+  if (synthetics[1] == 0) warning("No Synthetics given, variables cannot be aligned.")
+  if (synthetics[1] < 0) stop("Number of synthetics must be positive.")
+  if (synthetics[2] < 0) stop("Number of Synthetic Iterations must be positive.")
   ## Error checking
   # .checkData(alignmentMethod) ## TODO:: Add something in
 
@@ -94,14 +100,14 @@ funkyModel <- function(data, K = 10,
   if (length(KFunctions) > 0) {
     underlyingNoiseVars <- c(
       underlyingNoiseVars,
-      paste0("permuteInternal", 1:synthetics, "K_K")
+      paste0("permuteInternal", 1:synthetics[1], "K_K")
     )
   }
   if (length(metaNames) > 0) {
     underlyingNoiseVars <- c(
       underlyingNoiseVars,
       as.vector(sapply(metaNames, function(m) {
-        paste0(paste0("permuteInternal", 1:synthetics), m)
+        paste0(paste0("permuteInternal", 1:synthetics[1]), m)
       }))
     )
   }
@@ -144,7 +150,7 @@ funkyModel <- function(data, K = 10,
     # Permute Noise but do the functional components together
     data_full <- .permuteData(
       data_base = data, outcome = outcome, unit = unit,
-      synthetics = synthetics,
+      synthetics = synthetics[1],
       KFunctions = KFunctions, metaNames = metaNames,
       underlyingDataAlignedFunctions = underlyingDataAlignedFunctions,
       nPCs = nPCs, attach.data = TRUE, permute.data = FALSE
@@ -168,13 +174,13 @@ funkyModel <- function(data, K = 10,
   ## Permutation
   avgVI_perm <- data.frame("var" = c(underlyingNoiseVars))
 
-  if (!silent) cat("Permutation Trials (", synthetics, "): ", sep = "")
-  for (sim in 1:synthetics) {
+  if (!silent) cat("Permutation Trials (", synthetics[2], "): ", sep = "")
+  for (sim in 1:synthetics[2]) {
     if (!silent) cat(sim, ", ", sep = "")
 
     # Permute but do the functional components together
     data_permute <- .permuteData(data, outcome, unit,
-      synthetics, KFunctions, metaNames,
+      synthetics[1], KFunctions, metaNames,
       underlyingDataAlignedFunctions, nPCs,
       attach.data = TRUE, permute.data = TRUE
     )
@@ -754,18 +760,20 @@ funkyModel_condInt <- function(data, K = 10,
     # Bias guess - Pick most popular group
     accData$bias <- max(optVals) / sum(optVals)
 
-    # Random guessing based on total sample
-    acc <- rep(NA, rGuessSims)
-    for (i in 1:rGuessSims) {
-      # Columns relate to outcomes
-      guesses <- stats::rmultinom(length(outcomes),
-        size = 1,
-        optVals / sum(optVals)
-      )
-      acc[i] <- sum(which(guesses == 1, arr.ind = TRUE)[, 1] ==
-        as.integer(as.factor(outcomes))) / n
-    }
-    accData$guess <- mean(acc)
+    ## Random guessing based on total sample
+    # acc <- rep(NA, rGuessSims)
+    # for (i in 1:rGuessSims) {
+    #   # Columns relate to outcomes
+    #   guesses <- stats::rmultinom(length(outcomes),
+    #     size = 1,
+    #     optVals / sum(optVals)
+    #   )
+    #   acc[i] <- sum(which(guesses == 1, arr.ind = TRUE)[, 1] ==
+    #     as.integer(as.factor(outcomes))) / n
+    # }
+    # mean(acc)
+    # accData$guess <- mean(acc)
+    accData$guess <- sum((as.numeric(table(outcomes))/length(outcomes))^2)
   }
 
   accData
