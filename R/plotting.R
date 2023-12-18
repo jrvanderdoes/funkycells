@@ -34,7 +34,7 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
                    xlim = c(min(data[, 1]), max(data[, 1])),
                    ylim = c(min(data[, 2]), max(data[, 2])),
                    dropAxes = FALSE, layerBasedOnFrequency = TRUE,
-                   colors = NULL) {
+                   colors = NULL,xlab=NULL,ylab=NULL) {
   # Sort so most populous agents are at the bottom
   if (layerBasedOnFrequency && length(unique(data[, 3])) > 1) {
     agents_order <- as.data.frame(table(data[, 3])[order(-table(data[, 3]))])$Var1
@@ -57,9 +57,13 @@ plotPP <- function(data, colorGuide = NULL, ptSize = 1,
     ) +
     ggplot2::theme_bw() +
     ggplot2::xlim(xlim) +
-    ggplot2::xlab(NULL) +
+    ggplot2::xlab(xlab) +
     ggplot2::ylim(ylim) +
-    ggplot2::ylab(NULL) +
+    ggplot2::ylab(ylab) +
+    ggplot2::theme(
+      axis.title = ggplot2::element_text(size=30),
+      axis.text = ggplot2::element_text(size=26)
+    ) +
     ggplot2::guides(color = colorGuide)
   if (dropAxes) {
     retPlot <- retPlot +
