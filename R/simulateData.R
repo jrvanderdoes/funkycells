@@ -499,7 +499,7 @@ simulateMeta <- function(data,
       data_pts <- .placeClusteredPts(
         currXY = as.numeric(clusterAgentData[j, c("x", "y")]),
         agent = types[i],
-        numPts = stats::rpois(1, kappas[i]),
+        numPts = numPts,
         varValue = agentVarData[i]
       )
       data_pts$replicate <- clusterAgentData[j, "replicate"]
