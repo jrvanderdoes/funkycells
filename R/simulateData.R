@@ -492,7 +492,7 @@ simulateMeta <- function(data,
       preItrPt <- sample(nrow(clusterAgentData), 1)
       # Fill with enough pts
       numPts <- stats::rpois(1, kappas[i])
-      if (numPts + nrow(newData[newData$type == types[i], ] < minPts)) {
+      if (numPts + nrow(newData[newData$type == types[i], ]) < minPts) {
         numPts <- minPts - nrow(newData[newData$type == types[i], ])
       }
 
