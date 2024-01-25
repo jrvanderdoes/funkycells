@@ -57,6 +57,14 @@ clean_figures <- function(model_rf) {
 
   # Plot Full
   maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+  sub_val <- paste0(
+      "OOB (",
+      specify_decimal(accData$OOB, 2),
+      "), Guess (",
+      specify_decimal(accData$guess, 2),
+      "), Bias (",
+      specify_decimal(accData$bias, 2), ")"
+  )
   plot_full <- ggplot2::ggplot(
     data = viData,
     mapping = ggplot2::aes(
@@ -87,8 +95,8 @@ clean_figures <- function(model_rf) {
     ggplot2::ylab(NULL) +
     ggplot2::theme_bw() +
     ggplot2::theme(
-      axis.text = ggplot2::element_text(size = 18),
       axis.text.y = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(size = 14),
       axis.ticks.y = ggplot2::element_blank(),
       panel.grid.major.y = ggplot2::element_blank(),
       axis.title = ggplot2::element_text(size = 20)
@@ -97,14 +105,9 @@ clean_figures <- function(model_rf) {
       x = ordered(viData[order(-est), "var"]),
       y = InterpolationCutoff / maxVal
     ), color = "orange", linetype = "dashed", linewidth = 2) +
-    ggplot2::ylab(paste0(
-      "OOB (",
-      specify_decimal(accData$OOB, 2),
-      "), Guess (",
-      specify_decimal(accData$guess, 2),
-      "), Bias (",
-      specify_decimal(accData$bias, 2), ")"
-    ))
+    ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
+   
 
   # Plot Subset
   InterpolationCutoff1 <- InterpolationCutoff[1:subsetPlotSize]
@@ -112,6 +115,14 @@ clean_figures <- function(model_rf) {
   viData1 <- viData1[1:subsetPlotSize, ]
 
   maxVal <- max(InterpolationCutoff1, NoiseCutoff, viData1$est)
+  sub_val <- paste0(
+      "OOB (",
+      specify_decimal(accData$OOB, 2),
+      "), Guess (",
+      specify_decimal(accData$guess, 2),
+      "), Bias (",
+      specify_decimal(accData$bias, 2), ")"
+  )
   plot_top25 <- ggplot2::ggplot(
     data = viData1,
     mapping = ggplot2::aes(
@@ -141,48 +152,43 @@ clean_figures <- function(model_rf) {
     ggplot2::ylim(c(0, 1)) +
     ggplot2::ylab(NULL) +
     ggplot2::theme_bw() +
-    ggplot2::theme(
-      axis.text.x = ggplot2::element_text(size = 17),
-      axis.text.y = ggplot2::element_text(size = 14),
-      axis.ticks.y = ggplot2::element_blank(),
-      panel.grid.major.y = ggplot2::element_blank(),
-      axis.title = ggplot2::element_text(size = 17)
-    ) +
+  ggplot2::theme(
+    axis.text.y = ggplot2::element_text(size = 16),
+    axis.text.x = ggplot2::element_text(size = 14),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 16)
+  ) +
     ggplot2::geom_line(ggplot2::aes(
       x = ordered(viData1[order(-est), "var"]),
       y = InterpolationCutoff1 / maxVal
     ), color = "orange", linetype = "dashed", linewidth = 2) +
-    ggplot2::ylab(paste0(
-      "OOB (",
-      specify_decimal(accData$OOB, 2),
-      "), Guess (",
-      specify_decimal(accData$guess, 2),
-      "), Bias (",
-      specify_decimal(accData$bias, 2), ")"
-    ))
+    ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
   list(
     "full" = plot_full,
     "top" = plot_top25
   )
 }
+
 ```
 
 The data must be converted to $K$ functions, then to in finite dimensions. This data is then combined with the smoking meta-data.
 ```{r pca_data, eval=full_run}
 pcaData <- getKsPCAData(
-  data = use_data[!(colnames(use_data) %in% c("SmokingStatusLong"))],
+  data = dat[!(colnames(dat) %in% c("SmokingStatusLong"))],
   outcome = "Cancer",
   unit = "Patient",
   replicate = "Image",
   rCheckVals = seq(0, 50, 1),
   nPCs = 3,
-  agents_df = ints,
+  agents_df = getInteractions(unique(dat$cellType)),
   displayTVE = FALSE
 )
 
 data_rf <- merge(pcaData,
-  unique(use_data[, c("Patient", "SmokingStatusLong")]),
+  unique(dat[, c("Patient", "SmokingStatusLong")]),
   keep.x = TRUE, by.x = "Patient", by.y = "Patient"
 )
 ```
@@ -201,5 +207,5 @@ The plots can be given as well:
 ```{r plot_data, eval=full_run}
 figs <- clean_figures(model_fm)
 figs$full
-fits$top
+figs$top
 ```

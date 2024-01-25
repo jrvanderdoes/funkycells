@@ -22,6 +22,9 @@ library(funkycells)
 full_run <- FALSE # This runs only computations that are feasibly quick
 paper_run <- FALSE # This creates and saves figures as in paper
 save_path <- tempdir() # Save to temp directory as desired
+specify_decimal <- function(x, k) {
+  trimws(format(round(x, k), nsmall = k))
+}
 ```
 
 This vignettes walks through the approach `funkycells` takes to modeling data. The package `funkycells` is best employed when considering spatial data. While this data is typically collected, below such data is created. 
@@ -194,6 +197,14 @@ InterpolationCutoff <- model_fm$InterpolationCutoff
 
 # Plot
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+)
 plot_vi_full <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -224,25 +235,18 @@ plot_vi_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
-    axis.text.x = ggplot2::element_blank(),
     axis.text.y = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
   ) +
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+    ggplot2::geom_line(ggplot2::aes(
+      x = ordered(viData[order(-est), "var"]),
+      y = InterpolationCutoff / maxVal
+    ), color = "orange", linetype = "dashed", linewidth = 2) +
+    ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/diagram_variableimportance.png"))
 print(plot_vi_full)
@@ -251,6 +255,14 @@ dev.off()
 
 # Plot
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+)
 plot_vi_details <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -281,25 +293,18 @@ plot_vi_details <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
-    axis.text.x = ggplot2::element_blank(),
-    # axis.text.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_text(size = 18),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
   ) +
-  ggplot2::geom_line(ggplot2::aes(
-    x = ordered(viData[order(-est), "var"]),
-    y = InterpolationCutoff / maxVal
-  ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+    ggplot2::geom_line(ggplot2::aes(
+      x = ordered(viData[order(-est), "var"]),
+      y = InterpolationCutoff / maxVal
+    ), color = "orange", linetype = "dashed", linewidth = 2) +
+    ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/diagram_variableimportance_names.png"))
 print(plot_vi_details)
