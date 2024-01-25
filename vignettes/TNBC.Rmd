@@ -80,7 +80,8 @@ agent_info_subset <- data.frame(data_pheno_stat[1],
 
 ```{r paper_K_example, echo=FALSE, eval=paperRun}
 tnbc_fig <- plotPP(TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
-  ptSize = 3, colorGuide = "none", dropAxes = T
+  ptSize = 3, colorGuide = "none", dropAxes = F,
+  xlab='X',ylab='Y'
 )
 
 png(paste0(save_path,"/paper/tnbc_person2_phenotypes.png"), 
@@ -96,14 +97,33 @@ kf <- getKFunction(
 )
 
 k_fig <- ggplot2::ggplot() +
-  ggplot2::geom_line(ggplot2::aes(x = r, y = K1), data = kf, linewidth = 2) +
-  ggplot2::geom_line(ggplot2::aes(x = seq(0, 50, 1), y = pi * seq(0, 50, 1)^2),
-    linewidth = 2, col = "red", linetype = "dashed"
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1, 
+                                  color='K Function', linetype = "K Function"), 
+                     data = kf, linewidth = 2) +
+  ggplot2::geom_line(ggplot2::aes(x = seq(0, 50, 1), y = pi * seq(0, 50, 1)^2, 
+                                  color='Reference', linetype = "Reference"),
+                     linewidth = 2
   ) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.title = ggplot2::element_blank(),
-    axis.text = ggplot2::element_blank()
+    axis.title.y = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(size=26),
+    axis.title.x = ggplot2::element_text(size=30),
+    axis.text.x = ggplot2::element_text(size=26),
+  ) +
+  ggplot2::xlab('Range of Interest for Radius (\U03BCm)') +
+  ggplot2::ylab(NULL) +
+  ggplot2::scale_color_manual(name = NULL, 
+                              values = c("K Function" = "black", 
+                                         "Reference" = "red")) +
+  ggplot2::scale_linetype_manual(name = NULL, 
+                              values = c("K Function" = "solid", 
+                                         "Reference" = "dashed")) +
+  ggplot2::theme(
+    legend.position = c(0.05,0.95), # top left position
+    legend.justification = c(0.05, 0.95), # top left justification
+    legend.box.margin = ggplot2::margin(5, l = 5, unit = "mm") # small margin
   )
 
 png(paste0(save_path,"/paper/tnbc_person2_tumor_mononeu_k.png"), 
@@ -237,6 +257,14 @@ tnbc_image <- plotPP(
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors = clrs[-length(clrs)]
 )
+tnbc_image <- tnbc_image +
+  xlab('X (\U03BCm)') +
+  ylab('Y (\U03BCm)') +
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size=30),
+    axis.text = ggplot2::element_text(size=26)
+  )
+  
 png(paste0(save_path,"/paper/tnbc_image.png"), 
     width = 800, height = 800)
 print(tnbc_image)
@@ -247,6 +275,14 @@ sim_image <- plotPP(
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors = c(clrs[1:2], clrs[16], clrs[3:7], clrs[15], clrs[8:14])
 )
+sim_image <- sim_image +
+  xlab('X (\U03BCm)') +
+  ylab('Y (\U03BCm)') +
+  ggplot2::theme(
+    axis.title = ggplot2::element_text(size=30),
+    axis.text = ggplot2::element_text(size=26)
+  )
+  
 png(paste0(save_path,"/paper/sim_image.png"), 
     width = 800, height = 800)
 print(sim_image)
@@ -307,14 +343,21 @@ subsetPlotSize <- rfcv$AdditionalParams$subsetPlotSize
 
 # Plot Full
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0("OOB (",
+                  specify_decimal(accData$OOB, 2),
+                  "), Guess (",
+                  specify_decimal(accData$guess, 2),
+                  "), Bias (",
+                  specify_decimal(accData$bias, 2), ")"
+)
 plot_full <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
     x = factor(stats::reorder(var, est)),
     y = ifelse(est / maxVal > 1, 1,
-      ifelse(est / maxVal < 0, 0,
-        est / maxVal
-      )
+               ifelse(est / maxVal < 0, 0,
+                      est / maxVal
+               )
     ),
     group = 1
   )
@@ -337,7 +380,8 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -346,14 +390,11 @@ plot_full <- ggplot2::ggplot(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+  # ggplot2::ylab(expression(
+  #   atop(bold("Standardized Variable Importance"),
+  #        italic(sub_val))))
+  ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/noeffect_variableimportance.png"))
 print(plot_full)
@@ -365,6 +406,14 @@ viData <- viData[order(-viData$est), ]
 viData <- viData[1:subsetPlotSize, ]
 
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+  )
 plot_top25 <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -395,8 +444,8 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
-    axis.text.x = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_text(size = 18),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -405,14 +454,9 @@ plot_top25 <- ggplot2::ggplot(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+  ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
+
 
 
 png(paste0(save_path,"/paper/noeffect_variableimportance_top25.png"))
@@ -562,6 +606,14 @@ subsetPlotSize <- rfcv$AdditionalParams$subsetPlotSize
 
 # Plot Full
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+  )
 plot_full <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -592,7 +644,8 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -601,14 +654,8 @@ plot_full <- ggplot2::ggplot(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+  ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/effect_variableimportance.png"))
 print(plot_full)
@@ -620,6 +667,14 @@ viData <- viData[order(-viData$est), ]
 viData <- viData[1:subsetPlotSize, ]
 
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0(
+    "OOB (",
+    specify_decimal(accData$OOB, 2),
+    "), Guess (",
+    specify_decimal(accData$guess, 2),
+    "), Bias (",
+    specify_decimal(accData$bias, 2), ")"
+  )
 plot_top25 <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -650,8 +705,8 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text = ggplot2::element_text(size = 18),
-    axis.text.x = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_text(size = 18),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -660,14 +715,8 @@ plot_top25 <- ggplot2::ggplot(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+  ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/effect_variableimportance_top25.png"))
 print(plot_top25)
@@ -712,6 +761,13 @@ subsetPlotSize <- rfcv$AdditionalParams$subsetPlotSize
 
 # Plot Full
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0("OOB (",
+                  specify_decimal(accData$OOB, 2),
+                  "), Guess (",
+                  specify_decimal(accData$guess, 2),
+                  "), Bias (",
+                  specify_decimal(accData$bias, 2), ")"
+)
 plot_full <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -742,8 +798,8 @@ plot_full <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    # axis.text = ggplot2::element_text(size = 18),
-    axis.text = ggplot2::element_blank(),
+    axis.text.y = ggplot2::element_blank(),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 20)
@@ -752,14 +808,8 @@ plot_full <- ggplot2::ggplot(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+  ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/tnbc_variableimportance.png"))
 print(plot_full)
@@ -771,6 +821,13 @@ viData <- viData[order(-viData$est), ]
 viData <- viData[1:subsetPlotSize, ]
 
 maxVal <- max(InterpolationCutoff, NoiseCutoff, viData$est)
+sub_val <- paste0("OOB (",
+                  specify_decimal(accData$OOB, 2),
+                  "), Guess (",
+                  specify_decimal(accData$guess, 2),
+                  "), Bias (",
+                  specify_decimal(accData$bias, 2), ")"
+)
 plot_top25 <- ggplot2::ggplot(
   data = viData,
   mapping = ggplot2::aes(
@@ -801,8 +858,8 @@ plot_top25 <- ggplot2::ggplot(
   ggplot2::ylab(NULL) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.text.x = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_text(size = 14),
+    axis.text.y = ggplot2::element_text(size = 15),
+    axis.text.x = ggplot2::element_text(size = 14),
     axis.ticks.y = ggplot2::element_blank(),
     panel.grid.major.y = ggplot2::element_blank(),
     axis.title = ggplot2::element_text(size = 17)
@@ -811,14 +868,8 @@ plot_top25 <- ggplot2::ggplot(
     x = ordered(viData[order(-est), "var"]),
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
-  ggplot2::ylab(paste0(
-    "OOB (",
-    specify_decimal(accData$OOB, 2),
-    "), Guess (",
-    specify_decimal(accData$guess, 2),
-    "), Bias (",
-    specify_decimal(accData$bias, 2), ")"
-  ))
+  ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
+                            atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/tnbc_variableimportance_top25.png"))
 print(plot_top25)
@@ -931,18 +982,29 @@ return_plot <-
   ggplot2::theme_bw() +
   ggplot2::theme(
     axis.text = ggplot2::element_text(size = 18),
-    axis.text.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_blank(),
+    #axis.text.y = ggplot2::element_blank(),
+    #axis.ticks.y = ggplot2::element_blank(),
+    #panel.grid.major.y = ggplot2::element_blank(),
     # axis.title = ggplot2::element_text(size = 22),
-    axis.title = ggplot2::element_blank(),
-    legend.position = "none"
-  ) # +
-# ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
-#                                 group = outcome),
-#                    data = data_avg, linewidth = 1.25,
-#                    color = "black", linetype = "dashed"
-# )
+    #axis.title = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 22),
+    legend.position = "none",
+    legend.text = ggplot2::element_text(size=18)
+  ) +
+  ggplot2::xlab('Range of Interest for Radius (\U03BCm)') +
+  ggplot2::scale_colour_hue(name = NULL,labels=c('Mixed','Compartmentalized')) +
+  ggplot2::theme(
+    legend.position = c(0.05,0.95), # top left position
+    legend.justification = c(0.05, 0.95), # top left justification
+    legend.box.margin = ggplot2::margin(5, l = 5, unit = "mm") # small margin
+  ) +
+  ggplot2::annotate(geom="text", x=15, y=53000, label='* Bold are the respective means',
+                    size=5) +
+ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
+                                group = outcome),
+                   data = data_avg, linewidth = 1.25,
+                   color = "black", linetype = "dashed"
+)
 
 png(paste0(save_path,"/paper/TNBC_sig_KFunctions.png"))
 print(return_plot)
@@ -1055,18 +1117,29 @@ return_plot <-
   ggplot2::theme_bw() +
   ggplot2::theme(
     axis.text = ggplot2::element_text(size = 18),
-    axis.text.y = ggplot2::element_blank(),
-    axis.ticks.y = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_blank(),
+    #axis.text.y = ggplot2::element_blank(),
+    #axis.ticks.y = ggplot2::element_blank(),
+    #panel.grid.major.y = ggplot2::element_blank(),
     # axis.title = ggplot2::element_text(size = 22),
-    axis.title = ggplot2::element_blank(),
-    legend.position = "none"
-  ) # +
-# ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
-#                                 group = outcome),
-#                    data = data_avg, linewidth = 1.25,
-#                    color = "black", linetype = "dashed"
-# )
+    #axis.title = ggplot2::element_blank(),
+    axis.title = ggplot2::element_text(size = 22),
+    legend.position = "none",
+    legend.text = ggplot2::element_text(size=18)
+  ) +
+  ggplot2::xlab('Range of Interest for Radius (\U03BCm)') +
+  ggplot2::scale_colour_hue(name = NULL,labels=c('Mixed','Compartmentalized')) +
+  ggplot2::theme(
+    legend.position = c(0.05,0.95), # top left position
+    legend.justification = c(0.05, 0.95), # top left justification
+    legend.box.margin = ggplot2::margin(5, l = 5, unit = "mm") # small margin
+  ) +
+  ggplot2::annotate(geom="text", x=15, y=73000, label='* Bold are the respective means',
+                    size=5) +
+ggplot2::geom_line(ggplot2::aes(x = r, y = pi * r^2,
+                                group = outcome),
+                   data = data_avg, linewidth = 1.25,
+                   color = "black", linetype = "dashed"
+)
 
 png(paste0(save_path,"/paper/TNBC_insig_KFunctions.png"))
 print(return_plot)
