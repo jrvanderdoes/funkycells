@@ -17,9 +17,6 @@
 #'     throughout the analysis. Default is 0.05.
 #' @param silent (Optional) Boolean indicating if output should be suppressed
 #'     when the function is running. Default is FALSE.
-#' @param rGuessSims (Optional) Numeric value indicating the number of
-#'     simulations used for guessing and creating the guess estimate on the
-#'     plot. Default is 500.
 #' @param subsetPlotSize (Optional) Numeric indicating the number of top
 #'     variables to include in a subset graph. If this is larger than the total
 #'     number then no subset graph will be produced. Default is 25.
@@ -356,6 +353,7 @@ funkyModel <- function(data, K = 10,
 #'  conditionally on accepting the previous values.
 #'
 #' @inheritParams funkyModel
+#' @param numCondVI Number of VI runs for conditionality.
 #'
 #' @return List with the following items:
 #'     \enumerate{

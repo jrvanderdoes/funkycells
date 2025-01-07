@@ -40,6 +40,10 @@ layer based on the number of agents of the type. Default is TRUE.}
 
 \item{colors}{(Optional) Vector of colors for the points. Default is NULL, or
 ggplot2 selected colors.}
+
+\item{xlab}{Label for x-axis.}
+
+\item{ylab}{Label for y-axis.}
 }
 \value{
 ggplot2 plot of the spatial point process.

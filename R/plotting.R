@@ -18,6 +18,8 @@
 #'     layer based on the number of agents of the type. Default is TRUE.
 #' @param colors (Optional) Vector of colors for the points. Default is NULL, or
 #'     ggplot2 selected colors.
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
 #'
 #' @return ggplot2 plot of the spatial point process.
 #' @export

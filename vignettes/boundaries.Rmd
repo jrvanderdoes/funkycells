@@ -1,0 +1,252 @@
+---
+title: "boundaries"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{boundaries}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(funkycells)
+library(alphahull)
+library(sp)
+```
+
+```{r functions}
+
+ahull2poly <- function(dat, hull, min_cells=10){
+  
+  arc2line <- function(center, r, vector, theta, npoints = 100) {
+    # Get the angles at the extremes of the arcs
+    angles <- anglesArc(vector, theta)
+    # Generate sequence of angles along the arc to determine the points
+    seqang <- seq(angles[1], angles[2], length = npoints)
+    # Generate x coordinates for points along the arc
+    x <- center[1] + r * cos(seqang)
+    # Generate y coordinates for points along the arc
+    y <- center[2] + r * sin(seqang)
+    coords.xy <- cbind(x,y)
+    line <- Line(coords = coords.xy)
+    return(line)
+  }
+  
+  ahull2lines <- function(hull){
+    arclist <- hull$arcs
+    lines <- list()
+    for (i in 1:nrow(arclist)) {
+      # Extract the attributes of arc i
+      center_i <- arclist[i, 1:2]
+      radius_i <- arclist[i, 3]
+      vector_i <- arclist[i, 4:5]
+      theta_i <- arclist[i, 6]
+      # Convert arc i into a Line object
+      line_i <- arc2line(center = center_i, r = radius_i, vector = vector_i, theta = theta_i)
+      list_length <- length(lines)
+      if(list_length > 0){
+        # If a line has already been added to the list of lines
+        # Define last_line_coords as the coordinates of the last line added to the list before the ith line
+        last_line_coords <- lines[[list_length]]@coords
+      }
+      if(i == 1){
+        # Add the first line to the list of lines
+        lines[[i]] <- line_i
+      } else if(isTRUE(all.equal(line_i@coords[1,], last_line_coords[nrow(last_line_coords),]))){
+        # If the first coordinate in the ith line is equal to the last coordinate in the previous line
+        # then those lines should be connected
+        # Row bind the coordinates for the ith line to the coordinates of the previous line in the list
+        lines[[list_length]]@coords <- rbind(last_line_coords, line_i@coords[2:nrow(line_i@coords),])
+      } else {
+        # If the first coordinate in the ith line does not match the last coordinate in the previous line
+        # then the ith line represents a new line
+        # Add the ith line to the list as a new element
+        lines[[length(lines) + 1]] <- line_i
+      }
+    }
+    # Convert the list of lines to a Line object
+    lines <- Lines(lines, ID = 'l')
+    # Convert the Line object to a SpatialLines object
+    sp_lines <- SpatialLines(list(lines))
+    return(sp_lines)
+  }
+  
+  spLines2poly <- function(dat, sp_lines, min_cells){
+    # Extract the lines slot
+    lines_slot <- sp_lines@lines[[1]]
+    # Create a list of booleans indicating whether a given Line represents a polygon
+    poly_bool <- sapply(lines_slot@Lines, function(x){
+      # cat(1,' ')
+      coords <- lines_slot@Lines[[1]]@coords
+      # Check if the first coordinate in the line is the same as the last
+      all.equal(coords[1,], coords[nrow(coords),])
+    })
+    # Pull out the lines that form polygons
+    poly_lines_slot <- sp_lines@lines
+    poly_lines_slot[[1]]@Lines[!poly_bool] <- NULL
+    
+    
+    # Create SpatialPolygons
+    polys <- lapply(1:length(poly_lines_slot[[1]]@Lines), 
+                    function(x, size){
+                      res <- slot(poly_lines_slot[[1]]@Lines[[x]], "coords")
+                      
+                      # Remove if poly around a single cell
+                      #   Set to make it length 100 (size)
+                      if(nrow(res) <= size)
+                        return(NULL)
+                      Polygon(res)
+                    }, size=100)
+    while(TRUE){
+      cat('- Removing Small Groups -\n')
+      # Remove all small groups
+      missing_vals <- sapply(polys, is.null)
+      if(length(missing_vals)>0)
+        polys[sapply(polys, is.null)] <- NULL
+      sp_polys <- SpatialPolygons(
+        list(Polygons(polys, ID = "1")))
+      tmp <- get_edge_distance(dat, sp_polys, cutoff=10)
+      
+      # Remove all groups with less than min_cells
+      tab_dat <- table(tmp[[1]]$polygons[tmp[[1]]$polygons!=0])
+      polys_accept <- as.numeric(which(tab_dat>=min_cells)) #+1
+      
+      len_poly_full <- length(polys)
+      if(length(polys_accept)>0)
+        polys[-polys_accept] <- NULL
+      
+      if(len_poly_full==length(polys)) break
+    }
+    
+    SpatialPolygons(
+      list(Polygons(polys, ID = "1")))
+  }
+  
+  # Convert the alpha hull to SpatialLines
+  hull2SpatialLines <- ahull2lines(hull)
+  # Convert SpatialLines to SpatialPolygon
+  spLines2poly(dat, sp_lines = hull2SpatialLines, min_cells)
+}
+
+get_polygons <- function(hullpoly){
+  polygons_vals <- hullpoly@polygons[[1]]@Polygons
+  polygons_vals <- sapply(1:length(polygons_vals), function(idx, polyList){
+    if(!polyList[[idx]]@hole)
+      return(polyList[[idx]])
+  }, polyList=polygons_vals )
+  missing_vals <- which(sapply(polygons_vals, is.null))
+  if(length(missing_vals)>0)
+    polygons_vals <- polygons_vals[-which(sapply(polygons_vals, is.null))]
+  
+  polygons_vals
+}
+
+find_centers <- function(hullpoly){
+  
+  polygons_vals <- get_polygons(hullpoly)
+  
+  t(sapply(1:length(polygons_vals), function(idx, polyList){
+    colMeans(polyList[[idx]]@coords)
+  }, polyList=polygons_vals ) )
+}
+
+get_edge_distance <- function(dat, hullpoly, cutoff=10){
+  
+  polygons_vals <- get_polygons(hullpoly)
+  
+  dat$polygons <- NA
+  min_df <- sapply(1:length(polygons_vals), 
+                   function(idx, dat, polygons_vals){
+                     
+                     apply(dat[,1:2],MARGIN = 1,function(y,polygons_coord){
+                       res <- sp::point.in.polygon(y[1],y[2],
+                                                   polygons_coord[,1],
+                                                   polygons_coord[,2])
+                       # points(dat[res>0,1:2], pch=16,col = center_cols[idx])
+                       if(res>0) return(0)
+                       
+                       tmp <- do.call("rbind", replicate(nrow(polygons_coord), 
+                                                         y,
+                                                         simplify = FALSE)) -
+                         polygons_coord
+                       min(sqrt(rowSums(tmp^2)))
+                     },polygons_coord=polygons_vals[[idx]]@coords)
+                     
+                   },dat=dat,polygons_vals=polygons_vals)
+  min_df1 <- as.numeric( 
+    apply(min_df,1,function(y,cutoff){
+      if(min(y)<cutoff) return(which.min(y))
+      
+      0
+    }, cutoff = cutoff) )
+  min_df2 <- as.numeric( 
+    apply(min_df,1,function(y,cutoff){
+      min(y)
+    }, cutoff = cutoff) )
+  
+  dat$polygons <- min_df1
+  dat$polygons_dist <- min_df2
+  
+  list(dat, min_df)
+}
+
+```
+
+```{r testing}
+## Data
+data <- TNBC_pheno[TNBC_pheno$Person == 1, -c(1,2)]
+dat <- data[data$Phenotype=='B',]
+dat1 <- data[data$Phenotype=='Tumor',]
+
+# Generate Alphahull and the shape of it
+alphahull <- alphahull::ahull(dat[,1:2], alpha = 20)
+hullpoly <- ahull2poly(dat, hull = alphahull,min_cells = 10)
+
+centers <- find_centers(hullpoly)
+center_cols <- c('black',RColorBrewer::brewer.pal(max(3,nrow(centers)),'Set1'))
+center_cols <- center_cols[1:(length(center_cols)+1)]
+distances_dat <- get_edge_distance(dat, hullpoly, 10)
+
+## Plot figure shapes
+# plot(dat[,1:2], pch = 19, col = "darkseagreen")
+plot(dat[,1:2], pch = 19, col = "white")
+# plot(alphahull, lwd = 5, col = "gray", add = TRUE)
+plot(hullpoly, border = "magenta", add = TRUE)
+# points(centers, pch = 3, lwd=5,col = center_cols[-1])
+points(dat[,1:2], pch=16, 
+       col = center_cols[distances_dat[[1]]$polygons+1])
+
+## Look at different cell types
+plot(dat1[,1:2], pch = 19, col = "white")
+plot(hullpoly, border = "magenta", add = TRUE)
+distances_dat1 <- get_edge_distance(dat1, hullpoly,10)
+points(dat1[,1:2], pch=16, 
+       col = center_cols[distances_dat1[[1]]$polygons+1])
+```
+
+```{r K_functions}
+# K-functions to edges of each group
+#   Groups defined with XXX cells. 
+#   Only outside cells used for K-functions.
+get_group_K <- function(dat,hullpoly){
+  
+  for(i in 1:ncol(dat)){
+    # Replicate similar code to below (but to tumor)
+    
+    # KFunction <- getKFunction(
+    #   agents = c("B", "Tumor"), unit = "Person",
+    #   data = dat[TNBC_pheno$Person == 1, -1],
+    #   rCheckVals = seq(0, 50, 1),
+    #   edgeCorrection = "isotropic"
+    # )
+  }
+}
+
+# get_group_K(distances_dat[[2]], hullpoly)
+```

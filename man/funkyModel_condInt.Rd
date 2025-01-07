@@ -63,6 +63,8 @@ random forest model. Default is 500.}
 \item{method}{(Optional) Method for rpart tree to build random forest.
 Default is "class". Currently this is the only tested method. This will
 be expanded in future releases.}
+
+\item{numCondVI}{Number of VI runs for conditionality.}
 }
 \value{
 List with the following items:

@@ -25,9 +25,11 @@ BugReports: https://github.com/jrvanderdoes/funkycells/issues
 Depends: 
     R (>= 2.10)
 Imports: 
+    alphahull,
     fda,
     ggplot2,
     rpart,
+    sp,
     spatstat.explore,
     spatstat.geom,
     stats,
@@ -36,9 +38,11 @@ Imports:
 Suggests: 
     knitr,
     pROC,
+    RColorBrewer,
     rmarkdown,
     scales,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    tidyverse
 VignetteBuilder: 
     knitr
 Config/testthat/edition: 3

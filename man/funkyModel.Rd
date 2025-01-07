@@ -62,10 +62,6 @@ random forest model. Default is 500.}
 \item{method}{(Optional) Method for rpart tree to build random forest.
 Default is "class". Currently this is the only tested method. This will
 be expanded in future releases.}
-
-\item{rGuessSims}{(Optional) Numeric value indicating the number of
-simulations used for guessing and creating the guess estimate on the
-plot. Default is 500.}
 }
 \value{
 List with the following items:
