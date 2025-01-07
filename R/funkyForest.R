@@ -139,6 +139,8 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #'
 #' @return Data.frame which is the updated totVarImportance adding in the new
 #'     tree information.
+#'
+#' @keywords internal
 #' @noRd
 .computeTotalVarImportance <- function(tree, totVarImportance) {
   tmp1 <- as.data.frame(tree$variable.importance)
@@ -175,6 +177,8 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #' @param model (Optional) Random forest model from funkyForest.
 #'
 #' @return grid.arrange containing two ggplots
+#'
+#' @keywords internal
 #' @noRd
 .plotVariableImportance <- function(varImportanceData = NULL, model = NULL) {
   if ((is.null(varImportanceData) && is.null(model)) ||
@@ -213,6 +217,8 @@ funkyForest <- function(data, outcome = colnames(data)[1],
 #' @param varImportanceData Data.frame for the variable importance information.
 #'
 #' @return grid.arrange containing ggplot
+#'
+#' @keywords internal
 #' @noRd
 .plotImportance <- function(varImportanceData) {
   # Add this to prevent NOTEs when building package
@@ -413,6 +419,8 @@ predict_funkyForest <- function(model, data_pred, type = "all", data = NULL) {
 #' @param names Vector of names to get underlying function on each
 #'
 #' @return Vector of underlying functions for each in name.
+#'
+#' @keywords internal
 #' @noRd
 .getUnderlyingVariable <- function(names, returnUnique = TRUE) {
   if (returnUnique) {

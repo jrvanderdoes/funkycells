@@ -11,7 +11,8 @@
 #' @param synthetics (Optional) Numeric indicating the number of synthetics for
 #'  variables (one set of sythethics for functional variables and one for each
 #'  meta-variable). If 0 are used, the data cannot be aligned properly. Default
-#'  is 100.
+#'  is 100. The input is 1st B (number of synthetic vars per group), and 2nd H
+#'  (number of loops to align and get quantiles).
 #' @param alpha (Optional) Numeric in (0,1) indicating the significance used
 #'     throughout the analysis. Default is 0.05.
 #' @param silent (Optional) Boolean indicating if output should be suppressed
@@ -66,7 +67,6 @@ funkyModel <- function(data, K = 10,
                        synthetics = 100,
                        alpha = 0.05,
                        silent = FALSE,
-                       rGuessSims = 500,
                        subsetPlotSize = 25, nTrees = 500,
                        method = "class") {
   if(length(synthetics)==1){
@@ -399,7 +399,6 @@ funkyModel_condInt <- function(data, K = 10,
                                synthetics = 100,
                                alpha = 0.05,
                                silent = FALSE,
-                               rGuessSims = 500,
                                subsetPlotSize = 25, nTrees = 500,
                                method = "class",
                                numCondVI = 5) {
@@ -723,6 +722,8 @@ funkyModel_condInt <- function(data, K = 10,
 #'     variables.
 #'
 #' @return Data.frame with var, est, and sd as columns
+#'
+#' @keywords internal
 #' @noRd
 .summData <- function(dat) {
   data.frame(
@@ -744,8 +745,10 @@ funkyModel_condInt <- function(data, K = 10,
 #'     method
 #'
 #' @return Data.frame with OOB, guess, and bias accuracy estimates
+#'
+#' @keywords internal
 #' @noRd
-.computeModelAccuracy <- function(oobAcc, outcomes, rGuessSims = 500) {
+.computeModelAccuracy <- function(oobAcc, outcomes) {
   optVals <- as.numeric(table(outcomes))
   n <- length(outcomes)
 
@@ -793,6 +796,8 @@ funkyModel_condInt <- function(data, K = 10,
 #'     be created
 #'
 #' @return List with VI figures (one or two)
+#'
+#' @keywords internal
 #' @noRd
 .generateVIPlot <- function(viData, accData, NoiseCutoff,
                             InterpolationCutoff, subsetPlotSize) {
@@ -831,6 +836,8 @@ funkyModel_condInt <- function(data, K = 10,
 #' @param InterpolationCutoff Vector of numerics for the curved cutoff
 #'
 #' @return ggplot2 figure object for the VI plot
+#'
+#' @keywords internal
 #' @noRd
 .plotVI <- function(viData, accData, NoiseCutoff,
                     InterpolationCutoff) {
@@ -904,6 +911,8 @@ funkyModel_condInt <- function(data, K = 10,
 #'  1. data: Data.frame with outcome, unit, and data (may be only permuted or real
 #'    and permuted based on settings)
 #'  2. metaNames: Vector of the metaNames in the data
+#'
+#' @keywords internal
 #' @noRd
 .permuteData <- function(data_base, outcome, unit,
                          synthetics, KFunctions, metaNames,

@@ -3,6 +3,7 @@
 export(computePseudoROCCurves)
 export(funkyForest)
 export(funkyModel)
+export(funkyModel_condInt)
 export(getCountData)
 export(getKFunction)
 export(getKsPCAData)

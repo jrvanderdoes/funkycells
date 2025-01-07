@@ -12,7 +12,9 @@ plotPP(
   ylim = c(min(data[, 2]), max(data[, 2])),
   dropAxes = FALSE,
   layerBasedOnFrequency = TRUE,
-  colors = NULL
+  colors = NULL,
+  xlab = NULL,
+  ylab = NULL
 )
 }
 \arguments{

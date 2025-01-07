@@ -142,6 +142,8 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
 #'    the data to a bspline basis.
 #'
 #' @return Data.frame with the outcomes, units, then principal component scores.
+#'
+#' @keywords internal
 #' @noRd
 .getPCs <- function(rKData, agents, nPCs, nbasis = 21, silent = FALSE) {
   # Setup Data
@@ -198,6 +200,8 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
 #'     dropped.
 #'
 #' @return A data.frame with the PCs, now including the NA rows.
+#'
+#' @keywords internal
 #' @noRd
 .insertMissingRows <- function(data_add, insertRows) {
   data_return <- matrix(

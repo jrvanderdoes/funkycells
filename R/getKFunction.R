@@ -199,6 +199,8 @@ getKFunction <- function(data, agents, unit,
 #'         \item newK: newK evaluated at the (potentially) new r values
 #'         \item r: new master vector of evaluated radius r values
 #'     }
+#'
+#' @keywords internal
 #' @noRd
 .alignKr <- function(K, newK, r, newr) {
   # On the first loop (i.e. no existing data)
@@ -268,6 +270,8 @@ getKFunction <- function(data, agents, unit,
 #'
 #' @return Data.frame with the first column being the evaluated r and the rest
 #'     being the evaluated K functions for each unit.
+#'
+#' @keywords internal
 #' @noRd
 .rK2DF <- function(K_list, r_list) {
   # Define r

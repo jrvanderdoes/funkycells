@@ -341,6 +341,8 @@ simulateMeta <- function(data,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and replicate.
+#'
+#' @keywords internal
 #' @noRd
 .generateCSRPatterns <- function(outcomeName,
                                  unitsPerOutcome,
@@ -398,6 +400,8 @@ simulateMeta <- function(data,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and replicate.
+#'
+#' @keywords internal
 #' @noRd
 .generateInvClusterPatterns <- function(outcomeName,
                                         unitsPerOutcome,
@@ -458,6 +462,8 @@ simulateMeta <- function(data,
 #'
 #' The data.frame has columns for outcome, x coordinate, y coordinate, agent
 #'     type, unit, and replicate.
+#'
+#' @keywords internal
 #' @noRd
 .clusterAroundAgents <- function(clusterData, agentVarData,
                                  outcomeName,
@@ -536,6 +542,8 @@ simulateMeta <- function(data,
 #' @return Data.frame with placed types.
 #'
 #' The data.frame has 3 columns, x, y, and type.
+#'
+#' @keywords internal
 #' @noRd
 .placeClusteredPts <- function(currXY, agent, numPts, varValue,
                                xRange = c(0, 1), yRange = c(0, 1)) {

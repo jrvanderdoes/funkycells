@@ -19,6 +19,8 @@
 #'
 #' @return Data.frame with x, y, and type specified. Each row is a new
 #'     point.
+#'
+#' @keywords internal
 #' @noRd
 .generateCSRData <- function(xRange = c(0, 1), yRange = c(0, 1),
                              kappa = 25, requireOne = TRUE, type = "A") {

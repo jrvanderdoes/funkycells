@@ -4,8 +4,12 @@
 #'  worth trying later.
 #'
 #' Internal note: Few lines temporarily saved:
-#'           uniqx <- unique(na.omit(x))
-#'           uniqx[which.max(tabulate(match(x, uniqx)))]
+#'  \itemize{
+#'    \item uniqx <- unique(na.omit(x))
+#'    \item uniqx[which.max(tabulate(match(x, uniqx)))]
+#'  }
+#'
+#'
 #'
 #' @param x Vector of some items
 #'
@@ -16,6 +20,8 @@
 #' m2 <- .getMode(c("A", "B", "C", "A", "B"))
 #' m3 <- .getMode(c(1, 2, 3, "A", "A"))
 #' m4 <- .getMode(c(1, 2, 3, "A", "A", 2, 2, 2))
+#'
+#' @keywords internal
 #' @noRd
 .getMode <- function(x) {
   a <- table(x)
@@ -41,6 +47,8 @@
 #' @param listsDFCol String with column name for matching column in lists
 #'
 #' @return Data.frame df with values from lists appended
+#'
+#' @keywords internal
 #' @noRd
 .mergeListsToDF <- function(df, lists, dfCol, listsDFCol) {
   for (i in 1:length(lists)) {
@@ -67,6 +75,8 @@
 #'
 #' @examples
 #' gf <- .getFolds(1:10, 3)
+#'
+#' @keywords internal
 #' @noRd
 .getFolds <- function(x, K) {
   if (K > length(x)) {
@@ -94,6 +104,8 @@
 #' .specify_decimal(10.123, 1)
 #' .specify_decimal(10.123, 3)
 #' .specify_decimal(10.123, 5)
+#'
+#' @keywords internal
 #' @noRd
 .specify_decimal <- function(x, k) {
   trimws(format(round(x, k), nsmall = k))
