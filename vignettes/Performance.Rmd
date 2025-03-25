@@ -1,0 +1,558 @@
+---
+title: "Performance"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Performance}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(funkycells)
+library(tidyverse)
+```
+
+
+The following chunks of code look into the rate of detection for a significant interaction compared to the other non-significant interactions.
+
+This first chunk is the function used to generate the data.
+```{r gen_alt}
+simulate_Data_numCells_alt <- function(seed=NA, numCells=1){
+  ## SET SEED
+  if(!is.na(seed)){
+    set.seed(seed)
+  }
+  
+  dat_use <- data.frame("outcome" = c(0, 1),
+                        "c1" = c(1 / 40, 1 / (4*40)))
+  kappas <- rep(NA,numCells)
+  kappas[1] <- rbinom(1, 80, 0.5)
+  for(i in 2:numCells){
+    tmp_names <- colnames(dat_use)
+    dat_use <- cbind(dat_use,c(1/40,1/40))
+    colnames(dat_use) <- c(tmp_names,paste0('c',i))
+    
+    kappas[i] <- rbinom(1, 80, 0.5)
+  }
+  
+  ## SIMULATE SPATIAL
+  dat <- simulatePP(
+    agentVarData = dat_use,
+    agentKappaData = data.frame(
+      "agent" = paste0("c", 1:numCells),
+      "clusterAgent" = rep(NA, numCells),
+      "kappa" = kappas
+    ),
+    unitsPerOutcome = 10,
+    replicatesPerUnit = 1,
+    silent = T
+  )
+  #dat$replicate <- 1
+  
+  cells <- paste0("c", 1:numCells)
+  cells_interactions <- rbind(
+    data.frame(t(combn(cells, 2))),
+    data.frame("X1" = cells, "X2" = cells)
+  )
+  
+  pcaData <- getKsPCAData(
+    data = dat, replicate = "replicate",
+    agents_df = cells_interactions,
+    xRange = c(0, 1), yRange = c(0, 1),
+    silent = T
+  )
+  
+  pcaData
+}
+```
+
+The following chunk simulates and plots the results.
+```{r fit_plot_alt,eval=FALSE}
+totalVars <- c(4, 16, 8, 24)
+nTrials <- 100
+
+results_complete <- data.frame()
+
+for(totalVars_idx in 1:length(totalVars)){
+  cat(paste0(totalVars[totalVars_idx],': '))
+  
+  cells <- paste0("c", 1:totalVars[totalVars_idx])
+  cells_interactions <- rbind(
+    data.frame(t(combn(cells, 2))),
+    data.frame("X1" = cells, "X2" = cells)
+  )
+  
+  results <- data.frame('var'=paste0(cells_interactions$X1,'_',cells_interactions$X2),
+                        'noise'=0,
+                        'int'=0,'both'=0,'total'=0)
+  for(i in 1:nTrials){
+    cat(paste0(i,', '))
+    set.seed(totalVars_idx*1234+i*1234+123456789)
+    data <- simulate_Data_numCells_alt(numCells=totalVars[totalVars_idx])
+    
+    res <- funkyModel(
+      data = data,
+      outcome = "outcome",
+      unit = "unit",
+      synthetics = c(100, 100),
+      nTrees = 500,
+      silent = T,
+      K=10
+    )
+    
+    tmp_df <- res$VariableImportance
+    tmp_df <- tmp_df[order(-tmp_df$est),]
+    results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                    tmp_df$est >= res$NoiseCutoff ,'var'],"both"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                      tmp_df$est >= res$NoiseCutoff ,'var'],"both"] + 1
+    results$total <- results$total + 1
+    
+  }
+  cat(paste0('\n'))
+  
+  results_complete <- 
+    rbind(results_complete,
+          cbind(results[,-ncol(results)],'vars'=totalVars[totalVars_idx])
+          )
+}
+
+# Organize results
+results_plot$notImp <- results_plot$var=='c1_c1'
+
+
+tmp <- results_plot %>%
+  filter(!notImp) %>%
+  aggregate(both ~ vars,FUN=mean) %>%
+  mutate(var='MeanNI')
+
+results_plot1 <-rbind(
+  results_plot[results_plot$var=='c1_c1',
+               c('var',"both","vars")],
+  tmp
+)
+
+# Plot 
+ggplot(results_plot1) +
+  geom_line(aes(x = vars,y=both/100,color=var),
+            linewidth=1) +
+  geom_point(aes(x = vars,y=both/100,color=var), 
+             size=3) +
+  theme_bw() +
+  theme(legend.text = element_text(size=20),
+        legend.title = element_text(size=24),
+        axis.text = element_text(size=20),
+        axis.title = element_text(size=24)) +
+  xlab('Number of Cell Types') +
+  ylab('Percent of Detection') +
+  labs(color='Var') +
+  guides(col='none') +
+  ylim(c(0,1)) +
+  scale_x_continuous(breaks=c(0,4,8,12,16,20,24))
+```
+
+
+The following code simulates data under the null to specifically examine the false discovery rate.
+```{r dev_null}
+simulate_Data_numCells_null <- function(seed=NA, numCells=1){
+  ## SET SEED
+  if(!is.na(seed)){
+    set.seed(seed)
+  }
+  
+  dat_use <- data.frame("outcome" = c(0, 1),
+                        "c1" = c(1 / 40, 1 / 40))
+  kappas <- rep(NA,numCells)
+  kappas[1] <- rbinom(1, 80, 0.5)
+  for(i in 2:numCells){
+    tmp_names <- colnames(dat_use)
+    dat_use <- cbind(dat_use,c(1/40, 1/40))
+    colnames(dat_use) <- c(tmp_names,paste0('c',i))
+    
+    kappas[i] <- rbinom(1, 80, 0.5)
+  }
+  
+  ## SIMULATE SPATIAL
+  dat <- simulatePP(
+    agentVarData = dat_use,
+    agentKappaData = data.frame(
+      "agent" = paste0("c", 1:numCells),
+      "clusterAgent" = rep(NA, numCells),
+      "kappa" = kappas
+    ),
+    unitsPerOutcome = 17,
+    replicatesPerUnit = 1,
+    silent = T
+  )
+  #dat$replicate <- 1
+  
+  cells <- paste0("c", 1:numCells)
+  cells_interactions <- rbind(
+    data.frame(t(combn(cells, 2))),
+    data.frame("X1" = cells, "X2" = cells)
+  )
+  
+  pcaData <- getKsPCAData(
+    data = dat, replicate = "replicate",
+    agents_df = cells_interactions,
+    xRange = c(0, 1), yRange = c(0, 1),
+    silent = T
+  )
+  
+  pcaData
+}
+
+```
+
+Below runs to code to see false discovery when $$H=100$$.
+```{r fit_table100, eval=FALSE}
+totalVars <- c(4, 16)
+nTrials <- 100
+
+results_complete <- data.frame()
+results_list <- results1_list <- list()
+
+for(totalVars_idx in 1:length(totalVars)){
+  cat(paste0(totalVars[totalVars_idx],': '))
+  
+  cells <- paste0("c", 1:totalVars[totalVars_idx])
+  cells_interactions <- rbind(
+    data.frame(t(combn(cells, 2))),
+    data.frame("X1" = cells, "X2" = cells)
+  )
+  
+  results <- data.frame('var'=paste0(cells_interactions$X1,'_',cells_interactions$X2),
+                        'noise'=0, 'int'=0,'both'=0,
+                        'total'=0,
+                        'noiseSD'=0,'intSD'=0,'bothSD'=0)
+  results1 <- data.frame()
+  for(i in 1:nTrials){
+    cat(paste0(i,', '))
+    set.seed(totalVars_idx*1234+i*1234+123459)
+    data <- simulate_Data_numCells_null(numCells=totalVars[totalVars_idx])
+    
+    res <- funkyModel(
+      data = data,
+      outcome = "outcome",
+      unit = "unit",
+      synthetics = c(100, 100),
+      nTrees = 500,
+      silent = TRUE,
+      K=10
+    )
+    
+    tmp_df <- res$VariableImportance
+    tmp_df <- tmp_df[order(-tmp_df$est),]
+    results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                    tmp_df$est >= res$NoiseCutoff ,'var'],"both"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                      tmp_df$est >= res$NoiseCutoff ,'var'],"both"] + 1
+    
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var'],"noiseSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var'],"noiseSD"] + 1
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var'],"intSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var'],"intSD"] + 1
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                    tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'],"bothSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                      tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'],"bothSD"] + 1
+    results$total <- results$total + 1
+    
+    results1 <- 
+      rbind(results1, 
+            data.frame('iter'=i,
+                       'numVars'=totalVars[totalVars_idx],
+                       'OverNoi'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$NoiseCutoff,'var']),
+                       'OverInt'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$InterpolationCutoff,'var']),
+                       'OverBot'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                                tmp_df$est >= res$NoiseCutoff ,'var']),
+                       'maxNoi'= as.numeric(tmp_df$est[1] >= res$NoiseCutoff),
+                       'maxInt'= as.numeric(tmp_df$est[1] >= res$InterpolationCutoff[1]),
+                       'maxBot'= as.numeric(tmp_df$est[1] >= 
+                                              max(res$NoiseCutoff,res$InterpolationCutoff[1])),
+                       'sdNoi'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var']),
+                       'sdInt'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var']),
+                       'sdBot'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                               tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'])
+                       
+            ))
+  }
+  cat(paste0('\n'))
+
+  results_list[[totalVars_idx]] <- results
+  results1_list[[totalVars_idx]] <- results1
+}
+
+display_res <- data.frame()
+for(i in 1:length(totalVars)){
+  display_res <- 
+    rbind(display_res,
+          results1_list[[i]] %>%
+            mutate(Noise = OverNoi>0,
+                   Interp= OverInt>0,
+                   Both = OverBot>0,
+                   maxNoise = maxNoi>0,
+                   maxInterp= maxInt>0,
+                   maxBoth = maxBot>0,
+                   sdNoise = sdNoi>0,
+                   sdInterp= sdInt>0,
+                   sdBoth = sdBot>0) %>%
+            group_by(numVars) %>%
+            summarise(across(Noise:sdBoth, ~ 
+                               mean(., na.rm = TRUE))) %>%
+            as.data.frame()
+    )
+}
+
+display_res100 <- display_res
+display_res100
+```
+
+Below runs to code to see false discovery when $$H=200$$.
+```{r fit_table200, eval=FALSE}
+totalVars <- c(4, 16)
+nTrials <- 100
+
+results_complete <- data.frame()
+results_list <- results1_list <- list()
+
+for(totalVars_idx in 1:length(totalVars)){
+  cat(paste0(totalVars[totalVars_idx],': '))
+  
+  cells <- paste0("c", 1:totalVars[totalVars_idx])
+  cells_interactions <- rbind(
+    data.frame(t(combn(cells, 2))),
+    data.frame("X1" = cells, "X2" = cells)
+  )
+  
+  results <- data.frame('var'=paste0(cells_interactions$X1,'_',cells_interactions$X2),
+                        'noise'=0, 'int'=0,'both'=0,
+                        'total'=0,
+                        'noiseSD'=0,'intSD'=0,'bothSD'=0)
+  results1 <- data.frame()
+  for(i in 1:nTrials){
+    cat(paste0(i,', '))
+    set.seed(totalVars_idx*1234+i*1234+123459)
+    data <- simulate_Data_numCells_null(numCells=totalVars[totalVars_idx])
+    
+    res <- funkyModel(
+      data = data,
+      outcome = "outcome",
+      unit = "unit",
+      synthetics = c(100, 200),
+      nTrees = 500,
+      silent = TRUE,
+      K=10
+    )
+    
+    tmp_df <- res$VariableImportance
+    tmp_df <- tmp_df[order(-tmp_df$est),]
+    results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                    tmp_df$est >= res$NoiseCutoff ,'var'],"both"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                      tmp_df$est >= res$NoiseCutoff ,'var'],"both"] + 1
+    
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var'],"noiseSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var'],"noiseSD"] + 1
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var'],"intSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var'],"intSD"] + 1
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                    tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'],"bothSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                      tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'],"bothSD"] + 1
+    results$total <- results$total + 1
+    
+    results1 <- 
+      rbind(results1, 
+            data.frame('iter'=i,
+                       'numVars'=totalVars[totalVars_idx],
+                       'OverNoi'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$NoiseCutoff,'var']),
+                       'OverInt'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$InterpolationCutoff,'var']),
+                       'OverBot'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                                tmp_df$est >= res$NoiseCutoff ,'var']),
+                       'maxNoi'= as.numeric(tmp_df$est[1] >= res$NoiseCutoff),
+                       'maxInt'= as.numeric(tmp_df$est[1] >= res$InterpolationCutoff[1]),
+                       'maxBot'= as.numeric(tmp_df$est[1] >= 
+                                              max(res$NoiseCutoff,res$InterpolationCutoff[1])),
+                       'sdNoi'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var']),
+                       'sdInt'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var']),
+                       'sdBot'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                               tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'])
+                       
+            ))
+  }
+  cat(paste0('\n'))
+
+  results_list[[totalVars_idx]] <- results
+  results1_list[[totalVars_idx]] <- results1
+}
+
+display_res <- data.frame()
+for(i in 1:length(totalVars)){
+  display_res <- 
+    rbind(display_res,
+          results1_list[[i]] %>%
+            mutate(Noise = OverNoi>0,
+                   Interp= OverInt>0,
+                   Both = OverBot>0,
+                   maxNoise = maxNoi>0,
+                   maxInterp= maxInt>0,
+                   maxBoth = maxBot>0,
+                   sdNoise = sdNoi>0,
+                   sdInterp= sdInt>0,
+                   sdBoth = sdBot>0) %>%
+            group_by(numVars) %>%
+            summarise(across(Noise:sdBoth, ~ 
+                               mean(., na.rm = TRUE))) %>%
+            as.data.frame()
+    )
+}
+
+display_res200 <- display_res
+display_res200
+```
+
+Below runs to code to see false discovery when $$H=500$$.
+```{r fit_table500, eval=FALSE}
+totalVars <- c(4, 16)
+nTrials <- 100
+
+results_complete <- data.frame()
+results_list <- results1_list <- list()
+
+for(totalVars_idx in 1:length(totalVars)){
+  cat(paste0(totalVars[totalVars_idx],': '))
+  
+  cells <- paste0("c", 1:totalVars[totalVars_idx])
+  cells_interactions <- rbind(
+    data.frame(t(combn(cells, 2))),
+    data.frame("X1" = cells, "X2" = cells)
+  )
+  
+  results <- data.frame('var'=paste0(cells_interactions$X1,'_',cells_interactions$X2),
+                        'noise'=0, 'int'=0,'both'=0,
+                        'total'=0,
+                        'noiseSD'=0,'intSD'=0,'bothSD'=0)
+  results1 <- data.frame()
+  for(i in 1:nTrials){
+    cat(paste0(i,', '))
+    set.seed(totalVars_idx*1234+i*1234+123459)
+    data <- simulate_Data_numCells_null(numCells=totalVars[totalVars_idx])
+    
+    res <- funkyModel(
+      data = data,
+      outcome = "outcome",
+      unit = "unit",
+      synthetics = c(100, 500),
+      nTrees = 500,
+      silent = TRUE,
+      K=10
+    )
+    
+    tmp_df <- res$VariableImportance
+    tmp_df <- tmp_df[order(-tmp_df$est),]
+    results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$NoiseCutoff,'var'],"noise"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff,'var'],"int"] + 1
+    results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                    tmp_df$est >= res$NoiseCutoff ,'var'],"both"] <-
+      results[results$var%in%tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                      tmp_df$est >= res$NoiseCutoff ,'var'],"both"] + 1
+    
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var'],"noiseSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var'],"noiseSD"] + 1
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var'],"intSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var'],"intSD"] + 1
+    results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                    tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'],"bothSD"] <-
+      results[results$var%in%tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                      tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'],"bothSD"] + 1
+    results$total <- results$total + 1
+    
+    results1 <- 
+      rbind(results1, 
+            data.frame('iter'=i,
+                       'numVars'=totalVars[totalVars_idx],
+                       'OverNoi'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$NoiseCutoff,'var']),
+                       'OverInt'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$InterpolationCutoff,'var']),
+                       'OverBot'=sum(results$var %in% 
+                                       tmp_df[tmp_df$est >= res$InterpolationCutoff &
+                                                tmp_df$est >= res$NoiseCutoff ,'var']),
+                       'maxNoi'= as.numeric(tmp_df$est[1] >= res$NoiseCutoff),
+                       'maxInt'= as.numeric(tmp_df$est[1] >= res$InterpolationCutoff[1]),
+                       'maxBot'= as.numeric(tmp_df$est[1] >= 
+                                              max(res$NoiseCutoff,res$InterpolationCutoff[1])),
+                       'sdNoi'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$NoiseCutoff,'var']),
+                       'sdInt'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff,'var']),
+                       'sdBot'= sum(results$var %in% 
+                                      tmp_df[tmp_df$est-tmp_df$sd >= res$InterpolationCutoff &
+                                               tmp_df$est-tmp_df$sd >= res$NoiseCutoff ,'var'])
+                       
+            ))
+  }
+  cat(paste0('\n'))
+
+  results_list[[totalVars_idx]] <- results
+  results1_list[[totalVars_idx]] <- results1
+}
+
+display_res <- data.frame()
+for(i in 1:length(totalVars)){
+  display_res <- 
+    rbind(display_res,
+          results1_list[[i]] %>%
+            mutate(Noise = OverNoi>0,
+                   Interp= OverInt>0,
+                   Both = OverBot>0,
+                   maxNoise = maxNoi>0,
+                   maxInterp= maxInt>0,
+                   maxBoth = maxBot>0,
+                   sdNoise = sdNoi>0,
+                   sdInterp= sdInt>0,
+                   sdBoth = sdBot>0) %>%
+            group_by(numVars) %>%
+            summarise(across(Noise:sdBoth, ~ 
+                               mean(., na.rm = TRUE))) %>%
+            as.data.frame()
+    )
+}
+
+display_res500 <- display_res
+display_res500
+```

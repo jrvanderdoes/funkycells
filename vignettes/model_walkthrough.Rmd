@@ -246,7 +246,7 @@ plot_vi_full <- ggplot2::ggplot(
       y = InterpolationCutoff / maxVal
     ), color = "orange", linetype = "dashed", linewidth = 2) +
     ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 png(paste0(save_path,"/paper/diagram_variableimportance.png"))
 print(plot_vi_full)
@@ -304,7 +304,8 @@ plot_vi_details <- ggplot2::ggplot(
       y = InterpolationCutoff / maxVal
     ), color = "orange", linetype = "dashed", linewidth = 2) +
     ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                              italic(.(sub_val)))))
+                            #atop(italic(.(sub_val))))))
 
 png(paste0(save_path,"/paper/diagram_variableimportance_names.png"))
 print(plot_vi_details)

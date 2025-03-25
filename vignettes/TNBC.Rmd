@@ -81,7 +81,7 @@ agent_info_subset <- data.frame(data_pheno_stat[1],
 ```{r paper_K_example, echo=FALSE, eval=paperRun}
 tnbc_fig <- plotPP(TNBC_pheno[TNBC_pheno$Person == 2, c("cellx", "celly", "Phenotype")],
   ptSize = 3, colorGuide = "none", dropAxes = F,
-  xlab='X',ylab='Y'
+  xlab='X (\U03BCm)',ylab='Y (\U03BCm)'
 )
 
 png(paste0(save_path,"/paper/tnbc_person2_phenotypes.png"), 
@@ -106,14 +106,12 @@ k_fig <- ggplot2::ggplot() +
   ) +
   ggplot2::theme_bw() +
   ggplot2::theme(
-    axis.title.y = ggplot2::element_blank(),
-    axis.text.y = ggplot2::element_blank(),
     legend.text = ggplot2::element_text(size=26),
-    axis.title.x = ggplot2::element_text(size=30),
-    axis.text.x = ggplot2::element_text(size=26),
+    axis.title = ggplot2::element_text(size=30),
+    axis.text = ggplot2::element_text(size=26),
   ) +
-  ggplot2::xlab('Range of Interest for Radius (\U03BCm)') +
-  ggplot2::ylab(NULL) +
+  ggplot2::xlab('r (\U03BCm)') +
+  ggplot2::ylab('K') +
   ggplot2::scale_color_manual(name = NULL, 
                               values = c("K Function" = "black", 
                                          "Reference" = "red")) +
@@ -129,6 +127,37 @@ k_fig <- ggplot2::ggplot() +
 png(paste0(save_path,"/paper/tnbc_person2_tumor_mononeu_k.png"), 
     width = 800, height = 800)
 print(k_fig)
+dev.off()
+
+# Same plot, but different parameters for another figure
+k_fig1 <- ggplot2::ggplot() +
+  ggplot2::geom_line(ggplot2::aes(x = r, y = K1, 
+                                  color='K Function', linetype = "K Function"), 
+                     data = kf, linewidth = 3) +
+  ggplot2::geom_line(ggplot2::aes(x = seq(0, 50, 1), y = pi * seq(0, 50, 1)^2, 
+                                  color='Reference', linetype = "Reference"),
+                     linewidth = 3
+  ) +
+  ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(size=26),
+  ) +
+  ggplot2::xlab(NULL) + ggplot2::ylab(NULL) +
+  ggplot2::scale_color_manual(name = NULL, 
+                              values = c("K Function" = "black", 
+                                         "Reference" = "red")) +
+  ggplot2::scale_linetype_manual(name = NULL, 
+                                 values = c("K Function" = "solid", 
+                                            "Reference" = "dashed")) +
+  ggplot2::theme(
+    legend.position = "none"
+  )
+
+png(paste0(save_path,"/paper/tnbc_person2_tumor_mononeu_k_simple.png"), 
+    width = 800, height = 800)
+print(k_fig1)
 dev.off()
 ```
 
@@ -270,8 +299,11 @@ png(paste0(save_path,"/paper/tnbc_image.png"),
 print(tnbc_image)
 dev.off()
 
+plot_dat <- dat[dat$replicate == 18, c("x", "y", "type")]
+plot_dat$x <- plot_dat$x *2000
+plot_dat$y <- plot_dat$y *2000
 sim_image <- plotPP(
-  data = dat[dat$replicate == 18, c("x", "y", "type")],
+  data = plot_dat,
   ptSize = 3, dropAxes = T, colorGuide = "none",
   colors = c(clrs[1:2], clrs[16], clrs[3:7], clrs[15], clrs[8:14])
 )
@@ -394,7 +426,7 @@ plot_full <- ggplot2::ggplot(
   #   atop(bold("Standardized Variable Importance"),
   #        italic(sub_val))))
   ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 png(paste0(save_path,"/paper/noeffect_variableimportance.png"))
 print(plot_full)
@@ -455,7 +487,7 @@ plot_top25 <- ggplot2::ggplot(
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
   ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 
 
@@ -655,7 +687,7 @@ plot_full <- ggplot2::ggplot(
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
   ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 png(paste0(save_path,"/paper/effect_variableimportance.png"))
 print(plot_full)
@@ -716,7 +748,7 @@ plot_top25 <- ggplot2::ggplot(
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
   ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 png(paste0(save_path,"/paper/effect_variableimportance_top25.png"))
 print(plot_top25)
@@ -809,7 +841,7 @@ plot_full <- ggplot2::ggplot(
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
   ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 png(paste0(save_path,"/paper/tnbc_variableimportance.png"))
 print(plot_full)
@@ -869,7 +901,7 @@ plot_top25 <- ggplot2::ggplot(
     y = InterpolationCutoff / maxVal
   ), color = "orange", linetype = "dashed", linewidth = 2) +
   ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                            italic(.(sub_val)))))
 
 png(paste0(save_path,"/paper/tnbc_variableimportance_top25.png"))
 print(plot_top25)
@@ -991,7 +1023,7 @@ return_plot <-
     legend.position = "none",
     legend.text = ggplot2::element_text(size=18)
   ) +
-  ggplot2::xlab('Range of Interest for Radius (\U03BCm)') +
+  ggplot2::xlab('r (\U03BCm)') +
   ggplot2::scale_colour_hue(name = NULL,labels=c('Mixed','Compartmentalized')) +
   ggplot2::theme(
     legend.position = c(0.05,0.95), # top left position
@@ -1126,7 +1158,7 @@ return_plot <-
     legend.position = "none",
     legend.text = ggplot2::element_text(size=18)
   ) +
-  ggplot2::xlab('Range of Interest for Radius (\U03BCm)') +
+  ggplot2::xlab('r (\U03BCm)') +
   ggplot2::scale_colour_hue(name = NULL,labels=c('Mixed','Compartmentalized')) +
   ggplot2::theme(
     legend.position = c(0.05,0.95), # top left position

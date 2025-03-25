@@ -106,7 +106,7 @@ clean_figures <- function(model_rf) {
       y = InterpolationCutoff / maxVal
     ), color = "orange", linetype = "dashed", linewidth = 2) +
     ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                              italic(.(sub_val)))))
    
 
   # Plot Subset
@@ -164,7 +164,7 @@ clean_figures <- function(model_rf) {
       y = InterpolationCutoff1 / maxVal
     ), color = "orange", linetype = "dashed", linewidth = 2) +
     ggplot2::ylab(bquote(atop(bold("Standardized Variable Importance"),
-                            atop(italic(.(sub_val))))))
+                             italic(.(sub_val)))))
 
   list(
     "full" = plot_full,
