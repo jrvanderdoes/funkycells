@@ -147,13 +147,13 @@ getKsPCAData <- function(data, outcome = colnames(data)[1],
 #' @noRd
 .getPCs <- function(rKData, agents, nPCs, nbasis = 21, silent = FALSE) {
   # Setup Data
-  KData <- rKData[, -1]
+  KData <- rKData[, -1, drop=FALSE]
   evalPts <- rKData[[1]]
 
   # Check if any are missing
   dropIdx <- which(colSums(is.na(KData)) != 0)
   if (length(dropIdx) > 0) {
-    KData <- KData[, -dropIdx]
+    KData <- KData[, -dropIdx, drop=FALSE]
   }
 
   # Skip if not atleast 1 nonNA col
